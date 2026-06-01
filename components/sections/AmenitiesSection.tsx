@@ -53,7 +53,6 @@ const AMENITY_ICONS: Record<string, React.ReactNode> = {
 export default function AmenitiesSection() {
   const [amenities, setAmenities] = useState<Amenity[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState('all');
 
   useEffect(() => {
     const loadAmenities = async () => {
@@ -151,7 +150,7 @@ export default function AmenitiesSection() {
               variants={containerVariants}
               className="grid md:grid-cols-3 gap-6 mb-16"
             >
-              {featured.map((amenity, idx) => (
+              {featured.map((amenity) => (
                 <motion.div
                   key={amenity.id}
                   variants={itemVariants}
