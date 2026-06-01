@@ -62,9 +62,10 @@ export default function ProjectOverviewSection() {
               className="space-y-6"
             >
               <p className="text-[var(--text-secondary)] text-lg leading-relaxed">
-                Shubh Kamna Heights stands as a beacon of modern living in the spiritual city of Varanasi.
-                Built at the confluence of Varanasi's rich spiritual heritage and Chandauli's natural beauty,
-                our project offers more than just homes—it offers a lifestyle steeped in tradition and comfort.
+                Shubh Kamna Heights stands as a beacon of modern living in the spiritual city of
+                Varanasi. Built at the confluence of Varanasi&apos;s rich spiritual heritage and
+                Chandauli&apos;s natural beauty, our project offers more than just homes. It offers
+                a lifestyle steeped in tradition and comfort.
               </p>
               <p className="text-[var(--text-secondary)] text-lg leading-relaxed">
                 Located on 8-lane NH-2, the project enjoys seamless connectivity while maintaining the serenity
