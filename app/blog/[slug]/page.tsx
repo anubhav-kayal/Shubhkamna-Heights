@@ -1,203 +1,206 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { getBlogPostBySlug, getBlogPosts } from '@/lib/firestore';
-import { MOCK_POSTS } from '@/lib/constants';
-import type { BlogPost } from '@/types';
+import { notFound } from 'next/navigation';
 import { ArrowLeft, Calendar, User } from 'lucide-react';
+import { getBlogPostBySlug, getBlogPosts } from '@/lib/firestore';
+import {
+  FALLBACK_BLOG_POSTS,
+  formatDisplayDate,
+  getAbsoluteUrl,
+  getBlogPostsWithFallback,
+  stripHtml,
+  toDate,
+} from '@/lib/site';
 
-export default function BlogPostPage() {
-  const params = useParams();
-  const slug = params?.slug as string;
+type PageProps = {
+  params: Promise<{
+    slug: string;
+  }>;
+};
 
-  const [post, setPost] = useState<BlogPost | null>(null);
-  const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
+async function resolvePost(slug: string) {
+  return (await getBlogPostBySlug(slug)) ?? FALLBACK_BLOG_POSTS.find((post) => post.slug === slug) ?? null;
+}
 
-  useEffect(() => {
-    if (!slug) return;
+export async function generateStaticParams() {
+  const posts = getBlogPostsWithFallback(await getBlogPosts());
+  return posts.map((post) => ({ slug: post.slug }));
+}
 
-    const loadPost = async () => {
-      try {
-        setLoading(true);
-        let foundPost = await getBlogPostBySlug(slug);
-
-        if (!foundPost) {
-          // Fallback to mock data
-          foundPost = MOCK_POSTS.find(p => p.slug === slug) || null;
-        }
-
-        setPost(foundPost);
-
-        if (foundPost) {
-          // Load related posts from same category
-          const allPosts = await getBlogPosts();
-          const related = (allPosts.length > 0 ? allPosts : MOCK_POSTS)
-            .filter(p => p.category === foundPost.category && p.slug !== slug)
-            .slice(0, 3);
-          setRelatedPosts(related);
-        }
-      } catch (error) {
-        console.error('Error loading post:', error);
-        // Try mock data
-        const foundPost = MOCK_POSTS.find(p => p.slug === slug);
-        setPost(foundPost || null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadPost();
-  }, [slug]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
-        <div className="animate-pulse">
-          <div className="h-8 w-64 bg-[var(--border)] rounded mb-4" />
-          <div className="h-4 w-full bg-[var(--border)] rounded" />
-        </div>
-      </div>
-    );
-  }
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await resolvePost(slug);
 
   if (!post) {
-    return (
-      <div className="min-h-screen bg-[var(--bg-primary)]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-          <h1 className="font-cormorant text-3xl font-bold text-[var(--text-primary)] mb-4">
-            Article Not Found
-          </h1>
-          <p className="text-[var(--text-secondary)] mb-8">Sorry, we couldn't find the article you're looking for.</p>
-          <Link href="/blog" className="inline-flex items-center gap-2 text-[var(--gold)] hover:text-[var(--gold-light)]">
-            <ArrowLeft size={20} />
-            Back to Blog
-          </Link>
-        </div>
-      </div>
-    );
+    return {
+      title: 'Article Not Found',
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
   }
+
+  const description = post.excerpt || stripHtml(post.content).slice(0, 160);
+
+  return {
+    title: post.title,
+    description,
+    alternates: {
+      canonical: `/blog/${post.slug}`,
+    },
+    openGraph: {
+      title: post.title,
+      description,
+      type: 'article',
+      url: getAbsoluteUrl(`/blog/${post.slug}`),
+      publishedTime: toDate(post.publishedAt).toISOString(),
+      authors: [post.author],
+      images: post.coverImage ? [{ url: post.coverImage, alt: post.title }] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description,
+    },
+  };
+}
+
+export default async function BlogPostPage({ params }: PageProps) {
+  const { slug } = await params;
+  const post = await resolvePost(slug);
+
+  if (!post) {
+    notFound();
+  }
+
+  const posts = getBlogPostsWithFallback(await getBlogPosts());
+  const relatedPosts = posts
+    .filter((candidate) => candidate.slug !== post.slug && candidate.category === post.category)
+    .slice(0, 3);
+
+  const description = post.excerpt || stripHtml(post.content).slice(0, 160);
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)]">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="bg-[var(--bg-card)] border-b border-[var(--border)] py-8"
-      >
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Link href="/blog" className="inline-flex items-center gap-2 text-[var(--gold)] hover:text-[var(--gold-light)] mb-6">
-            <ArrowLeft size={20} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BlogPosting',
+            headline: post.title,
+            description,
+            datePublished: toDate(post.publishedAt).toISOString(),
+            author: {
+              '@type': 'Person',
+              name: post.author,
+            },
+            image: post.coverImage ? [post.coverImage] : undefined,
+            mainEntityOfPage: getAbsoluteUrl(`/blog/${post.slug}`),
+          }),
+        }}
+      />
+
+      <div className="border-b border-[var(--border)] bg-[var(--bg-card)] py-6 sm:py-8">
+        <div className="page-container max-w-4xl">
+          <Link
+            href="/blog"
+            className="mb-6 inline-flex items-center gap-2 text-[var(--gold)] transition-colors hover:text-[var(--gold-light)]"
+          >
+            <ArrowLeft size={18} />
             Back to Blog
           </Link>
 
-          <div className="space-y-4">
-            <span className="inline-block px-3 py-1 rounded-full bg-[var(--gold)]/10 text-[var(--gold)] text-sm font-semibold">
-              {post.category}
+          <span className="inline-flex rounded-full bg-[var(--gold)]/10 px-3 py-1 text-sm font-semibold text-[var(--gold)]">
+            {post.category}
+          </span>
+
+          <h1 className="section-heading mt-4 sm:mt-5">
+            {post.title}
+          </h1>
+
+          <div className="mt-6 flex flex-col gap-3 text-sm text-[var(--text-secondary)] sm:flex-row sm:items-center sm:gap-6">
+            <span className="flex items-center gap-2">
+              <User size={16} />
+              {post.author}
             </span>
-
-            <h1 className="font-cormorant text-4xl sm:text-5xl font-bold text-[var(--text-primary)]">
-              {post.title}
-            </h1>
-
-            <div className="flex flex-col sm:flex-row gap-4 text-[var(--text-secondary)]">
-              <div className="flex items-center gap-2">
-                <User size={18} />
-                <span>{post.author}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar size={18} />
-                <span>
-                  {(() => {
-                    const date =
-                      post.publishedAt instanceof Date
-                        ? post.publishedAt
-                        : typeof post.publishedAt === 'object' && 'toDate' in post.publishedAt
-                          ? (post.publishedAt as any).toDate()
-                          : new Date(post.publishedAt);
-                    return date.toLocaleDateString();
-                  })()}
-                </span>
-              </div>
-            </div>
+            <span className="flex items-center gap-2">
+              <Calendar size={16} />
+              {formatDisplayDate(post.publishedAt)}
+            </span>
           </div>
         </div>
-      </motion.div>
+      </div>
 
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Featured Image */}
-        {post.coverImage && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-12 rounded-lg overflow-hidden border border-[var(--border)] h-96 sm:h-[500px]"
-          >
-            <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" />
-          </motion.div>
+      <div className="page-container max-w-4xl py-8 sm:py-10 lg:py-12">
+        {post.coverImage ? (
+          <div className="relative mb-8 h-48 overflow-hidden rounded-2xl border border-[var(--border)] sm:mb-10 sm:h-72 sm:rounded-3xl lg:h-[28rem]">
+            <Image src={post.coverImage} alt={post.title} fill className="object-cover" />
+          </div>
+        ) : (
+          <div className="mb-8 flex h-48 items-center justify-center rounded-2xl border border-[var(--border)] bg-gradient-to-br from-[var(--gold)]/20 to-[var(--bg-section)] sm:mb-10 sm:h-72 sm:rounded-3xl lg:h-[28rem]">
+            <span className="font-cormorant text-4xl font-bold text-[var(--gold)]/70 sm:text-6xl">
+              {post.title.charAt(0)}
+            </span>
+          </div>
         )}
 
-        {/* Article Content */}
-        <motion.article
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="prose prose-invert max-w-none"
-        >
-          <div className="font-inter text-[var(--text-primary)] leading-relaxed space-y-4 mb-12">
-            {post.content ? (
-              <div dangerouslySetInnerHTML={{ __html: post.content }} />
-            ) : (
-              <p>{post.excerpt}</p>
-            )}
-          </div>
-        </motion.article>
+        <article className="space-y-6 text-base leading-8 text-[var(--text-primary)]">
+          {post.content ? (
+            <div
+              className="space-y-6 [&_h2]:font-cormorant [&_h2]:text-3xl [&_h2]:font-semibold [&_h2]:text-[var(--text-primary)] [&_p]:text-[var(--text-secondary)]"
+              dangerouslySetInnerHTML={{ __html: post.content }}
+            />
+          ) : (
+            <p className="text-[var(--text-secondary)]">{post.excerpt}</p>
+          )}
+        </article>
 
-        {/* Divider */}
-        <div className="border-t border-[var(--border)] my-12" />
-
-        {/* Related Posts */}
         {relatedPosts.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="font-cormorant text-3xl font-bold text-[var(--text-primary)] mb-8">Related Articles</h2>
+          <section className="mt-10 border-t border-[var(--border)] pt-8 sm:mt-12 sm:pt-10">
+            <h2 className="section-subheading text-[var(--text-primary)]">
+              Related Articles
+            </h2>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {relatedPosts.map((relatedPost, idx) => (
-                <motion.article
+            <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              {relatedPosts.map((relatedPost) => (
+                <article
                   key={relatedPost.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="group bg-[var(--bg-card)] rounded-lg overflow-hidden border border-[var(--border)] hover:border-[var(--gold)] transition-colors"
+                  className="overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg-card)]"
                 >
-                  <div className="h-40 bg-gradient-to-br from-[var(--gold)] to-[var(--gold-dark)]" />
-
-                  <div className="p-4">
-                    <span className="text-xs text-[var(--gold)]">{relatedPost.category}</span>
-                    <h3 className="font-cormorant text-lg font-bold text-[var(--text-primary)] mt-2 line-clamp-2">
+                  <div className="relative h-44 bg-gradient-to-br from-[var(--gold)]/20 to-[var(--bg-section)]">
+                    {relatedPost.coverImage ? (
+                      <Image
+                        src={relatedPost.coverImage}
+                        alt={relatedPost.title}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : null}
+                  </div>
+                  <div className="p-5">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">
+                      {relatedPost.category}
+                    </p>
+                    <h3 className="mt-3 font-cormorant text-2xl font-semibold text-[var(--text-primary)]">
                       {relatedPost.title}
                     </h3>
-                    <p className="text-[var(--text-secondary)] text-sm mt-2 line-clamp-2">{relatedPost.excerpt}</p>
-
+                    <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">
+                      {relatedPost.excerpt}
+                    </p>
                     <Link
                       href={`/blog/${relatedPost.slug}`}
-                      className="inline-flex items-center gap-2 text-[var(--gold)] hover:text-[var(--gold-light)] text-sm font-semibold mt-4"
+                      className="mt-5 inline-flex items-center gap-2 font-semibold text-[var(--gold)] transition-colors hover:text-[var(--gold-light)]"
                     >
-                      Read More →
+                      Read Article
                     </Link>
                   </div>
-                </motion.article>
+                </article>
               ))}
             </div>
-          </motion.div>
+          </section>
         )}
       </div>
     </div>

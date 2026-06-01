@@ -59,8 +59,8 @@ export default function BlogSection() {
   };
 
   return (
-    <section className="relative py-20 sm:py-32 bg-[var(--bg-primary)] overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="section-shell bg-[var(--bg-primary)]">
+      <div className="page-container">
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -68,14 +68,13 @@ export default function BlogSection() {
           variants={sectionVariants}
         >
           {/* Heading */}
-          <div className="text-center mb-16">
-            <h2 className="font-cormorant text-4xl sm:text-5xl lg:text-6xl font-bold text-[var(--text-primary)] mb-4">
-              Insights & Updates
-            </h2>
-            <p className="text-[var(--text-secondary)] text-lg">
+          <div className="section-header-center">
+            <span className="section-kicker justify-center">Blog</span>
+            <h2 className="section-heading">Insights & Updates</h2>
+            <p className="section-copy mx-auto mt-3 max-w-xl">
               Stay informed with our latest blog posts
             </p>
-            <div className="w-20 h-1 bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] mx-auto mt-6"></div>
+            <div className="gold-rule mx-auto mt-4 sm:mt-6" />
           </div>
 
           {/* Blog Posts Grid */}
@@ -86,13 +85,13 @@ export default function BlogSection() {
           ) : (
             <motion.div
               variants={containerVariants}
-              className="grid md:grid-cols-3 gap-8 mb-12"
+              className="grid-safe mb-8 grid grid-cols-1 gap-5 sm:mb-10 sm:gap-6 md:grid-cols-2 lg:grid-cols-3"
             >
               {posts.map(post => (
                 <motion.div
                   key={post.id}
                   variants={itemVariants}
-                  className="group bg-[var(--bg-card)] border border-[var(--border)] rounded-lg overflow-hidden hover:border-[var(--gold)] transition-all duration-300"
+                  className="group min-w-0 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-card)] transition-all duration-300 hover:border-[var(--gold)] sm:rounded-2xl"
                 >
                   {/* Cover Image */}
                   <div className="relative h-48 bg-gradient-to-br from-[var(--gold)]/20 to-[var(--bg-section)] flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-300">
@@ -100,7 +99,7 @@ export default function BlogSection() {
                   </div>
 
                   {/* Content */}
-                  <div className="p-6 space-y-4">
+                  <div className="space-y-4 p-5 sm:p-6">
                     {/* Category */}
                     <span className="inline-block px-3 py-1 bg-[var(--gold)]/20 text-[var(--gold)] text-xs font-medium rounded-full border border-[var(--gold)]/50">
                       {post.category}

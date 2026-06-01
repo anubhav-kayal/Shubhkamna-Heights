@@ -35,9 +35,9 @@ export default function BlogIndexClient({ posts }: { posts: BlogPost[] }) {
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)]">
-      <div className="border-b border-[var(--border)] bg-[var(--bg-card)] py-12 sm:py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h1 className="font-cormorant text-4xl font-bold text-[var(--text-primary)] sm:text-5xl">
+      <div className="border-b border-[var(--border)] bg-[var(--bg-card)] py-8 sm:py-12 lg:py-14">
+        <div className="page-container">
+          <h1 className="section-heading">
             Blog &amp; Insights
           </h1>
           <p className="mt-4 max-w-2xl text-[var(--text-secondary)]">
@@ -47,8 +47,8 @@ export default function BlogIndexClient({ posts }: { posts: BlogPost[] }) {
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mb-10 space-y-6">
+      <div className="page-container py-8 sm:py-10 lg:py-12">
+        <div className="mb-8 space-y-5 sm:mb-10 sm:space-y-6">
           <div className="relative">
             <Search
               className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"
