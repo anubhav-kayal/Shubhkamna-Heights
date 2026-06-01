@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
+import { ArrowRight, Menu, X } from 'lucide-react';
 import { useScrolled } from '@/hooks/useScrolled';
 import { PROJECT_DATA } from '@/lib/constants';
 import { useCalculator } from '@/context/CalculatorContext';
@@ -21,101 +21,107 @@ export default function Navbar() {
     { label: 'Blog', href: '/blog' },
   ];
 
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
   return (
-    <>
-      {/* RERA Banner */}
-      <div className="fixed top-0 left-0 right-0 z-[60] bg-[var(--bg-card)] border-b border-[var(--border)] text-center py-2 text-xs text-[var(--text-secondary)]">
-        <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4">
-          <span>RERA: {PROJECT_DATA.reraNumber}</span>
+    <header className="site-header fixed inset-x-0 top-0 z-[60]">
+      <div className="border-b border-white/5 bg-black/40 backdrop-blur-xl">
+        <div className="page-container flex min-h-[var(--header-rera)] flex-wrap items-center justify-center gap-x-2 gap-y-0.5 py-1.5 text-center text-[9px] font-medium uppercase tracking-[0.14em] text-[var(--text-secondary)] sm:gap-x-4 sm:py-2 sm:text-[11px] sm:tracking-[0.18em]">
+          <span className="leading-tight">RERA: {PROJECT_DATA.reraNumber}</span>
           <span className="hidden sm:inline">|</span>
           <span>VDA Approved</span>
           <span className="hidden sm:inline">|</span>
-          <span>CREDAI {PROJECT_DATA.credaiText}</span>
+          <span className="max-[380px]:hidden sm:inline">CREDAI {PROJECT_DATA.credaiText}</span>
         </div>
       </div>
 
-      {/* Main Navbar */}
       <nav
-        className={`fixed left-0 right-0 z-50 transition-all duration-300 pt-8 ${
+        className={`transition-all duration-300 ${
           isScrolled
-            ? 'bg-[var(--bg-card)] border-b border-[var(--gold)] shadow-lg'
+            ? 'border-b border-[var(--border)] bg-[rgba(10,10,15,0.92)] backdrop-blur-xl'
             : 'bg-transparent'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link href="/" className="flex items-center">
+        <div className="page-container">
+          <div className="flex min-h-[var(--header-nav)] items-center justify-between gap-3 sm:gap-6">
+            <Link href="/" className="flex shrink-0 items-center">
               <div className="flex flex-col">
-                <span className="font-cormorant text-2xl font-bold text-[var(--gold)]">
+                <span className="font-cormorant text-xl font-bold tracking-[0.06em] text-[var(--gold)] sm:text-[1.75rem] sm:tracking-[0.08em]">
                   SHUBH KAMNA
                 </span>
-                <span className="font-cormorant text-sm text-[var(--text-primary)]">
+                <span className="font-inter text-[0.6rem] uppercase tracking-[0.36em] text-[var(--text-secondary)] sm:text-[0.68rem] sm:tracking-[0.42em]">
                   HEIGHTS
                 </span>
               </div>
             </Link>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-8">
+            <div className="hidden min-w-0 flex-1 items-center justify-center gap-5 px-4 lg:flex xl:gap-7">
               {navLinks.map(link => (
                 <Link
                   key={link.label}
                   href={link.href}
-                  className="text-[var(--text-secondary)] hover:text-[var(--gold)] transition-colors font-inter text-sm"
+                  className="text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
                 >
                   {link.label}
                 </Link>
               ))}
             </div>
 
-            {/* CTA Button */}
-            <div className="hidden md:flex items-center gap-4">
-              <button
-                onClick={openCalculator}
-                className="px-6 py-2 border border-[var(--gold)] text-[var(--gold)] rounded-full hover:bg-[var(--gold)] hover:text-[var(--text-dark)] transition-all duration-200 font-inter text-sm font-medium"
-              >
+            <div className="hidden lg:flex">
+              <button type="button" onClick={openCalculator} className="btn-secondary">
                 Book a Visit
+                <ArrowRight size={16} />
               </button>
             </div>
 
-            {/* Mobile Menu Button */}
             <button
+              type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden text-[var(--gold)]"
+              aria-expanded={mobileMenuOpen}
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+              className="rounded-full border border-[var(--border)] bg-white/5 p-2.5 text-[var(--gold)] lg:hidden"
             >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
         </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 top-20 bg-[var(--bg-primary)] bg-opacity-95 z-40">
-            <div className="flex flex-col items-center justify-center h-screen gap-8">
-              {navLinks.map(link => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-[var(--text-primary)] hover:text-[var(--gold)] transition-colors font-inter text-lg"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  openCalculator();
-                }}
-                className="px-8 py-3 bg-[var(--gold)] text-[var(--text-dark)] rounded-full font-inter font-medium mt-4"
-              >
-                Book a Visit
-              </button>
-            </div>
-          </div>
-        )}
       </nav>
-    </>
+
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-x-0 bottom-0 z-50 overflow-y-auto bg-[rgba(10,10,15,0.97)] backdrop-blur-xl lg:hidden"
+          style={{ top: 'var(--site-header-height)' }}
+        >
+          <div className="page-container flex min-h-full flex-col gap-3 py-6">
+            {navLinks.map(link => (
+              <Link
+                key={link.label}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-xl border border-[var(--border)] px-4 py-3.5 text-base font-medium text-[var(--text-primary)] transition-colors hover:border-[var(--gold)] hover:text-[var(--gold)]"
+              >
+                {link.label}
+              </Link>
+            ))}
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                openCalculator();
+              }}
+              className="btn-primary mt-2"
+            >
+              Book a Visit
+              <ArrowRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+    </header>
   );
 }

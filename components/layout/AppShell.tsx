@@ -14,7 +14,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <>
       {!isAdminRoute && <Navbar />}
-      <main className="relative w-full">{children}</main>
+      <main className="site-main relative w-full">{children}</main>
       {!isAdminRoute && (
         <>
           <WhatsAppFAB />
