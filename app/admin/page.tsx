@@ -1,46 +1,58 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { auth } from '@/lib/firebase';
+import { motion } from 'framer-motion';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import {
+  BarChart3,
+  Building2,
+  FileText,
+  Images,
+  LogOut,
+  MessageSquare,
+  Users,
+} from 'lucide-react';
+import { auth } from '@/lib/firebase';
+import {
+  getAllBlogPosts,
+  getAllTestimonials,
+  getBanks,
   getEnquiries,
   getGalleryImages,
-  getBlogPosts,
-  getTestimonials,
 } from '@/lib/firestore';
-import {
-  MessageSquare,
-  Images,
-  FileText,
-  Users,
-  Settings,
-  LogOut,
-  BarChart3,
-} from 'lucide-react';
+
+type DashboardStats = {
+  enquiries: number;
+  gallery: number;
+  blog: number;
+  testimonials: number;
+  banks: number;
+};
+
+const EMPTY_STATS: DashboardStats = {
+  enquiries: 0,
+  gallery: 0,
+  blog: 0,
+  testimonials: 0,
+  banks: 0,
+};
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [stats, setStats] = useState({
-    enquiries: 0,
-    gallery: 0,
-    blog: 0,
-    testimonials: 0,
-  });
+  const [stats, setStats] = useState<DashboardStats>(EMPTY_STATS);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadStats = async () => {
       try {
-        setLoading(true);
-        const [enquiries, gallery, blog, testimonials] = await Promise.all([
+        const [enquiries, gallery, blog, testimonials, banks] = await Promise.all([
           getEnquiries(),
           getGalleryImages(),
-          getBlogPosts(),
-          getTestimonials(),
+          getAllBlogPosts(),
+          getAllTestimonials(),
+          getBanks(),
         ]);
 
         setStats({
@@ -48,24 +60,19 @@ export default function AdminDashboard() {
           gallery: gallery.length,
           blog: blog.length,
           testimonials: testimonials.length,
+          banks: banks.length,
         });
-      } catch (error) {
-        console.error('Error loading stats:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadStats();
+    void loadStats();
   }, []);
 
   const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      router.push('/admin/login');
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
+    await signOut(auth);
+    router.push('/admin/login');
   };
 
   const modules = [
@@ -76,25 +83,25 @@ export default function AdminDashboard() {
       color: 'from-blue-500 to-blue-600',
       count: stats.enquiries,
       href: '/admin/enquiries',
-      description: 'Manage visitor enquiries',
+      description: 'Review inbound sales leads',
     },
     {
       id: 'gallery',
       title: 'Gallery',
       icon: Images,
-      color: 'from-purple-500 to-purple-600',
+      color: 'from-emerald-500 to-emerald-600',
       count: stats.gallery,
       href: '/admin/gallery',
-      description: 'Manage property images',
+      description: 'Track visual assets and categories',
     },
     {
       id: 'blog',
-      title: 'Blog Posts',
+      title: 'Blog',
       icon: FileText,
-      color: 'from-green-500 to-green-600',
+      color: 'from-violet-500 to-violet-600',
       count: stats.blog,
       href: '/admin/blog',
-      description: 'Create and edit articles',
+      description: 'Create and edit published content',
     },
     {
       id: 'testimonials',
@@ -103,138 +110,105 @@ export default function AdminDashboard() {
       color: 'from-orange-500 to-orange-600',
       count: stats.testimonials,
       href: '/admin/testimonials',
-      description: 'Manage resident reviews',
+      description: 'Manage resident stories and ratings',
+    },
+    {
+      id: 'banks',
+      title: 'Banks',
+      icon: Building2,
+      color: 'from-cyan-500 to-cyan-600',
+      count: stats.banks,
+      href: '/admin/banks',
+      description: 'Update partner bank and loan data',
     },
     {
       id: 'pricing',
       title: 'Pricing',
       icon: BarChart3,
-      color: 'from-yellow-500 to-yellow-600',
+      color: 'from-amber-500 to-amber-600',
+      count: undefined,
       href: '/admin/pricing',
-      description: 'Update pricing settings',
+      description: 'Maintain rates, taxes, and defaults',
     },
   ];
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)]">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-[var(--bg-card)] border-b border-[var(--border)]"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
+      <div className="border-b border-[var(--border)] bg-[var(--bg-card)]">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-6 sm:px-6 lg:px-8">
           <div>
             <h1 className="font-cormorant text-3xl font-bold text-[var(--gold)]">
               Admin Dashboard
             </h1>
-            <p className="text-[var(--text-secondary)] mt-1">Manage your property</p>
+            <p className="mt-1 text-[var(--text-secondary)]">
+              Content, lead, and pricing controls for the website.
+            </p>
           </div>
 
           <button
             onClick={handleLogout}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 border border-red-500/20 rounded-lg hover:bg-red-500/20 transition-colors font-inter font-semibold text-sm"
+            className="inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-400 transition-colors hover:bg-red-500/20"
           >
-            <LogOut size={18} />
+            <LogOut size={16} />
             Logout
           </button>
         </div>
-      </motion.div>
+      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Stats Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
-          {modules.map((module, idx) => {
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mb-12 rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] p-6">
+          <p className="text-sm uppercase tracking-[0.3em] text-[var(--gold)]">
+            Overview
+          </p>
+          <h2 className="mt-3 font-cormorant text-3xl font-semibold text-[var(--text-primary)]">
+            {loading ? 'Loading dashboard metrics...' : 'Current content snapshot'}
+          </h2>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {modules.map((module, index) => {
             const Icon = module.icon;
+
             return (
               <motion.div
                 key={module.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                className={`group relative overflow-hidden rounded-lg border border-[var(--border)] bg-gradient-to-br ${module.color} p-0.5`}
+                transition={{ delay: index * 0.06 }}
+                className={`rounded-3xl bg-gradient-to-br p-px ${module.color}`}
               >
-                <div className="bg-[var(--bg-card)] rounded-lg p-6 relative z-10">
-                  <div className="flex items-center justify-between mb-4">
+                <div className="flex h-full flex-col rounded-[calc(1.5rem-1px)] bg-[var(--bg-card)] p-6">
+                  <div className="flex items-start justify-between">
                     <div
-                      className={`w-12 h-12 rounded-lg bg-gradient-to-br ${module.color} flex items-center justify-center`}
+                      className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${module.color}`}
                     >
-                      <Icon size={24} className="text-white" />
+                      <Icon size={22} className="text-white" />
                     </div>
-                    {module.count !== undefined && (
-                      <span className="text-2xl font-bold text-[var(--gold)]">{module.count}</span>
+                    {module.count !== undefined && !loading && (
+                      <span className="text-3xl font-bold text-[var(--gold)]">
+                        {module.count}
+                      </span>
                     )}
                   </div>
-                  <h3 className="font-inter font-bold text-[var(--text-primary)] mb-1">
+
+                  <h3 className="mt-5 text-xl font-semibold text-[var(--text-primary)]">
                     {module.title}
                   </h3>
-                  <p className="text-[var(--text-secondary)] text-sm mb-4">{module.description}</p>
+                  <p className="mt-2 flex-1 text-sm leading-6 text-[var(--text-secondary)]">
+                    {module.description}
+                  </p>
+
                   <Link
                     href={module.href}
-                    className="inline-flex items-center gap-2 text-[var(--gold)] hover:text-[var(--gold-light)] font-semibold text-sm"
+                    className="mt-6 inline-flex items-center gap-2 font-semibold text-[var(--gold)] transition-colors hover:text-[var(--gold-light)]"
                   >
-                    Manage →
+                    Open module
                   </Link>
                 </div>
               </motion.div>
             );
           })}
         </div>
-
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="bg-[var(--bg-card)] rounded-lg border border-[var(--border)] p-8"
-        >
-          <h2 className="font-cormorant text-2xl font-bold text-[var(--text-primary)] mb-6">
-            Quick Actions
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <Link
-              href="/admin/blog"
-              className="p-4 bg-[var(--bg-primary)] rounded-lg border border-[var(--border)] hover:border-[var(--gold)] transition-colors"
-            >
-              <p className="font-inter font-bold text-[var(--text-primary)]">📝 Create New Blog Post</p>
-              <p className="text-[var(--text-secondary)] text-sm mt-1">
-                Add a new article to share insights
-              </p>
-            </Link>
-
-            <Link
-              href="/admin/enquiries"
-              className="p-4 bg-[var(--bg-primary)] rounded-lg border border-[var(--border)] hover:border-[var(--gold)] transition-colors"
-            >
-              <p className="font-inter font-bold text-[var(--text-primary)]">💬 View Enquiries</p>
-              <p className="text-[var(--text-secondary)] text-sm mt-1">
-                Check new visitor enquiries
-              </p>
-            </Link>
-
-            <Link
-              href="/admin/pricing"
-              className="p-4 bg-[var(--bg-primary)] rounded-lg border border-[var(--border)] hover:border-[var(--gold)] transition-colors"
-            >
-              <p className="font-inter font-bold text-[var(--text-primary)]">💰 Update Pricing</p>
-              <p className="text-[var(--text-secondary)] text-sm mt-1">
-                Adjust rates and EMI settings
-              </p>
-            </Link>
-
-            <Link
-              href="/admin/gallery"
-              className="p-4 bg-[var(--bg-primary)] rounded-lg border border-[var(--border)] hover:border-[var(--gold)] transition-colors"
-            >
-              <p className="font-inter font-bold text-[var(--text-primary)]">🖼️ Upload Gallery</p>
-              <p className="text-[var(--text-secondary)] text-sm mt-1">
-                Add property images
-              </p>
-            </Link>
-          </div>
-        </motion.div>
       </div>
     </div>
   );
