@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
+  ArrowRight,
   Waves,
   Dumbbell,
   Users,
@@ -61,7 +62,6 @@ export default function AmenitiesSection() {
         if (data && data.length > 0) {
           setAmenities(data);
         } else {
-          // Use hardcoded list if Firestore is empty
           setAmenities(
             AMENITIES_LIST.map((name, idx) => ({
               id: `amenity-${idx}`,
@@ -74,7 +74,6 @@ export default function AmenitiesSection() {
         }
       } catch (error) {
         console.error('Error loading amenities:', error);
-        // Fallback to hardcoded list
         setAmenities(
           AMENITIES_LIST.map((name, idx) => ({
             id: `amenity-${idx}`,
@@ -122,90 +121,110 @@ export default function AmenitiesSection() {
   const grid = amenities.slice(3);
 
   return (
-    <section
-      id="amenities"
-      className="relative py-20 sm:py-32 bg-[var(--bg-section)] overflow-hidden"
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="amenities" className="section-shell bg-[var(--bg-section)]">
+      <div className="page-container">
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
           variants={sectionVariants}
         >
-          {/* Heading */}
-          <div className="text-center mb-16">
-            <h2 className="font-cormorant text-4xl sm:text-5xl lg:text-6xl font-bold text-[var(--text-primary)] mb-4">
-              Unmatched Lifestyle
-            </h2>
-            <p className="text-[var(--text-secondary)] text-lg">
-              Unparalleled Amenities for Modern Living
-            </p>
-            <div className="w-20 h-1 bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] mx-auto mt-6"></div>
+          <div className="section-header grid-safe grid gap-6 lg:grid-cols-[1fr_minmax(0,18rem)] lg:items-end lg:gap-8">
+            <div className="min-w-0">
+              <span className="section-kicker">Lifestyle</span>
+              <h2 className="section-heading text-[var(--text-primary)]">
+                Unmatched Lifestyle
+              </h2>
+              <div className="gold-rule my-4 sm:my-5" />
+              <p className="section-lead">
+                Club amenities, green breathing spaces, active recreation, and calm corners are
+                arranged to make the project feel inhabited, not just occupied.
+              </p>
+            </div>
+            <div className="panel-dark min-w-0 rounded-2xl panel-padding">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]/80">
+                Community Focus
+              </p>
+              <p className="section-lead !mt-3 !max-w-none">
+                From fitness and leisure to family gathering spaces, the amenity mix is designed
+                for daily use instead of brochure filler.
+              </p>
+            </div>
           </div>
 
-          {/* Featured Amenities - Large Cards */}
           {!loading && featured.length > 0 && (
             <motion.div
               variants={containerVariants}
-              className="grid md:grid-cols-3 gap-6 mb-16"
+              className="grid-safe mb-8 grid grid-cols-1 gap-4 sm:mb-10 sm:gap-5 md:grid-cols-2 lg:mb-12 lg:grid-cols-3 lg:gap-6"
             >
-              {featured.map((amenity) => (
-                <motion.div
-                  key={amenity.id}
-                  variants={itemVariants}
-                  className="group relative h-64 rounded-lg overflow-hidden cursor-pointer"
-                >
-                  {/* Placeholder image background */}
-                  <div
-                    className="absolute inset-0 bg-gradient-to-br from-[var(--bg-card)] to-[var(--bg-primary)] flex items-center justify-center"
-                    style={{
-                      backgroundImage: `linear-gradient(135deg, rgba(201,168,76,0.1), rgba(201,168,76,0.05))`,
-                    }}
+              {featured.map((amenity) => {
+                const hasImage = Boolean(
+                  amenity.imageUrl && !amenity.imageUrl.includes('placeholder')
+                );
+
+                return (
+                  <motion.article
+                    key={amenity.id}
+                    variants={itemVariants}
+                    className="group relative flex min-h-[16rem] min-w-0 flex-col rounded-2xl border border-[var(--border)] bg-[var(--bg-primary)] sm:min-h-[18rem] sm:rounded-[1.75rem]"
                   >
-                    <div className="text-[var(--gold)] opacity-30 text-6xl">
-                      {AMENITY_ICONS[amenity.title] || <Users size={48} />}
+                    <div className="absolute inset-0 overflow-hidden rounded-2xl sm:rounded-[1.75rem]">
+                      {hasImage ? (
+                        <div
+                          role="img"
+                          aria-label={amenity.title}
+                          className="h-full w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                          style={{ backgroundImage: `url(${amenity.imageUrl})` }}
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top_left,rgba(201,168,76,0.28),transparent_42%),linear-gradient(135deg,rgba(33,32,42,0.98),rgba(16,15,22,1))]">
+                          <div className="text-[var(--gold)]/25 transition-transform duration-500 group-hover:scale-110">
+                            {AMENITY_ICONS[amenity.title] || <Users size={56} />}
+                          </div>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[rgba(9,8,15,0.96)] via-[rgba(9,8,15,0.5)] to-[rgba(9,8,15,0.15)]" />
                     </div>
-                  </div>
 
-                  {/* Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-primary)] via-transparent to-transparent group-hover:from-[var(--bg-primary)] group-hover:to-transparent transition-all duration-300"></div>
-
-                  {/* Content */}
-                  <div className="absolute inset-0 flex flex-col justify-between p-6">
-                    <div className="text-[var(--gold)] group-hover:scale-110 transition-transform duration-300">
-                      {AMENITY_ICONS[amenity.title] || <Users size={32} />}
+                    <div className="relative flex min-h-[16rem] flex-1 flex-col justify-between p-5 sm:min-h-[18rem] sm:p-6 lg:p-7">
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="badge-pill shrink border border-[var(--gold)]/25 bg-[rgba(9,8,15,0.7)] text-[var(--gold)] backdrop-blur-sm">
+                          Featured
+                        </span>
+                        <div className="shrink-0 text-[var(--gold)]">
+                          {AMENITY_ICONS[amenity.title] || <Users size={26} />}
+                        </div>
+                      </div>
+                      <div className="min-w-0 pt-4">
+                        <h3 className="font-cormorant text-2xl font-semibold leading-tight text-[var(--text-primary)] text-balance sm:text-3xl">
+                          {amenity.title}
+                        </h3>
+                        <p className="mt-2 text-sm leading-relaxed text-[rgba(247,243,233,0.85)]">
+                          {amenity.description}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-cormorant text-2xl font-bold text-[var(--text-primary)] group-hover:text-[var(--gold)] transition-colors mb-2">
-                        {amenity.title}
-                      </h3>
-                      <p className="text-[var(--text-secondary)] text-sm group-hover:text-[var(--text-primary)] transition-colors">
-                        {amenity.description}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.article>
+                );
+              })}
             </motion.div>
           )}
 
-          {/* Amenities Grid */}
           {!loading && grid.length > 0 && (
             <motion.div
               variants={containerVariants}
-              className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"
+              className="grid-safe grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5"
             >
               {grid.map(amenity => (
                 <motion.div
                   key={amenity.id}
                   variants={itemVariants}
-                  className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-lg p-4 hover:border-[var(--gold)] transition-all duration-300 group cursor-pointer text-center"
+                  className="panel-dark group flex min-h-[9.5rem] min-w-0 flex-col gap-3 rounded-xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-[var(--gold)]/50 sm:min-h-[10.5rem] sm:rounded-2xl sm:p-5"
                 >
-                  <div className="flex justify-center mb-3 text-[var(--gold)] group-hover:scale-110 transition-transform duration-300">
-                    {AMENITY_ICONS[amenity.title] || <Users size={28} />}
+                  <div className="inline-flex w-fit rounded-xl border border-[var(--gold)]/15 bg-[rgba(201,168,76,0.08)] p-2.5 text-[var(--gold)]">
+                    {AMENITY_ICONS[amenity.title] || <Users size={22} />}
                   </div>
-                  <p className="font-inter text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--gold)] transition-colors">
+                  <p className="font-inter text-xs font-semibold uppercase leading-snug tracking-[0.1em] text-[var(--text-primary)] text-balance sm:text-[0.8125rem] sm:tracking-[0.12em]">
                     {amenity.title}
                   </p>
                 </motion.div>
@@ -219,20 +238,31 @@ export default function AmenitiesSection() {
             </div>
           )}
 
-          {/* Call to Action */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
-            className="text-center mt-16 pt-12 border-t border-[var(--border)]"
+            className="mt-8 min-w-0 rounded-2xl border border-[var(--border)] bg-[linear-gradient(135deg,rgba(201,168,76,0.12),rgba(17,16,24,0.98))] panel-padding sm:mt-12 sm:rounded-[1.75rem]"
           >
-            <p className="text-[var(--text-secondary)] mb-6">
-              Experience the perfect blend of leisure and luxury
-            </p>
-            <button className="px-8 py-3 bg-[var(--gold)] text-[var(--text-dark)] rounded-lg font-inter font-semibold hover:shadow-lg hover:shadow-[var(--gold)]/30 transition-all duration-300">
-              Schedule a Visit Today
-            </button>
+            <div className="flex min-w-0 flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]/80">
+                  Experience On Site
+                </p>
+                <h3 className="section-subheading mt-3 text-[var(--text-primary)]">
+                  Walk through the spaces before you make the decision.
+                </h3>
+                <p className="section-lead !max-w-none">
+                  A site visit will show the scale, circulation, green cover, and amenity planning
+                  far better than a brochure grid can.
+                </p>
+              </div>
+              <button type="button" className="btn-primary shrink-0 lg:min-w-[12rem]">
+                Schedule a Visit
+                <ArrowRight size={16} />
+              </button>
+            </div>
           </motion.div>
         </motion.div>
       </div>

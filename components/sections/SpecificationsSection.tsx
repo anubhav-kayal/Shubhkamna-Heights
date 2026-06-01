@@ -76,8 +76,8 @@ export default function SpecificationsSection() {
   };
 
   return (
-    <section className="relative py-20 sm:py-32 bg-[var(--bg-light)] overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="section-shell bg-[var(--bg-light)]">
+      <div className="page-container">
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -85,11 +85,12 @@ export default function SpecificationsSection() {
           variants={sectionVariants}
         >
           {/* Heading */}
-          <div className="text-center mb-16">
-            <h2 className="font-cormorant text-4xl sm:text-5xl lg:text-6xl font-bold text-[var(--text-dark)] mb-4">
+          <div className="section-header-center">
+            <span className="section-kicker text-[var(--text-dark)]/70 justify-center">Specifications</span>
+            <h2 className="section-heading text-[var(--text-dark)]">
               Premium Specifications
             </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] mx-auto"></div>
+            <div className="gold-rule mx-auto mt-4 sm:mt-6" />
           </div>
 
           {/* Specifications Accordion */}
@@ -111,9 +112,9 @@ export default function SpecificationsSection() {
                     onClick={() =>
                       setExpandedCategory(expandedCategory === spec.category ? null : spec.category)
                     }
-                    className="w-full flex items-center justify-between p-6 bg-[var(--bg-card)] hover:bg-[var(--bg-section)] transition-colors duration-300"
+                    className="flex w-full items-center justify-between gap-4 bg-[var(--bg-card)] px-4 py-4 text-left transition-colors duration-300 hover:bg-[var(--bg-section)] sm:px-5 sm:py-5"
                   >
-                    <span className="font-cormorant text-lg font-bold text-[var(--text-dark)]">
+                    <span className="font-cormorant text-base font-bold text-[var(--text-dark)] text-balance sm:text-lg">
                       {spec.category}
                     </span>
                     <ChevronDown
@@ -130,7 +131,7 @@ export default function SpecificationsSection() {
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.3 }}
-                      className="bg-[var(--bg-primary)] p-6"
+                      className="bg-[var(--bg-primary)] px-4 py-5 sm:px-5 sm:py-6"
                     >
                       <div className="space-y-3">
                         {spec.items.map((item, idx) => (
@@ -138,10 +139,10 @@ export default function SpecificationsSection() {
                             key={idx}
                             className="flex justify-between items-start border-b border-[var(--border)] pb-3 last:border-0"
                           >
-                            <span className="text-[var(--text-secondary)] font-inter text-sm">
+                            <span className="min-w-0 flex-1 font-inter text-sm text-[var(--text-secondary)]">
                               {item.label}
                             </span>
-                            <span className="text-[var(--text-dark)] font-inter font-semibold text-sm text-right ml-4">
+                            <span className="ml-4 max-w-[55%] shrink-0 text-right font-inter text-sm font-semibold text-[var(--text-dark)]">
                               {item.value}
                             </span>
                           </div>
