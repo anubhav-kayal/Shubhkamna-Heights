@@ -11,16 +11,14 @@ export default function WhatsAppFAB() {
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-40">
-      <button
-        onClick={handleWhatsAppClick}
-        className="relative w-16 h-16 rounded-full bg-[#25D366] flex items-center justify-center text-white shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 group"
-      >
-        {/* Pulse ring animation */}
-        <div className="absolute inset-0 rounded-full bg-[#25D366] opacity-75 group-hover:animate-pulse"></div>
-        
-        <MessageCircle size={28} className="relative z-10" />
-      </button>
-    </div>
+    <button
+      type="button"
+      onClick={handleWhatsAppClick}
+      aria-label="Chat on WhatsApp"
+      className="fab-anchor fab-anchor-right group flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform duration-300 hover:scale-105 hover:shadow-xl sm:h-16 sm:w-16"
+    >
+      <div className="absolute inset-0 rounded-full bg-[#25D366] opacity-75 group-hover:animate-pulse" />
+      <MessageCircle size={26} className="relative z-10 sm:size-7" />
+    </button>
   );
 }

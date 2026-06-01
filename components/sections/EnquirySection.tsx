@@ -85,8 +85,11 @@ export default function EnquirySection() {
   };
 
   return (
-    <section className="relative py-20 sm:py-32 bg-[var(--bg-card)] border-t border-[var(--gold)] overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section
+      id="contact"
+      className="section-shell border-t border-[var(--gold)] bg-[var(--bg-card)]"
+    >
+      <div className="page-container">
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -94,11 +97,12 @@ export default function EnquirySection() {
           variants={sectionVariants}
         >
           {/* Heading */}
-          <div className="text-center mb-16">
-            <h2 className="font-cormorant text-4xl sm:text-5xl lg:text-6xl font-bold text-[var(--text-primary)] mb-4">
+          <div className="section-header-center">
+            <span className="section-kicker justify-center">Enquire</span>
+            <h2 className="section-heading">
               Your Dream Home is One Step Away
             </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] mx-auto"></div>
+            <div className="gold-rule mx-auto mt-4 sm:mt-6" />
           </div>
 
           {/* Form */}

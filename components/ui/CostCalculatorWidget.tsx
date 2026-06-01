@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { Calculator, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCalculator } from '@/context/CalculatorContext';
 import { calculatePropertyCost, formatCurrency, formatEmi, type CalculatorInputs } from '@/lib/calculator';
@@ -9,7 +9,7 @@ import { getPricingSettings } from '@/lib/firestore';
 import { PROJECT_DATA } from '@/lib/constants';
 
 export default function CostCalculatorWidget() {
-  const { isOpen, closeCalculator } = useCalculator();
+  const { isOpen, openCalculator, closeCalculator } = useCalculator();
   const [inputs, setInputs] = useState<CalculatorInputs>({
     bhkType: '3BHK',
     areaScftFt: 1200,
@@ -61,6 +61,19 @@ export default function CostCalculatorWidget() {
   };
 
   return (
+    <>
+      {!isOpen && (
+        <button
+          type="button"
+          onClick={openCalculator}
+          aria-label="Open EMI calculator"
+          className="fab-anchor fab-anchor-left flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] px-4 py-3 text-sm font-semibold text-[var(--text-dark)] shadow-[0_12px_32px_rgba(201,168,76,0.28)] transition-transform hover:scale-[1.02] sm:px-5 sm:py-3.5"
+        >
+          <Calculator size={20} />
+          <span className="hidden sm:inline">EMI Calculator</span>
+        </button>
+      )}
+
     <AnimatePresence>
       {isOpen && (
         <>
@@ -111,6 +124,7 @@ export default function CostCalculatorWidget() {
         </>
       )}
     </AnimatePresence>
+    </>
   );
 }
 
