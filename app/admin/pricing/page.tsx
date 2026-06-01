@@ -1,129 +1,161 @@
 'use client';
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
+import { getPricingSettings, savePricingSettings } from '@/lib/firestore';
+import type { PricingSettings } from '@/types';
+
+const DEFAULT_PRICING: PricingSettings = {
+  bhk2BasePrice: 3500,
+  bhk3BasePrice: 4200,
+  perSqftRate: 3500,
+  gstPercent: 5,
+  stampDutyPercent: 5,
+};
 
 export default function PricingPage() {
-  const [pricing, setPricing] = useState({
-    bhk2BasePrice: 3500,
-    bhk3BasePrice: 4200,
-    perSqftRate: 3500,
-    gstPercent: 5,
-    stampDutyPercent: 5,
-  });
-
+  const [pricing, setPricing] = useState<PricingSettings>(DEFAULT_PRICING);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  useEffect(() => {
+    const loadPricing = async () => {
+      try {
+        const data = await getPricingSettings();
+        if (data) {
+          setPricing(data);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadPricing();
+  }, []);
+
+  const updateField = (key: keyof PricingSettings, value: string) => {
+    setPricing((current) => ({
+      ...current,
+      [key]: Number(value) || 0,
+    }));
+  };
+
   const handleSave = async () => {
+    setSaving(true);
+    setSaved(false);
+
     try {
-      // Save to Firestore /settings/pricing
+      await savePricingSettings(pricing);
       setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    } catch (error) {
-      console.error('Error saving pricing:', error);
+      window.setTimeout(() => setSaved(false), 2500);
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)]">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="bg-[var(--bg-card)] border-b border-[var(--border)] p-6"
-      >
-        <div className="max-w-4xl mx-auto flex items-center gap-4">
-          <Link href="/admin" className="p-2 hover:bg-[var(--border)] rounded">
-            <ArrowLeft size={24} className="text-[var(--text-primary)]" />
+      <div className="border-b border-[var(--border)] bg-[var(--bg-card)] p-6">
+        <div className="mx-auto flex max-w-4xl items-center gap-4">
+          <Link href="/admin" className="rounded-full p-2 transition-colors hover:bg-white/5">
+            <ArrowLeft size={22} className="text-[var(--text-primary)]" />
           </Link>
           <div>
             <h1 className="font-cormorant text-3xl font-bold text-[var(--gold)]">
               Pricing Settings
             </h1>
-            <p className="text-[var(--text-secondary)]">Update rates and EMI settings</p>
+            <p className="text-[var(--text-secondary)]">
+              Central defaults used by the cost calculator and pricing displays.
+            </p>
           </div>
         </div>
-      </motion.div>
+      </div>
 
-      {/* Form */}
-      <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="mx-auto max-w-4xl px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-[var(--bg-card)] rounded-lg border border-[var(--border)] p-8 space-y-6"
+          className="space-y-6 rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] p-8"
         >
-          {/* Success Message */}
           {saved && (
-            <div className="bg-green-500/10 border border-green-500/20 text-green-500 px-4 py-3 rounded-lg">
-              ✓ Pricing updated successfully
+            <div className="rounded-2xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-400">
+              Pricing updated successfully.
             </div>
           )}
 
-          {/* 2BHK Base Price */}
-          <div>
-            <label className="block font-inter font-bold text-[var(--text-primary)] mb-2">
-              2BHK Base Price (per sq ft in ₹)
-            </label>
-            <input
-              type="number"
-              value={pricing.bhk2BasePrice}
-              onChange={(e) => setPricing({ ...pricing, bhk2BasePrice: parseFloat(e.target.value) })}
-              className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-lg px-4 py-2 text-[var(--text-primary)] focus:outline-none focus:border-[var(--gold)]"
-            />
-          </div>
+          {loading ? (
+            <p className="text-[var(--text-secondary)]">Loading pricing settings...</p>
+          ) : (
+            <>
+              <Field
+                label="2BHK Base Price (₹ / sq ft)"
+                value={pricing.bhk2BasePrice}
+                onChange={(value) => updateField('bhk2BasePrice', value)}
+              />
+              <Field
+                label="3BHK Base Price (₹ / sq ft)"
+                value={pricing.bhk3BasePrice}
+                onChange={(value) => updateField('bhk3BasePrice', value)}
+              />
+              <Field
+                label="General Rate (₹ / sq ft)"
+                value={pricing.perSqftRate}
+                onChange={(value) => updateField('perSqftRate', value)}
+              />
+              <Field
+                label="GST Percentage"
+                value={pricing.gstPercent}
+                onChange={(value) => updateField('gstPercent', value)}
+                step="0.1"
+              />
+              <Field
+                label="Stamp Duty Percentage"
+                value={pricing.stampDutyPercent}
+                onChange={(value) => updateField('stampDutyPercent', value)}
+                step="0.1"
+              />
 
-          {/* 3BHK Base Price */}
-          <div>
-            <label className="block font-inter font-bold text-[var(--text-primary)] mb-2">
-              3BHK Base Price (per sq ft in ₹)
-            </label>
-            <input
-              type="number"
-              value={pricing.bhk3BasePrice}
-              onChange={(e) => setPricing({ ...pricing, bhk3BasePrice: parseFloat(e.target.value) })}
-              className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-lg px-4 py-2 text-[var(--text-primary)] focus:outline-none focus:border-[var(--gold)]"
-            />
-          </div>
-
-          {/* GST Percent */}
-          <div>
-            <label className="block font-inter font-bold text-[var(--text-primary)] mb-2">
-              GST Percentage
-            </label>
-            <input
-              type="number"
-              step="0.1"
-              value={pricing.gstPercent}
-              onChange={(e) => setPricing({ ...pricing, gstPercent: parseFloat(e.target.value) })}
-              className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-lg px-4 py-2 text-[var(--text-primary)] focus:outline-none focus:border-[var(--gold)]"
-            />
-          </div>
-
-          {/* Stamp Duty Percent */}
-          <div>
-            <label className="block font-inter font-bold text-[var(--text-primary)] mb-2">
-              Stamp Duty Percentage
-            </label>
-            <input
-              type="number"
-              step="0.1"
-              value={pricing.stampDutyPercent}
-              onChange={(e) => setPricing({ ...pricing, stampDutyPercent: parseFloat(e.target.value) })}
-              className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-lg px-4 py-2 text-[var(--text-primary)] focus:outline-none focus:border-[var(--gold)]"
-            />
-          </div>
-
-          {/* Save Button */}
-          <button
-            onClick={handleSave}
-            className="w-full bg-[var(--gold)] text-[var(--bg-primary)] font-inter font-bold py-3 rounded-lg hover:bg-[var(--gold-light)] transition-colors"
-          >
-            Save Changes
-          </button>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="w-full rounded-2xl bg-[var(--gold)] py-3 font-bold text-[var(--bg-primary)] transition-colors hover:bg-[var(--gold-light)] disabled:opacity-60"
+              >
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </>
+          )}
         </motion.div>
       </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  value,
+  onChange,
+  step,
+}: {
+  label: string;
+  value: number;
+  onChange: (value: string) => void;
+  step?: string;
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-sm font-semibold text-[var(--text-primary)]">
+        {label}
+      </label>
+      <input
+        type="number"
+        value={value}
+        step={step}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-primary)] px-4 py-3 text-[var(--text-primary)] outline-none transition-colors focus:border-[var(--gold)]"
+      />
     </div>
   );
 }
