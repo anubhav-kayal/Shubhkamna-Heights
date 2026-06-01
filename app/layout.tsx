@@ -1,12 +1,10 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Cormorant_Garamond, Inter } from 'next/font/google';
 import './globals.css';
 import { CalculatorProvider } from '@/context/CalculatorContext';
-import Navbar from '@/components/sections/Navbar';
-import WhatsAppFAB from '@/components/ui/WhatsAppFAB';
-import CostCalculatorWidget from '@/components/ui/CostCalculatorWidget';
-import ExitIntentModal from '@/components/ui/ExitIntentModal';
+import AppShell from '@/components/layout/AppShell';
 import { PROJECT_DATA } from '@/lib/constants';
+import { SITE_URL } from '@/lib/site';
 
 const cormorant = Cormorant_Garamond({
   variable: '--font-cormorant',
@@ -21,7 +19,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Shubh Kamna Heights | 2BHK & 3BHK Flats in Chandauli, UP',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: 'Shubh Kamna Heights | 2BHK & 3BHK Flats in Chandauli, UP',
+    template: '%s | Shubh Kamna Heights',
+  },
   description:
     'Premium residential project near Varanasi. 2BHK & 3BHK homes at NH-2 Chandauli. RERA registered UPRERAPRJ757815/04/2025. VDA approved. 1000+ families.',
   keywords: [
@@ -32,15 +34,32 @@ export const metadata: Metadata = {
     'NH-2 Chandauli housing',
     'residential project',
   ],
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
-    title: 'Shubh Kamna Heights — Crafted for Comfort',
-    description: 'Premium 2BHK & 3BHK homes near Varanasi | RERA Registered',
+    title: 'Shubh Kamna Heights | Crafted for Comfort. Designed for Life.',
+    description:
+      'Premium 2BHK & 3BHK homes near Varanasi at NH-2 Chandauli. Explore floor plans, pricing, amenities, and book a visit.',
     type: 'website',
+    url: SITE_URL,
+    siteName: 'Shubh Kamna Heights',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Shubh Kamna Heights | 2BHK & 3BHK Flats in Chandauli',
+    description:
+      'Premium homes at NH-2 Chandauli with 65%+ open space, lifestyle amenities, and direct connectivity to Varanasi.',
   },
   robots: {
     index: true,
     follow: true,
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0A0A0F',
+  colorScheme: 'dark',
 };
 
 export default function RootLayout({
@@ -52,22 +71,14 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${cormorant.variable} ${inter.variable} h-full scroll-smooth antialiased`}
-      style={{
-        colorScheme: 'dark',
-      }}
     >
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#0A0A0F" />
-        <link rel="manifest" href="/manifest.json" />
-        {/* JSON-LD Structured Data */}
+      <body className="h-full w-full bg-[var(--bg-primary)] text-[var(--text-primary)]">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',
-              '@type': 'RealEstateListing',
+              '@type': 'Residence',
               name: PROJECT_DATA.name,
               address: {
                 '@type': 'PostalAddress',
@@ -76,19 +87,13 @@ export default function RootLayout({
                 addressRegion: 'Uttar Pradesh',
                 addressCountry: 'IN',
               },
-              telephone: PROJECT_DATA.contactPhone,
-              url: 'https://shubhkamnaheights.vercel.app',
+              telephone: PROJECT_DATA.contactPhone.replace(/\s+/g, ''),
+              url: SITE_URL,
             }),
           }}
         />
-      </head>
-      <body className="h-full w-full bg-[var(--bg-primary)] text-[var(--text-primary)]">
         <CalculatorProvider>
-          <Navbar />
-          <main className="relative w-full">{children}</main>
-          <WhatsAppFAB />
-          <CostCalculatorWidget />
-          <ExitIntentModal />
+          <AppShell>{children}</AppShell>
         </CalculatorProvider>
       </body>
     </html>
