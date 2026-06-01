@@ -77,8 +77,8 @@ export default function TestimonialsSection() {
 
   if (loading) {
     return (
-      <section className="relative py-20 sm:py-32 bg-[var(--bg-section)] overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center py-16">
+      <section className="section-shell bg-[var(--bg-section)]">
+        <div className="page-container flex items-center justify-center py-12 sm:py-16">
           <div className="animate-pulse text-[var(--text-secondary)]">Loading testimonials...</div>
         </div>
       </section>
@@ -92,8 +92,8 @@ export default function TestimonialsSection() {
   const currentTestimonial = testimonials[currentIndex];
 
   return (
-    <section className="relative py-20 sm:py-32 bg-[var(--bg-section)] overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="section-shell bg-[var(--bg-section)]">
+      <div className="page-container">
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -101,11 +101,10 @@ export default function TestimonialsSection() {
           variants={sectionVariants}
         >
           {/* Heading */}
-          <div className="text-center mb-16">
-            <h2 className="font-cormorant text-4xl sm:text-5xl lg:text-6xl font-bold text-[var(--text-primary)] mb-4">
-              What Our Residents Say
-            </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] mx-auto"></div>
+          <div className="section-header-center">
+            <span className="section-kicker justify-center">Testimonials</span>
+            <h2 className="section-heading">What Our Residents Say</h2>
+            <div className="gold-rule mx-auto mt-4 sm:mt-6" />
           </div>
 
           {/* Carousel */}
@@ -116,7 +115,7 @@ export default function TestimonialsSection() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -100 }}
               transition={{ duration: 0.5 }}
-              className="bg-[var(--bg-card)] border border-[var(--gold)] rounded-lg p-8 sm:p-12 relative"
+              className="relative min-w-0 rounded-xl border border-[var(--gold)] bg-[var(--bg-card)] panel-padding sm:rounded-2xl"
             >
               {/* Quote Mark */}
               <div className="absolute top-4 left-4 text-[var(--gold)] opacity-50">
@@ -131,7 +130,7 @@ export default function TestimonialsSection() {
               </div>
 
               {/* Content */}
-              <p className="text-[var(--text-secondary)] text-lg italic mb-6 leading-relaxed pl-6">
+              <p className="mb-6 pl-4 text-base italic leading-relaxed text-[var(--text-secondary)] sm:pl-6 sm:text-lg">
                 &ldquo;{currentTestimonial.quote}&rdquo;
               </p>
 

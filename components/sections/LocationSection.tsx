@@ -18,32 +18,31 @@ export default function LocationSection() {
   return (
     <section
       id="location"
-      className="relative py-20 sm:py-32 bg-[var(--bg-primary)] overflow-hidden"
+      className="section-shell bg-[var(--bg-primary)]"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="page-container">
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
           variants={sectionVariants}
         >
-          {/* Heading */}
-          <div className="text-center mb-16">
-            <h2 className="font-cormorant text-4xl sm:text-5xl lg:text-6xl font-bold text-[var(--text-primary)] mb-4">
+          <div className="section-header-center">
+            <span className="section-kicker justify-center">Location</span>
+            <h2 className="section-heading">
               Prime Location. Perfect Connectivity.
             </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] mx-auto"></div>
+            <div className="gold-rule mx-auto mt-4 sm:mt-6" />
           </div>
 
-          {/* Two Column Layout */}
-          <div className="grid md:grid-cols-2 gap-12">
+          <div className="grid gap-6 md:grid-cols-2 md:gap-8 lg:gap-10">
             {/* Left - Map */}
             <motion.div
               initial={{ opacity: 0, x: -40 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="rounded-lg overflow-hidden border border-[var(--gold)] h-96"
+              className="h-56 overflow-hidden rounded-xl border border-[var(--gold)] sm:h-72 md:h-80 lg:h-96"
             >
               <iframe
                 src="https://maps.google.com/maps?q=PDDU+Nagar+Chandauli+UP&output=embed"
@@ -64,7 +63,7 @@ export default function LocationSection() {
               transition={{ duration: 0.6 }}
               className="space-y-4"
             >
-              <h3 className="font-cormorant text-2xl font-bold text-[var(--text-primary)] mb-6">
+              <h3 className="section-subheading mb-4 text-[var(--text-primary)] sm:mb-6">
                 How to Reach
               </h3>
 
@@ -75,7 +74,7 @@ export default function LocationSection() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: idx * 0.05 }}
-                  className="flex items-start gap-4 p-4 bg-[var(--bg-card)] border border-[var(--border)] rounded-lg hover:border-[var(--gold)] transition-colors duration-300"
+                  className="flex items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-3 transition-colors duration-300 hover:border-[var(--gold)] sm:gap-4 sm:p-4"
                 >
                   <div className="flex-shrink-0 w-12 h-12 bg-[var(--gold)]/20 rounded-full flex items-center justify-center border border-[var(--gold)]/50">
                     <MapPin size={20} className="text-[var(--gold)]" />
@@ -96,10 +95,10 @@ export default function LocationSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
-            className="mt-16 pt-12 border-t border-[var(--border)]"
+            className="mt-8 border-t border-[var(--border)] pt-8 sm:mt-12 sm:pt-10"
           >
-            <div className="bg-[var(--bg-card)] p-8 rounded-lg border border-[var(--gold)] border-opacity-50">
-              <h3 className="font-cormorant text-2xl font-bold text-[var(--text-primary)] mb-4">
+            <div className="panel-dark rounded-xl panel-padding sm:rounded-2xl">
+              <h3 className="section-subheading mb-3 text-[var(--text-primary)] sm:mb-4">
                 Project Address
               </h3>
               <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
