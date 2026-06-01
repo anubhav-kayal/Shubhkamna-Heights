@@ -12,6 +12,7 @@ export default function FloorPlansSection() {
 
   useEffect(() => {
     const loadFloorPlans = async () => {
+      setLoading(true);
       try {
         const data = await getFloorPlans(activeTab);
         setFloorPlans(data);
@@ -34,8 +35,7 @@ export default function FloorPlansSection() {
       }
     };
 
-    setLoading(true);
-    loadFloorPlans();
+    void loadFloorPlans();
   }, [activeTab]);
 
   const sectionVariants = {
