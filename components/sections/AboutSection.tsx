@@ -35,8 +35,8 @@ export default function AboutSection() {
   };
 
   return (
-    <section className="relative py-20 sm:py-32 bg-[var(--bg-light)] overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="section-shell bg-[var(--bg-light)]">
+      <div className="page-container">
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -44,11 +44,12 @@ export default function AboutSection() {
           variants={sectionVariants}
         >
           {/* Heading */}
-          <div className="text-center mb-16">
-            <h2 className="font-cormorant text-4xl sm:text-5xl lg:text-6xl font-bold text-[var(--text-dark)] mb-4">
+          <div className="section-header-center">
+            <span className="section-kicker text-[var(--text-dark)]/70 justify-center">About</span>
+            <h2 className="section-heading text-[var(--text-dark)]">
               Built on Trust. Standing on Excellence.
             </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] mx-auto"></div>
+            <div className="gold-rule mx-auto mt-4 sm:mt-6" />
           </div>
 
           {/* Developer Story */}
@@ -57,13 +58,13 @@ export default function AboutSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="bg-[var(--bg-card)] p-8 rounded-lg border border-[var(--border)] mb-12"
+            className="panel-dark mb-8 rounded-xl panel-padding sm:mb-10 sm:rounded-2xl"
           >
-            <p className="text-[var(--text-dark)] text-lg leading-relaxed mb-4">
+            <p className="section-copy mb-4 text-[var(--text-dark)]">
               Shubh Kamna Heights is built by a team of developers with decades of experience in the real estate sector.
               We believe in creating not just buildings, but communities that resonate with the spiritual and natural essence of their surroundings.
             </p>
-            <p className="text-[var(--text-secondary)] text-lg leading-relaxed">
+            <p className="section-copy text-[var(--text-secondary)]">
               Located in Chandauli, where the spiritual heritage of Varanasi meets the natural beauty of the surrounding regions,
               our project embodies the perfect balance of tradition and modernity. Every detail is crafted with care,
               ensuring that our residents live in homes that are as beautiful as they are functional.
@@ -82,7 +83,7 @@ export default function AboutSection() {
                 },
               },
             }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16 py-12 border-y border-[var(--border)]"
+            className="mb-10 grid grid-cols-2 gap-4 border-y border-[var(--border)] py-8 sm:mb-12 sm:gap-6 sm:py-10 md:grid-cols-4"
           >
             {[
               { target: 1000, label: 'Families' },
