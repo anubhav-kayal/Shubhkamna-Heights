@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { submitEnquiry } from '@/lib/firestore';
-import { PROJECT_DATA } from '@/lib/constants';
 
 export default function ExitIntentModal() {
   const [isVisible, setIsVisible] = useState(false);
@@ -111,7 +110,7 @@ export default function ExitIntentModal() {
                   <X size={20} />
                 </button>
                 <h2 className="font-cormorant text-2xl font-bold text-[var(--text-dark)]">
-                  Don't Leave Empty Handed!
+                  Don&apos;t Leave Empty Handed!
                 </h2>
                 <p className="text-[var(--text-dark)] text-sm mt-2">
                   Get exclusive details about Shubh Kamna Heights
@@ -144,7 +143,7 @@ export default function ExitIntentModal() {
                     Thank You!
                   </h3>
                   <p className="text-[var(--text-secondary)] text-sm">
-                    We'll get in touch soon with exclusive details about your preferred home.
+                    We&apos;ll get in touch soon with exclusive details about your preferred home.
                   </p>
                 </motion.div>
               ) : (
