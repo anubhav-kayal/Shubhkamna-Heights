@@ -5,7 +5,7 @@ import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCalculator } from '@/context/CalculatorContext';
 import { calculatePropertyCost, formatCurrency, formatEmi, type CalculatorInputs } from '@/lib/calculator';
-import { getPricingSettings, getBanks } from '@/lib/firestore';
+import { getPricingSettings } from '@/lib/firestore';
 import { PROJECT_DATA } from '@/lib/constants';
 
 export default function CostCalculatorWidget() {
@@ -21,7 +21,6 @@ export default function CostCalculatorWidget() {
     stampDutyPercent: 5,
   });
 
-  const [outputs, setOutputs] = useState<ReturnType<typeof calculatePropertyCost> | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Load pricing from Firestore
@@ -52,13 +51,7 @@ export default function CostCalculatorWidget() {
     loadPricing();
   }, []);
 
-  // Calculate when inputs change
-  useEffect(() => {
-    if (inputs.pricePerSqft > 0) {
-      const result = calculatePropertyCost(inputs);
-      setOutputs(result);
-    }
-  }, [inputs]);
+  const outputs = inputs.pricePerSqft > 0 ? calculatePropertyCost(inputs) : null;
 
   const handleWhatsAppClick = () => {
     const message = encodeURIComponent(
