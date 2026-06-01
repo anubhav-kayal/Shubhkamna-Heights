@@ -14,6 +14,7 @@ export default function GallerySection() {
 
   useEffect(() => {
     const loadGallery = async () => {
+      setLoading(true);
       try {
         const data = await getGalleryImages(selectedCategory === 'All' ? undefined : selectedCategory);
         setImages(data);
@@ -35,8 +36,7 @@ export default function GallerySection() {
       }
     };
 
-    setLoading(true);
-    loadGallery();
+    void loadGallery();
   }, [selectedCategory]);
 
   const sectionVariants = {
