@@ -1,5 +1,13 @@
 import { Timestamp } from 'firebase/firestore';
 
+export type FirestoreDateLike =
+  | Timestamp
+  | Date
+  | string
+  | {
+      toDate: () => Date;
+    };
+
 export interface ProjectData {
   name: string;
   tagline: string;
@@ -36,9 +44,9 @@ export interface Bank {
   id: string;
   name: string;
   logoUrl: string;
-  interestRate: string;
-  maxLoan: string;
-  processingFee: string;
+  interestRate: number;
+  maxLoanAmount: number;
+  processingFee: number;
 }
 
 export interface GalleryImage {
@@ -77,7 +85,7 @@ export interface BlogPost {
   excerpt: string;
   coverImage: string;
   author: string;
-  publishedAt: Timestamp | Date;
+  publishedAt: FirestoreDateLike;
   category: string;
   published: boolean;
 }
@@ -99,6 +107,7 @@ export interface Specification {
 }
 
 export interface Enquiry {
+  id?: string;
   name: string;
   phone: string;
   email: string;
@@ -106,6 +115,6 @@ export interface Enquiry {
   visitDate: string;
   message?: string;
   source: string;
-  createdAt: Timestamp | Date;
+  createdAt: FirestoreDateLike;
   contacted: boolean;
 }

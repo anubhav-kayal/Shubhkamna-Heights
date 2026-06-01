@@ -1,4 +1,5 @@
 import {
+  addDoc,
   collection,
   doc,
   getDoc,
@@ -6,12 +7,20 @@ import {
   query,
   where,
   orderBy,
-  addDoc,
   serverTimestamp,
-  WriteBatch,
-  writeBatch,
+  setDoc,
 } from 'firebase/firestore';
 import { firestore } from './firebase';
+import type {
+  Amenity,
+  Bank,
+  BlogPost,
+  Enquiry,
+  FloorPlan,
+  PricingSettings,
+  Specification,
+  Testimonial,
+} from '@/types';
 
 // Settings
 export async function getHeroSettings() {
@@ -20,28 +29,67 @@ export async function getHeroSettings() {
   return docSnap.exists() ? docSnap.data() : null;
 }
 
-export async function getPricingSettings() {
+export async function getPricingSettings(): Promise<PricingSettings | null> {
   const docRef = doc(firestore, 'settings', 'pricing');
   const docSnap = await getDoc(docRef);
-  return docSnap.exists() ? docSnap.data() : null;
+  if (!docSnap.exists()) {
+    return null;
+  }
+
+  const data = docSnap.data();
+
+  return {
+    bhk2BasePrice: Number(data.bhk2BasePrice ?? data.bhk2_base_price ?? 3500),
+    bhk3BasePrice: Number(data.bhk3BasePrice ?? data.bhk3_base_price ?? 4200),
+    perSqftRate: Number(data.perSqftRate ?? data.per_sqft_rate ?? 3500),
+    gstPercent: Number(data.gstPercent ?? data.gst_percent ?? 5),
+    stampDutyPercent: Number(data.stampDutyPercent ?? data.stamp_duty_percent ?? 5),
+  };
 }
 
-export async function getBanks() {
+export async function savePricingSettings(data: PricingSettings) {
+  await setDoc(doc(firestore, 'settings', 'pricing'), data, { merge: true });
+}
+
+function mapBankData(id: string, data: Record<string, unknown>): Bank {
+  return {
+    id,
+    name: String(data.name ?? ''),
+    logoUrl: String(data.logoUrl ?? ''),
+    interestRate: Number(data.interestRate ?? 8.5),
+    maxLoanAmount: Number(data.maxLoanAmount ?? data.maxLoan ?? 0),
+    processingFee: Number(data.processingFee ?? 0),
+  };
+}
+
+export async function getBanks(): Promise<Bank[]> {
   try {
+    const settingsDoc = await getDoc(doc(firestore, 'settings', 'banks'));
+    if (settingsDoc.exists()) {
+      const data = settingsDoc.data().items;
+      if (Array.isArray(data)) {
+        return data.map((item, index) =>
+          mapBankData(
+            typeof item === 'object' && item && 'id' in item ? String(item.id) : `bank-${index}`,
+            (item as Record<string, unknown>) ?? {}
+          )
+        );
+      }
+    }
+
     const q = query(collection(firestore, 'banks'));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      name: doc.data().name || '',
-      logoUrl: doc.data().logoUrl || '',
-      interestRate: doc.data().interestRate || 8.5,
-      maxLoan: doc.data().maxLoan || 0,
-      processingFee: doc.data().processingFee || 0,
-    }));
+    return querySnapshot.docs.map((bankDoc) => mapBankData(bankDoc.id, bankDoc.data()));
   } catch (error) {
     console.warn('Failed to fetch banks from Firestore:', error);
     return [];
   }
+}
+
+export async function saveBank(data: Omit<Bank, 'id'> & { id?: string }) {
+  const bankRef = data.id ? doc(firestore, 'banks', data.id) : doc(collection(firestore, 'banks'));
+  await setDoc(bankRef, data, { merge: true });
+  return bankRef.id;
 }
 
 // Gallery
@@ -78,20 +126,21 @@ export async function getGalleryImages(category?: string) {
 }
 
 // Amenities
-export async function getAmenities() {
+export async function getAmenities(): Promise<Amenity[]> {
   try {
     const q = query(
       collection(firestore, 'amenities'),
       orderBy('order', 'asc')
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      title: doc.data().title || '',
-      description: doc.data().description || '',
-      iconName: doc.data().iconName || '',
-      order: doc.data().order || 0,
-    })) as Array<{ id: string; title: string; description: string; iconName: string; order: number }>;
+    return querySnapshot.docs.map((amenityDoc) => ({
+      id: amenityDoc.id,
+      title: amenityDoc.data().title || '',
+      description: amenityDoc.data().description || '',
+      iconName: amenityDoc.data().iconName || '',
+      imageUrl: amenityDoc.data().imageUrl || '',
+      order: amenityDoc.data().order || 0,
+    }));
   } catch (error) {
     console.warn('Failed to fetch amenities from Firestore:', error);
     return [];
@@ -99,7 +148,7 @@ export async function getAmenities() {
 }
 
 // Floor Plans
-export async function getFloorPlans(bhkType?: string) {
+export async function getFloorPlans(bhkType?: string): Promise<FloorPlan[]> {
   try {
     let q;
     if (bhkType) {
@@ -115,14 +164,14 @@ export async function getFloorPlans(bhkType?: string) {
       );
     }
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      type: (doc.data().type || '2BHK') as '2BHK' | '3BHK',
-      imageUrl: doc.data().imageUrl || '',
-      carpetArea: doc.data().carpetArea || 0,
-      superArea: doc.data().superArea || 0,
-      price: doc.data().price || 0,
-      active: doc.data().active || false,
+    return querySnapshot.docs.map((planDoc) => ({
+      id: planDoc.id,
+      type: (planDoc.data().type || '2BHK') as '2BHK' | '3BHK',
+      imageUrl: planDoc.data().imageUrl || '',
+      carpetArea: Number(planDoc.data().carpetArea || 0),
+      superArea: Number(planDoc.data().superArea || 0),
+      price: Number(planDoc.data().price || 0),
+      active: Boolean(planDoc.data().active),
     }));
   } catch (error) {
     console.warn('Failed to fetch floor plans from Firestore:', error);
@@ -131,7 +180,22 @@ export async function getFloorPlans(bhkType?: string) {
 }
 
 // Blog
-export async function getBlogPosts(limit?: number) {
+function mapBlogPostData(id: string, data: Record<string, unknown>): BlogPost {
+  return {
+    id,
+    title: String(data.title ?? ''),
+    slug: String(data.slug ?? ''),
+    content: String(data.content ?? ''),
+    excerpt: String(data.excerpt ?? ''),
+    coverImage: String(data.coverImage ?? ''),
+    author: String(data.author ?? ''),
+    publishedAt: (data.publishedAt as BlogPost['publishedAt']) ?? new Date(),
+    category: String(data.category ?? ''),
+    published: Boolean(data.published),
+  };
+}
+
+export async function getBlogPosts(limit?: number): Promise<BlogPost[]> {
   try {
     const q = query(
       collection(firestore, 'blog'),
@@ -139,29 +203,7 @@ export async function getBlogPosts(limit?: number) {
       orderBy('publishedAt', 'desc')
     );
     const querySnapshot = await getDocs(q);
-    let posts = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      title: doc.data().title || '',
-      slug: doc.data().slug || '',
-      content: doc.data().content || '',
-      excerpt: doc.data().excerpt || '',
-      coverImage: doc.data().coverImage || '',
-      author: doc.data().author || '',
-      publishedAt: doc.data().publishedAt || new Date(),
-      category: doc.data().category || '',
-      published: doc.data().published || false,
-    })) as Array<{
-      id: string;
-      title: string;
-      slug: string;
-      content: string;
-      excerpt: string;
-      coverImage: string;
-      author: string;
-      publishedAt: any;
-      category: string;
-      published: boolean;
-    }>;
+    let posts = querySnapshot.docs.map((blogDoc) => mapBlogPostData(blogDoc.id, blogDoc.data()));
     if (limit) {
       posts = posts.slice(0, limit);
     }
@@ -172,7 +214,18 @@ export async function getBlogPosts(limit?: number) {
   }
 }
 
-export async function getBlogPostBySlug(slug: string) {
+export async function getAllBlogPosts(): Promise<BlogPost[]> {
+  try {
+    const q = query(collection(firestore, 'blog'), orderBy('publishedAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map((blogDoc) => mapBlogPostData(blogDoc.id, blogDoc.data()));
+  } catch (error) {
+    console.warn('Failed to fetch all blog posts from Firestore:', error);
+    return [];
+  }
+}
+
+export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
   try {
     const q = query(
       collection(firestore, 'blog'),
@@ -181,19 +234,8 @@ export async function getBlogPostBySlug(slug: string) {
     );
     const querySnapshot = await getDocs(q);
     if (querySnapshot.docs.length > 0) {
-      const doc = querySnapshot.docs[0];
-      return {
-        id: doc.id,
-        title: doc.data().title || '',
-        slug: doc.data().slug || '',
-        content: doc.data().content || '',
-        excerpt: doc.data().excerpt || '',
-        coverImage: doc.data().coverImage || '',
-        author: doc.data().author || '',
-        publishedAt: doc.data().publishedAt || new Date(),
-        category: doc.data().category || '',
-        published: doc.data().published || false,
-      };
+      const blogDoc = querySnapshot.docs[0];
+      return mapBlogPostData(blogDoc.id, blogDoc.data());
     }
     return null;
   } catch (error) {
@@ -202,21 +244,34 @@ export async function getBlogPostBySlug(slug: string) {
   }
 }
 
+export async function saveBlogPost(data: Omit<BlogPost, 'id' | 'publishedAt'> & { id?: string; publishedAt?: Date }) {
+  const blogRef = data.id ? doc(firestore, 'blog', data.id) : doc(collection(firestore, 'blog'));
+  await setDoc(
+    blogRef,
+    {
+      ...data,
+      publishedAt: data.publishedAt ?? serverTimestamp(),
+    },
+    { merge: true }
+  );
+  return blogRef.id;
+}
+
 // Testimonials
-export async function getTestimonials() {
+export async function getTestimonials(): Promise<Testimonial[]> {
   try {
     const q = query(
       collection(firestore, 'testimonials'),
       where('active', '==', true)
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      name: doc.data().name || '',
-      flatType: doc.data().flatType || '',
-      quote: doc.data().quote || '',
-      rating: doc.data().rating || 5,
-      active: doc.data().active || false,
+    return querySnapshot.docs.map((testimonialDoc) => ({
+      id: testimonialDoc.id,
+      name: testimonialDoc.data().name || '',
+      flatType: testimonialDoc.data().flatType || '',
+      quote: testimonialDoc.data().quote || '',
+      rating: Number(testimonialDoc.data().rating || 5),
+      active: Boolean(testimonialDoc.data().active),
     }));
   } catch (error) {
     console.warn('Failed to fetch testimonials from Firestore:', error);
@@ -224,19 +279,45 @@ export async function getTestimonials() {
   }
 }
 
+export async function getAllTestimonials(): Promise<Testimonial[]> {
+  try {
+    const q = query(collection(firestore, 'testimonials'));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map((testimonialDoc) => ({
+      id: testimonialDoc.id,
+      name: testimonialDoc.data().name || '',
+      flatType: testimonialDoc.data().flatType || '',
+      quote: testimonialDoc.data().quote || '',
+      rating: Number(testimonialDoc.data().rating || 5),
+      active: Boolean(testimonialDoc.data().active),
+    }));
+  } catch (error) {
+    console.warn('Failed to fetch all testimonials from Firestore:', error);
+    return [];
+  }
+}
+
+export async function saveTestimonial(data: Omit<Testimonial, 'id'> & { id?: string }) {
+  const testimonialRef = data.id
+    ? doc(firestore, 'testimonials', data.id)
+    : doc(collection(firestore, 'testimonials'));
+  await setDoc(testimonialRef, data, { merge: true });
+  return testimonialRef.id;
+}
+
 // Specifications
-export async function getSpecifications() {
+export async function getSpecifications(): Promise<Specification[]> {
   try {
     const q = query(
       collection(firestore, 'specifications'),
       orderBy('order', 'asc')
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      category: doc.data().category || '',
-      items: doc.data().items || [],
-      order: doc.data().order || 0,
+    return querySnapshot.docs.map((specDoc) => ({
+      id: specDoc.id,
+      category: specDoc.data().category || '',
+      items: (specDoc.data().items || []) as Specification['items'],
+      order: Number(specDoc.data().order || 0),
     }));
   } catch (error) {
     console.warn('Failed to fetch specifications from Firestore:', error);
@@ -263,17 +344,25 @@ export async function submitEnquiry(data: {
 }
 
 // Get enquiries (for admin)
-export async function getEnquiries() {
+export async function getEnquiries(): Promise<Enquiry[]> {
   try {
     const q = query(
       collection(firestore, 'enquiries'),
       orderBy('createdAt', 'desc')
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as Array<any>;
+    return querySnapshot.docs.map((enquiryDoc) => ({
+      id: enquiryDoc.id,
+      name: String(enquiryDoc.data().name || ''),
+      phone: String(enquiryDoc.data().phone || ''),
+      email: String(enquiryDoc.data().email || ''),
+      bhkPreference: String(enquiryDoc.data().bhkPreference || ''),
+      visitDate: String(enquiryDoc.data().visitDate || ''),
+      message: String(enquiryDoc.data().message || ''),
+      source: String(enquiryDoc.data().source || ''),
+      createdAt: enquiryDoc.data().createdAt as Enquiry['createdAt'],
+      contacted: Boolean(enquiryDoc.data().contacted),
+    }));
   } catch (error) {
     console.warn('Failed to fetch enquiries from Firestore:', error);
     return [];
