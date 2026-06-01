@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { PROJECT_DATA } from '@/lib/constants';
-import { useCalculator } from '@/context/CalculatorContext';
 
 interface HeroSettings {
   videoUrl?: string;
@@ -13,7 +12,6 @@ interface HeroSettings {
 
 export default function HeroSection({ settings = {} as HeroSettings }) {
   const [showStats, setShowStats] = useState(false);
-  const { openCalculator } = useCalculator();
 
   useEffect(() => {
     const timer = setTimeout(() => {

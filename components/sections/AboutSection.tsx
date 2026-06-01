@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Award, CheckCircle, Users, Building2 } from 'lucide-react';
-import { PROJECT_DATA } from '@/lib/constants';
 
 const Counter = ({ target, label }: { target: number; label: string }) => {
   const [count, setCount] = useState(0);
