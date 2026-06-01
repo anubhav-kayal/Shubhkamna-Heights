@@ -121,7 +121,7 @@ export default function EnquirySection() {
                 </div>
                 <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Thank You!</h3>
                 <p className="text-[var(--text-secondary)] mb-6">
-                  We've received your enquiry and will be in touch soon.
+                  We&apos;ve received your enquiry and will be in touch soon.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <a
