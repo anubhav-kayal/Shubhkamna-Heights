@@ -7,10 +7,10 @@ import { PROJECT_DATA } from '@/lib/constants';
 import type { Bank } from '@/types';
 
 const MOCK_BANKS: Bank[] = [
-  { id: '1', name: 'State Bank of India', logoUrl: '/banks/sbi.png', interestRate: '8.50%', maxLoan: 'Up to ₹75L', processingFee: '0.35%' },
-  { id: '2', name: 'HDFC Bank', logoUrl: '/banks/hdfc.png', interestRate: '8.75%', maxLoan: 'Up to ₹1Cr', processingFee: '0.50%' },
-  { id: '3', name: 'ICICI Bank', logoUrl: '/banks/icici.png', interestRate: '8.75%', maxLoan: 'Up to ₹1Cr', processingFee: '0.50%' },
-  { id: '4', name: 'Punjab National Bank', logoUrl: '/banks/pnb.png', interestRate: '8.50%', maxLoan: 'Up to ₹75L', processingFee: '0.35%' },
+  { id: '1', name: 'State Bank of India', logoUrl: '/banks/sbi.png', interestRate: 8.5, maxLoanAmount: 7500000, processingFee: 0.35 },
+  { id: '2', name: 'HDFC Bank', logoUrl: '/banks/hdfc.png', interestRate: 8.75, maxLoanAmount: 10000000, processingFee: 0.5 },
+  { id: '3', name: 'ICICI Bank', logoUrl: '/banks/icici.png', interestRate: 8.75, maxLoanAmount: 10000000, processingFee: 0.5 },
+  { id: '4', name: 'Punjab National Bank', logoUrl: '/banks/pnb.png', interestRate: 8.5, maxLoanAmount: 7500000, processingFee: 0.35 },
 ];
 
 export default function TieUpBanksSection() {
@@ -114,17 +114,21 @@ export default function TieUpBanksSection() {
                   <div className="space-y-3">
                     <div className="bg-[var(--gold)]/20 rounded px-3 py-2 text-center border border-[var(--gold)]/50">
                       <p className="text-xs text-[var(--text-secondary)] mb-1">Interest Rate</p>
-                      <p className="text-[var(--gold)] font-bold">{bank.interestRate}</p>
+                      <p className="text-[var(--gold)] font-bold">{bank.interestRate.toFixed(2)}%</p>
                     </div>
 
                     <div className="text-sm">
                       <p className="text-[var(--text-secondary)] text-xs mb-1">Max Loan</p>
-                      <p className="text-[var(--text-primary)] font-semibold">{bank.maxLoan}</p>
+                      <p className="text-[var(--text-primary)] font-semibold">
+                        Up to ₹{(bank.maxLoanAmount / 100000).toFixed(0)}L
+                      </p>
                     </div>
 
                     <div className="text-sm">
                       <p className="text-[var(--text-secondary)] text-xs mb-1">Processing Fee</p>
-                      <p className="text-[var(--text-primary)] font-semibold">{bank.processingFee}</p>
+                      <p className="text-[var(--text-primary)] font-semibold">
+                        {bank.processingFee.toFixed(2)}%
+                      </p>
                     </div>
                   </div>
                 </motion.div>
