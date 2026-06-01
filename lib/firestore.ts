@@ -10,7 +10,7 @@ import {
   serverTimestamp,
   setDoc,
 } from 'firebase/firestore';
-import { firestore } from './firebase';
+import { firestore, isFirebaseConfigured } from './firebase';
 import type {
   Amenity,
   Bank,
@@ -22,14 +22,28 @@ import type {
   Testimonial,
 } from '@/types';
 
+function requireFirebaseConfig() {
+  if (!isFirebaseConfigured) {
+    throw new Error('Firebase is not configured. Set the NEXT_PUBLIC_FIREBASE_* environment variables.');
+  }
+}
+
 // Settings
 export async function getHeroSettings() {
+  if (!isFirebaseConfigured) {
+    return null;
+  }
+
   const docRef = doc(firestore, 'settings', 'hero');
   const docSnap = await getDoc(docRef);
   return docSnap.exists() ? docSnap.data() : null;
 }
 
 export async function getPricingSettings(): Promise<PricingSettings | null> {
+  if (!isFirebaseConfigured) {
+    return null;
+  }
+
   const docRef = doc(firestore, 'settings', 'pricing');
   const docSnap = await getDoc(docRef);
   if (!docSnap.exists()) {
@@ -48,6 +62,7 @@ export async function getPricingSettings(): Promise<PricingSettings | null> {
 }
 
 export async function savePricingSettings(data: PricingSettings) {
+  requireFirebaseConfig();
   await setDoc(doc(firestore, 'settings', 'pricing'), data, { merge: true });
 }
 
@@ -63,6 +78,10 @@ function mapBankData(id: string, data: Record<string, unknown>): Bank {
 }
 
 export async function getBanks(): Promise<Bank[]> {
+  if (!isFirebaseConfigured) {
+    return [];
+  }
+
   try {
     const settingsDoc = await getDoc(doc(firestore, 'settings', 'banks'));
     if (settingsDoc.exists()) {
@@ -87,13 +106,20 @@ export async function getBanks(): Promise<Bank[]> {
 }
 
 export async function saveBank(data: Omit<Bank, 'id'> & { id?: string }) {
+  requireFirebaseConfig();
   const bankRef = data.id ? doc(firestore, 'banks', data.id) : doc(collection(firestore, 'banks'));
-  await setDoc(bankRef, data, { merge: true });
+  const { id, ...bankData } = data;
+  void id;
+  await setDoc(bankRef, bankData, { merge: true });
   return bankRef.id;
 }
 
 // Gallery
 export async function getGalleryImages(category?: string) {
+  if (!isFirebaseConfigured) {
+    return [];
+  }
+
   try {
     let q;
     if (category) {
@@ -127,6 +153,10 @@ export async function getGalleryImages(category?: string) {
 
 // Amenities
 export async function getAmenities(): Promise<Amenity[]> {
+  if (!isFirebaseConfigured) {
+    return [];
+  }
+
   try {
     const q = query(
       collection(firestore, 'amenities'),
@@ -149,6 +179,10 @@ export async function getAmenities(): Promise<Amenity[]> {
 
 // Floor Plans
 export async function getFloorPlans(bhkType?: string): Promise<FloorPlan[]> {
+  if (!isFirebaseConfigured) {
+    return [];
+  }
+
   try {
     let q;
     if (bhkType) {
@@ -196,6 +230,10 @@ function mapBlogPostData(id: string, data: Record<string, unknown>): BlogPost {
 }
 
 export async function getBlogPosts(limit?: number): Promise<BlogPost[]> {
+  if (!isFirebaseConfigured) {
+    return [];
+  }
+
   try {
     const q = query(
       collection(firestore, 'blog'),
@@ -215,6 +253,10 @@ export async function getBlogPosts(limit?: number): Promise<BlogPost[]> {
 }
 
 export async function getAllBlogPosts(): Promise<BlogPost[]> {
+  if (!isFirebaseConfigured) {
+    return [];
+  }
+
   try {
     const q = query(collection(firestore, 'blog'), orderBy('publishedAt', 'desc'));
     const querySnapshot = await getDocs(q);
@@ -226,6 +268,10 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
 }
 
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+  if (!isFirebaseConfigured) {
+    return null;
+  }
+
   try {
     const q = query(
       collection(firestore, 'blog'),
@@ -245,11 +291,14 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
 }
 
 export async function saveBlogPost(data: Omit<BlogPost, 'id' | 'publishedAt'> & { id?: string; publishedAt?: Date }) {
+  requireFirebaseConfig();
   const blogRef = data.id ? doc(firestore, 'blog', data.id) : doc(collection(firestore, 'blog'));
+  const { id, ...blogData } = data;
+  void id;
   await setDoc(
     blogRef,
     {
-      ...data,
+      ...blogData,
       publishedAt: data.publishedAt ?? serverTimestamp(),
     },
     { merge: true }
@@ -259,6 +308,10 @@ export async function saveBlogPost(data: Omit<BlogPost, 'id' | 'publishedAt'> & 
 
 // Testimonials
 export async function getTestimonials(): Promise<Testimonial[]> {
+  if (!isFirebaseConfigured) {
+    return [];
+  }
+
   try {
     const q = query(
       collection(firestore, 'testimonials'),
@@ -280,6 +333,10 @@ export async function getTestimonials(): Promise<Testimonial[]> {
 }
 
 export async function getAllTestimonials(): Promise<Testimonial[]> {
+  if (!isFirebaseConfigured) {
+    return [];
+  }
+
   try {
     const q = query(collection(firestore, 'testimonials'));
     const querySnapshot = await getDocs(q);
@@ -298,15 +355,22 @@ export async function getAllTestimonials(): Promise<Testimonial[]> {
 }
 
 export async function saveTestimonial(data: Omit<Testimonial, 'id'> & { id?: string }) {
+  requireFirebaseConfig();
   const testimonialRef = data.id
     ? doc(firestore, 'testimonials', data.id)
     : doc(collection(firestore, 'testimonials'));
-  await setDoc(testimonialRef, data, { merge: true });
+  const { id, ...testimonialData } = data;
+  void id;
+  await setDoc(testimonialRef, testimonialData, { merge: true });
   return testimonialRef.id;
 }
 
 // Specifications
 export async function getSpecifications(): Promise<Specification[]> {
+  if (!isFirebaseConfigured) {
+    return [];
+  }
+
   try {
     const q = query(
       collection(firestore, 'specifications'),
@@ -335,6 +399,7 @@ export async function submitEnquiry(data: {
   message?: string;
   source: string;
 }) {
+  requireFirebaseConfig();
   const docRef = await addDoc(collection(firestore, 'enquiries'), {
     ...data,
     createdAt: serverTimestamp(),
@@ -345,6 +410,10 @@ export async function submitEnquiry(data: {
 
 // Get enquiries (for admin)
 export async function getEnquiries(): Promise<Enquiry[]> {
+  if (!isFirebaseConfigured) {
+    return [];
+  }
+
   try {
     const q = query(
       collection(firestore, 'enquiries'),

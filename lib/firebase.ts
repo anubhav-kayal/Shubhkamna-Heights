@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app';
+import { getApp, getApps, initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
@@ -12,7 +12,21 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+const fallbackConfig = {
+  apiKey: 'demo-api-key',
+  authDomain: 'demo.firebaseapp.com',
+  projectId: 'demo-project',
+  storageBucket: 'demo.appspot.com',
+  messagingSenderId: '000000000000',
+  appId: '1:000000000000:web:demo',
+};
+
+export const isFirebaseConfigured = Object.values(firebaseConfig).every(Boolean);
+
+const app = getApps().length
+  ? getApp()
+  : initializeApp(isFirebaseConfigured ? firebaseConfig : fallbackConfig);
+
 export const auth = getAuth(app);
 export const firestore = getFirestore(app);
 export const storage = getStorage(app);

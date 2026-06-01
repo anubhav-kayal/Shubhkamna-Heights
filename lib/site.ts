@@ -71,7 +71,11 @@ export function toDate(value: FirestoreDateLike | null | undefined): Date {
     return value.toDate();
   }
 
-  return new Date(value);
+  if (typeof value === 'string' || typeof value === 'number') {
+    return new Date(value);
+  }
+
+  return new Date();
 }
 
 export function formatDisplayDate(value: FirestoreDateLike | null | undefined): string {

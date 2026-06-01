@@ -54,8 +54,8 @@ export default function TieUpBanksSection() {
   };
 
   return (
-    <section className="relative py-20 sm:py-32 bg-[var(--bg-section)] overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="section-shell bg-[var(--bg-section)]">
+      <div className="page-container">
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -63,14 +63,13 @@ export default function TieUpBanksSection() {
           variants={sectionVariants}
         >
           {/* Heading */}
-          <div className="text-center mb-12">
-            <h2 className="font-cormorant text-4xl sm:text-5xl lg:text-6xl font-bold text-[var(--text-primary)] mb-2">
-              Easy Home Loans Available
-            </h2>
-            <p className="text-[var(--text-secondary)] text-lg">
+          <div className="section-header-center">
+            <span className="section-kicker justify-center">Financing</span>
+            <h2 className="section-heading">Easy Home Loans Available</h2>
+            <p className="section-copy mx-auto mt-3 max-w-xl">
               Pre-approved tie-ups with leading banks
             </p>
-            <div className="w-20 h-1 bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] mx-auto mt-6"></div>
+            <div className="gold-rule mx-auto mt-4 sm:mt-6" />
           </div>
 
           {/* Banks Grid */}
@@ -90,7 +89,7 @@ export default function TieUpBanksSection() {
                   },
                 },
               }}
-              className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
+              className="grid-safe mb-8 grid grid-cols-1 gap-4 sm:mb-10 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6"
             >
               {banks.map(bank => (
                 <motion.div
@@ -103,7 +102,7 @@ export default function TieUpBanksSection() {
                       transition: { duration: 0.5 },
                     },
                   }}
-                  className="bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-6 hover:border-[var(--gold)] transition-all duration-300 group"
+                  className="panel-dark min-w-0 rounded-xl panel-padding transition-all duration-300 hover:border-[var(--gold)]"
                 >
                   {/* Bank Name */}
                   <div className="h-16 flex items-center justify-center mb-4 text-[var(--text-dark)] font-bold text-sm text-center">
