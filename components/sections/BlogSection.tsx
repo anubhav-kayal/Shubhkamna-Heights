@@ -6,45 +6,7 @@ import Link from 'next/link';
 import { ArrowRight, Calendar } from 'lucide-react';
 import { getBlogPosts } from '@/lib/firestore';
 import type { BlogPost } from '@/types';
-
-const MOCK_POSTS: BlogPost[] = [
-  {
-    id: '1',
-    title: 'Why Chandauli is the Next Real Estate Hub',
-    slug: 'why-chandauli-next-hub',
-    excerpt: 'Discover why Chandauli is emerging as a prime location for residential development with excellent connectivity and growth potential.',
-    coverImage: '/blog-1.jpg',
-    author: 'Priya Singh',
-    publishedAt: new Date('2024-12-01'),
-    category: 'Market Insights',
-    content: '',
-    published: true,
-  },
-  {
-    id: '2',
-    title: '5 Amenities Every Modern Family Deserves',
-    slug: '5-amenities-modern-family',
-    excerpt: 'Learn about the essential amenities that make a residential project truly livable and family-friendly.',
-    coverImage: '/blog-2.jpg',
-    author: 'Rajesh Kumar',
-    publishedAt: new Date('2024-11-20'),
-    category: 'Lifestyle',
-    content: '',
-    published: true,
-  },
-  {
-    id: '3',
-    title: 'Home Loan Guide for First-Time Buyers',
-    slug: 'home-loan-guide-first-time',
-    excerpt: 'Complete guide to understanding home loans, choosing the right bank, and navigating the approval process.',
-    coverImage: '/blog-3.jpg',
-    author: 'Amit Sharma',
-    publishedAt: new Date('2024-11-10'),
-    category: 'Finance',
-    content: '',
-    published: true,
-  },
-];
+import { FALLBACK_BLOG_POSTS, formatDisplayDate } from '@/lib/site';
 
 export default function BlogSection() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -57,11 +19,11 @@ export default function BlogSection() {
         if (data && data.length > 0) {
           setPosts(data);
         } else {
-          setPosts(MOCK_POSTS);
+          setPosts(FALLBACK_BLOG_POSTS.slice(0, 3));
         }
       } catch (error) {
         console.error('Error loading blog posts:', error);
-        setPosts(MOCK_POSTS);
+        setPosts(FALLBACK_BLOG_POSTS.slice(0, 3));
       } finally {
         setLoading(false);
       }
@@ -159,15 +121,7 @@ export default function BlogSection() {
                       <span>{post.author}</span>
                       <span className="flex items-center gap-1">
                         <Calendar size={14} />
-                        {(() => {
-                          const date =
-                            post.publishedAt instanceof Date
-                              ? post.publishedAt
-                              : typeof post.publishedAt === 'object' && 'toDate' in post.publishedAt
-                                ? (post.publishedAt as any).toDate()
-                                : new Date(post.publishedAt);
-                          return date.toLocaleDateString();
-                        })()}
+                        {formatDisplayDate(post.publishedAt)}
                       </span>
                     </div>
 
