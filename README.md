@@ -1,22 +1,392 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Shubh Kamna Heights — Premium Real Estate Website
 
-## Getting Started
+A cinematic, conversion-focused real estate showcase website for **Shubh Kamna Heights**, built with modern web technologies and Firebase backend integration.
 
-First, run the development server:
+---
+
+## 🎯 Tech Stack
+
+- **Framework:** Next.js 14 (App Router, TypeScript)
+- **Styling:** Tailwind CSS v4 + custom CSS variables
+- **Animations:** Framer Motion
+- **Database:** Firebase Firestore
+- **Storage:** Firebase Storage (images, videos)
+- **Authentication:** Firebase Auth (admin CMS)
+- **Forms:** Firebase Firestore (enquiry writes)
+- **Hosting:** Vercel
+- **Icons:** Lucide React
+- **Fonts:** Cormorant Garamond (display) + Inter (body)
+
+---
+
+## 🚀 Quick Start
+
+### 1. Clone & Install
+
+```bash
+git clone <repo-url>
+cd shubhkamna-heights
+npm install --legacy-peer-deps
+```
+
+### 2. Firebase Setup
+
+1. Create a Firebase project at [firebase.google.com](https://firebase.google.com)
+2. Enable these services:
+   - Firestore Database
+   - Firebase Storage
+   - Firebase Authentication (Email/Password)
+
+3. Copy your Firebase credentials from **Project Settings**
+
+### 3. Environment Variables
+
+Create a `.env.local` file (copy from `.env.local.example`):
+
+```bash
+cp .env.local.example .env.local
+```
+
+Then add your Firebase credentials:
+
+```
+NEXT_PUBLIC_FIREBASE_API_KEY=...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+NEXT_PUBLIC_FIREBASE_APP_ID=...
+```
+
+### 4. Firestore Setup
+
+Initialize these collections in Firebase Console:
+
+```
+/settings/hero          → { videoUrl, posterUrl, headline, subheadline }
+/settings/pricing       → { bhk2_base_price, bhk3_base_price, per_sqft_rate, gst_percent, stamp_duty_percent }
+/settings/banks         → array of bank details
+/gallery                → { id, imageUrl, category, caption, order, active }
+/amenities              → { id, title, description, iconName, order }
+/floorplans             → { id, type, imageUrl, carpetArea, superArea, price, active }
+/blog                   → { id, title, slug, content, excerpt, coverImage, author, publishedAt, category, published }
+/testimonials           → { id, name, flatType, quote, rating, active }
+/enquiries              → { name, phone, email, bhkPreference, visitDate, message, source, createdAt, contacted }
+/specifications         → { id, category, items, order }
+```
+
+### 5. Start Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
+
+## 📁 Project Structure
+
+```
+/app
+  /layout.tsx              ← Root layout with Navbar, FABs, providers
+  /page.tsx                ← Homepage (all 15 sections)
+  /blog
+    /page.tsx              ← Blog listing
+    /[slug]/page.tsx       ← Individual blog post
+  /admin                   ← CMS (protected)
+    /layout.tsx
+    /page.tsx              ← Dashboard
+
+/components
+  /sections                ← 12 homepage sections
+    Navbar.tsx
+    HeroSection.tsx
+    ProjectOverviewSection.tsx
+    AmenitiesSection.tsx
+    FloorPlansSection.tsx
+    GallerySection.tsx
+    SpecificationsSection.tsx
+    TieUpBanksSection.tsx
+    LocationSection.tsx
+    AboutSection.tsx
+    TestimonialsSection.tsx
+    BlogSection.tsx
+    EnquirySection.tsx
+    Footer.tsx
+  /ui
+    CostCalculatorWidget.tsx     ← Floating EMI calculator
+    WhatsAppFAB.tsx             ← WhatsApp button
+    ExitIntentModal.tsx         ← Exit-intent enquiry form
+
+/lib
+  firebase.ts              ← Firebase initialization
+  firestore.ts             ← Firestore queries & writes
+  calculator.ts            ← EMI calculation logic
+  constants.ts             ← Project data & settings
+
+/context
+  CalculatorContext.tsx    ← Calculator state management
+
+/hooks
+  useScrolled.ts           ← Scroll position tracking
+
+/types
+  index.ts                 ← TypeScript interfaces
+```
+
+---
+
+## 🎨 Color Scheme — "Midnight Gold"
+
+The website uses a luxury real estate color palette:
+
+```css
+/* Primary */
+--gold: #C9A84C;           /* Brand gold */
+--gold-light: #E8C97A;     /* Hover states */
+--gold-dark: #9A7A2E;      /* Pressed states */
+
+/* Backgrounds */
+--bg-primary: #0A0A0F;     /* Main dark */
+--bg-card: #111118;        /* Card backgrounds */
+--bg-section: #16161F;     /* Section alternates */
+--bg-light: #F7F5F0;       /* Light sections */
+
+/* Text */
+--text-primary: #F0EDE6;   /* Warm white */
+--text-secondary: #A89F8C; /* Muted gray */
+--text-dark: #1A1A24;      /* Dark text */
+```
+
+---
+
+## 📊 Homepage Sections
+
+1. **Navbar** — Sticky navigation with RERA banner
+2. **Hero** — Full-screen video background with CTAs
+3. **Project Overview** — Location highlights & key features
+4. **Amenities** — 20 lifestyle amenities with icons
+5. **Floor Plans** — 2BHK & 3BHK unit cards with pricing
+6. **Gallery** — Masonry image gallery with filters
+7. **Specifications** — Construction details (accordion)
+8. **Tie-up Banks** — Home loan options & interest rates
+9. **Location** — Map + connectivity landmarks
+10. **About** — Trust badges & certifications
+11. **Testimonials** — Carousel with buyer quotes
+12. **Blog** — Latest articles with links
+13. **Enquiry Form** — Contact form with WhatsApp CTA
+14. **Footer** — Links, contact info, RERA details
+
+---
+
+## ⚡ Key Features
+
+### Floating Widgets
+- **EMI Calculator** (bottom-left): Live EMI calculations
+- **WhatsApp FAB** (bottom-right): Direct WhatsApp link
+- **Exit-Intent Modal** (desktop): Capture leads before bounce
+
+### Animations
+- Section entrance animations (Framer Motion)
+- Smooth scroll behavior
+- Staggered grid animations
+- Counter animations (stats)
+- Hover effects on interactive elements
+
+### Mobile Responsive
+- Mobile-optimized menu (hamburger drawer)
+- Bottom sheet calculator (mobile)
+- Touch-friendly CTAs
+- Responsive images with WebP support
+
+### Performance
+- `next/image` with blur placeholders
+- Video optimization (see below)
+- CSS variables for dynamic theming
+- Optimized bundle size
+
+---
+
+## 🎬 Video Optimization
+
+The hero video should be compressed before uploading to Firebase Storage:
+
+```bash
+ffmpeg -i input.mp4 -vcodec libx264 -crf 28 -preset slow -acodec aac -b:a 128k -movflags +faststart output.mp4
+```
+
+Target: **≤ 8 MB** for optimal delivery
+
+---
+
+## 🔐 Firebase Security Rules
+
+Set these rules in Firestore Console:
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Public read access
+    match /{document=**} {
+      allow read: if true;
+    }
+    
+    // Enquiry submissions
+    match /enquiries/{document=**} {
+      allow create: if request.auth != null || true;
+    }
+    
+    // Admin-only writes
+    match /{document=**} {
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+  }
+}
+```
+
+---
+
+## 📋 SEO & Meta Tags
+
+- Metadata configured in `app/layout.tsx`
+- JSON-LD structured data for real estate listing
+- All images have alt text
+- Meta descriptions on dynamic pages
+- Open Graph tags for social sharing
+- Robots.txt and sitemap.ts configured
+
+---
+
+## 🧪 Build & Deploy
+
+### Build
+
+```bash
+npm run build
+```
+
+### Deploy to Vercel
+
+```bash
+npm install -g vercel
+vercel
+```
+
+Then connect your GitHub repo and let Vercel handle deployments.
+
+### Environment Variables on Vercel
+
+Add your `.env.local` variables to Vercel Project Settings:
+- `NEXT_PUBLIC_FIREBASE_API_KEY`
+- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+- etc.
+
+---
+
+## 📝 Content Management
+
+### Managing Content via Firestore Console
+
+1. **Hero Section**
+   - Go to `settings/hero`
+   - Upload video to Firebase Storage → get URL
+   - Update `videoUrl`, `posterUrl`
+
+2. **Amenities**
+   - Add documents to `/amenities` collection
+   - Include icon names from Lucide React
+
+3. **Gallery**
+   - Upload images to Firebase Storage `/gallery` folder
+   - Add Firestore docs with image URLs & category
+
+4. **Blog Posts**
+   - Create docs in `/blog` collection
+   - Set `published: true` to show on website
+   - Use readable slugs for URL structure
+
+5. **Banks & Pricing**
+   - Update `/settings/pricing` with current rates
+   - Manage bank partnerships in `/settings/banks`
+
+---
+
+## 🚀 Deployment Checklist
+
+- [ ] Firebase project created & configured
+- [ ] `.env.local` populated with Firebase credentials
+- [ ] All Firestore collections initialized
+- [ ] Hero video uploaded to Firebase Storage
+- [ ] Bank logos uploaded to `/banks` folder
+- [ ] Gallery images uploaded & linked in Firestore
+- [ ] Blog posts created with `published: true`
+- [ ] Build passes with `npm run build`
+- [ ] Lighthouse score ≥ 85 (Performance)
+- [ ] All internal links tested
+- [ ] Mobile menu tested on device
+- [ ] EMI calculator tested with live rates
+- [ ] Enquiry form submission tested
+- [ ] RERA number & links verified
+- [ ] Analytics configured (if needed)
+
+---
+
+## 📱 API Endpoints (if needed)
+
+Currently, the app uses Firestore directly via client SDK. To add server-side API routes:
+
+```typescript
+// app/api/[endpoint]/route.ts
+import { firestore } from '@/lib/firebase';
+
+export async function GET() {
+  // Fetch from Firestore
+}
+
+export async function POST(request: Request) {
+  // Write to Firestore
+}
+```
+
+---
+
+## 🆘 Troubleshooting
+
+### Firebase not connecting?
+- Check `.env.local` variables are correct
+- Ensure Firebase project is active
+- Check Firestore rules aren't blocking reads
+
+### Images not loading?
+- Verify image URLs in Firestore are accessible
+- Check Firebase Storage CORS settings
+- Use absolute URLs, not relative paths
+
+### Mobile menu not working?
+- Check Tailwind breakpoints in globals.css
+- Ensure `setMobileMenuOpen(false)` is called on link click
+
+### EMI Calculator not calculating?
+- Verify pricing settings in `/settings/pricing`
+- Check interest rate inputs on Firestore `/settings/banks`
+
+---
+
+## 📞 Support & Contact
+
+**Project:** Shubh Kamna Heights
+**Location:** Chandauli, Uttar Pradesh
+**Contact:** +91 70841 65214
+**Email:** subh.0263@gmail.com
+**WhatsApp:** https://wa.me/917084165214
+
+---
+
+## 📄 License
+
+All rights reserved © 2025 Shubh Kamna Heights
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
