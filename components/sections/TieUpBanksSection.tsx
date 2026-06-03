@@ -1,17 +1,22 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { getBanks } from '@/lib/firestore';
 import { PROJECT_DATA } from '@/lib/constants';
+import { resolveBanks } from '@/lib/fallbacks';
 import type { Bank } from '@/types';
-
-const MOCK_BANKS: Bank[] = [
-  { id: '1', name: 'State Bank of India', logoUrl: '/banks/sbi.png', interestRate: 8.5, maxLoanAmount: 7500000, processingFee: 0.35 },
-  { id: '2', name: 'HDFC Bank', logoUrl: '/banks/hdfc.png', interestRate: 8.75, maxLoanAmount: 10000000, processingFee: 0.5 },
-  { id: '3', name: 'ICICI Bank', logoUrl: '/banks/icici.png', interestRate: 8.75, maxLoanAmount: 10000000, processingFee: 0.5 },
-  { id: '4', name: 'Punjab National Bank', logoUrl: '/banks/pnb.png', interestRate: 8.5, maxLoanAmount: 7500000, processingFee: 0.35 },
-];
+import {
+  Section,
+  PageContainer,
+  SectionKicker,
+  SectionHeading,
+  GoldRule,
+  SectionCopy,
+  SectionHeaderCenter,
+  Button,
+} from '@/components/ui/design';
 
 export default function TieUpBanksSection() {
   const [banks, setBanks] = useState<Bank[]>([]);
@@ -21,20 +26,16 @@ export default function TieUpBanksSection() {
     const loadBanks = async () => {
       try {
         const data = await getBanks();
-        if (data && data.length > 0) {
-          setBanks(data);
-        } else {
-          setBanks(MOCK_BANKS);
-        }
+        setBanks(resolveBanks(data));
       } catch (error) {
         console.error('Error loading banks:', error);
-        setBanks(MOCK_BANKS);
+        setBanks(resolveBanks([]));
       } finally {
         setLoading(false);
       }
     };
 
-    loadBanks();
+    void loadBanks();
   }, []);
 
   const handleWhatsAppClick = () => {
@@ -44,114 +45,81 @@ export default function TieUpBanksSection() {
     window.open(`https://wa.me/${PROJECT_DATA.whatsappNumber}?text=${message}`, '_blank');
   };
 
-  const sectionVariants = {
-    hidden: { opacity: 0, y: 40 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.7, ease: 'easeOut' },
-    },
-  };
-
   return (
-    <section className="section-shell bg-[var(--bg-section)]">
-      <div className="page-container">
+    <Section tone="muted">
+      <PageContainer>
         <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          variants={sectionVariants}
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.15 }}
+          transition={{ duration: 0.55, ease: 'easeOut' }}
         >
-          {/* Heading */}
-          <div className="section-header-center">
-            <span className="section-kicker justify-center">Financing</span>
-            <h2 className="section-heading">Easy Home Loans Available</h2>
-            <p className="section-copy mx-auto mt-3 max-w-xl">
+          <SectionHeaderCenter>
+            <SectionKicker centered>Financing</SectionKicker>
+            <SectionHeading className="mt-3 sm:mt-4">Easy Home Loans Available</SectionHeading>
+            <SectionCopy className="mx-auto mt-3 max-w-xl">
               Pre-approved tie-ups with leading banks
-            </p>
-            <div className="gold-rule mx-auto mt-4 sm:mt-6" />
-          </div>
+            </SectionCopy>
+            <GoldRule className="mx-auto mt-4 sm:mt-6" />
+          </SectionHeaderCenter>
 
-          {/* Banks Grid */}
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-pulse text-[var(--text-secondary)]">Loading banks...</div>
+              <div className="animate-pulse text-text-secondary">Loading banks...</div>
             </div>
           ) : (
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={{
-                visible: {
-                  transition: {
-                    staggerChildren: 0.1,
-                  },
-                },
-              }}
-              className="grid-safe mb-8 grid grid-cols-1 gap-4 sm:mb-10 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6"
-            >
-              {banks.map(bank => (
-                <motion.div
+            <div className="mt-10 grid min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 lg:mt-14 lg:grid-cols-4 lg:gap-8">
+              {banks.map((bank) => (
+                <article
                   key={bank.id}
-                  variants={{
-                    hidden: { opacity: 0, y: 20 },
-                    visible: {
-                      opacity: 1,
-                      y: 0,
-                      transition: { duration: 0.5 },
-                    },
-                  }}
-                  className="panel-dark min-w-0 rounded-xl panel-padding transition-all duration-300 hover:border-[var(--gold)]"
+                  className="flex min-w-0 flex-col rounded-2xl border border-border-gold bg-bg-card/90 p-6 shadow-[0_12px_36px_rgba(0,0,0,0.2)] transition-colors hover:border-gold/40 sm:rounded-[1.75rem]"
                 >
-                  {/* Bank Name */}
-                  <div className="h-16 flex items-center justify-center mb-4 text-[var(--text-dark)] font-bold text-sm text-center">
-                    {bank.name}
+                  <div className="relative mx-auto h-14 w-full max-w-[10rem] overflow-hidden rounded-lg bg-black/20 sm:h-16">
+                    <Image
+                      src={bank.logoUrl}
+                      alt={`${bank.name} logo`}
+                      fill
+                      className="object-contain p-2"
+                      sizes="240px"
+                    />
                   </div>
-
-                  {/* Details */}
-                  <div className="space-y-3">
-                    <div className="bg-[var(--gold)]/20 rounded px-3 py-2 text-center border border-[var(--gold)]/50">
-                      <p className="text-xs text-[var(--text-secondary)] mb-1">Interest Rate</p>
-                      <p className="text-[var(--gold)] font-bold">{bank.interestRate.toFixed(2)}%</p>
-                    </div>
-
-                    <div className="text-sm">
-                      <p className="text-[var(--text-secondary)] text-xs mb-1">Max Loan</p>
-                      <p className="text-[var(--text-primary)] font-semibold">
+                  <p className="mt-4 text-center font-inter text-sm font-semibold text-text-primary sm:text-base">
+                    {bank.name}
+                  </p>
+                  <div className="mt-4 rounded-xl border border-border-gold bg-black/15 px-4 py-3 text-center">
+                    <p className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-text-secondary">
+                      Interest Rate
+                    </p>
+                    <p className="mt-1 font-cormorant text-2xl font-semibold text-gold">
+                      {bank.interestRate.toFixed(2)}%
+                    </p>
+                  </div>
+                  <div className="mt-4 space-y-3 border-t border-border-gold pt-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs text-text-secondary">Max Loan</p>
+                      <p className="font-inter text-sm font-semibold text-text-primary">
                         Up to ₹{(bank.maxLoanAmount / 100000).toFixed(0)}L
                       </p>
                     </div>
-
-                    <div className="text-sm">
-                      <p className="text-[var(--text-secondary)] text-xs mb-1">Processing Fee</p>
-                      <p className="text-[var(--text-primary)] font-semibold">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs text-text-secondary">Processing Fee</p>
+                      <p className="font-inter text-sm font-semibold text-text-primary">
                         {bank.processingFee.toFixed(2)}%
                       </p>
                     </div>
                   </div>
-                </motion.div>
+                </article>
               ))}
-            </motion.div>
+            </div>
           )}
 
-          {/* Call to Action */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-            className="text-center pt-8 border-t border-[var(--border)]"
-          >
-            <button
-              onClick={handleWhatsAppClick}
-              className="px-8 py-3 bg-[var(--gold)] text-[var(--text-dark)] rounded-lg font-inter font-semibold hover:shadow-lg hover:shadow-[var(--gold)]/30 transition-all duration-300"
-            >
+          <div className="mt-10 border-t border-border-gold pt-10 text-center lg:mt-14">
+            <Button type="button" onClick={handleWhatsAppClick} className="inline-flex">
               Get Pre-Approved Today →
-            </button>
-          </motion.div>
+            </Button>
+          </div>
         </motion.div>
-      </div>
-    </section>
+      </PageContainer>
+    </Section>
   );
 }
