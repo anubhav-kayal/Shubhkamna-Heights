@@ -3,6 +3,7 @@
 import React from 'react';
 import { MessageCircle } from 'lucide-react';
 import { PROJECT_DATA } from '@/lib/constants';
+import { cn } from '@/lib/cn';
 
 export default function WhatsAppFAB() {
   const handleWhatsAppClick = () => {
@@ -15,7 +16,15 @@ export default function WhatsAppFAB() {
       type="button"
       onClick={handleWhatsAppClick}
       aria-label="Chat on WhatsApp"
-      className="fab-anchor fab-anchor-right group flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform duration-300 hover:scale-105 hover:shadow-xl sm:h-16 sm:w-16"
+      className={cn(
+        'group fixed z-[48] flex h-14 w-14 items-center justify-center rounded-full',
+        'bg-[#25D366] text-white shadow-lg transition-transform duration-300',
+        'hover:scale-105 hover:shadow-xl sm:h-16 sm:w-16',
+        'right-[max(1rem,env(safe-area-inset-right,0px))]',
+        'bottom-[calc(1rem+env(safe-area-inset-bottom,0px))]',
+        'sm:right-[max(1.5rem,env(safe-area-inset-right,0px))]',
+        'sm:bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]',
+      )}
     >
       <div className="absolute inset-0 rounded-full bg-[#25D366] opacity-75 group-hover:animate-pulse" />
       <MessageCircle size={26} className="relative z-10 sm:size-7" />

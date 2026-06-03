@@ -100,19 +100,19 @@ export default function ExitIntentModal() {
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
-            <div className="bg-[var(--bg-card)] border border-[var(--gold)] rounded-lg max-w-md w-full overflow-hidden">
+            <div className="w-full max-w-md overflow-hidden rounded-lg border border-gold bg-bg-card">
               {/* Header */}
-              <div className="bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] p-6 relative">
+              <div className="relative bg-gradient-to-r from-gold to-gold-light p-6">
                 <button
                   onClick={() => setIsVisible(false)}
-                  className="absolute top-4 right-4 text-[var(--text-dark)]"
+                  className="absolute top-4 right-4 text-text-dark"
                 >
                   <X size={20} />
                 </button>
-                <h2 className="font-cormorant text-2xl font-bold text-[var(--text-dark)]">
+                <h2 className="font-cormorant text-2xl font-bold text-text-dark">
                   Don&apos;t Leave Empty Handed!
                 </h2>
-                <p className="text-[var(--text-dark)] text-sm mt-2">
+                <p className="mt-2 text-sm text-text-dark">
                   Get exclusive details about Shubh Kamna Heights
                 </p>
               </div>
@@ -124,9 +124,9 @@ export default function ExitIntentModal() {
                   animate={{ opacity: 1 }}
                   className="p-6 text-center"
                 >
-                  <div className="w-16 h-16 rounded-full bg-[var(--green-accent)] bg-opacity-20 flex items-center justify-center mx-auto mb-4">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-accent/20">
                     <svg
-                      className="w-8 h-8 text-[var(--green-accent)]"
+                      className="h-8 w-8 text-green-accent"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -139,22 +139,22 @@ export default function ExitIntentModal() {
                       />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">
+                  <h3 className="mb-2 text-xl font-bold text-text-primary">
                     Thank You!
                   </h3>
-                  <p className="text-[var(--text-secondary)] text-sm">
+                  <p className="text-sm text-text-secondary">
                     We&apos;ll get in touch soon with exclusive details about your preferred home.
                   </p>
                 </motion.div>
               ) : (
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4 p-6">
                   <input
                     type="text"
                     placeholder="Your Name"
                     value={formData.name}
                     onChange={e => setFormData({ ...formData, name: e.target.value })}
                     required
-                    className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded px-3 py-2 text-[var(--text-primary)] placeholder-[var(--text-secondary)] font-inter text-sm focus:outline-none focus:ring-2 focus:ring-[var(--gold)]"
+                    className="w-full rounded border border-border-gold bg-bg-primary px-3 py-2 font-inter text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-gold"
                   />
 
                   <input
@@ -164,13 +164,13 @@ export default function ExitIntentModal() {
                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
                     required
                     pattern="[0-9\-\+\(\)\s]+"
-                    className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded px-3 py-2 text-[var(--text-primary)] placeholder-[var(--text-secondary)] font-inter text-sm focus:outline-none focus:ring-2 focus:ring-[var(--gold)]"
+                    className="w-full rounded border border-border-gold bg-bg-primary px-3 py-2 font-inter text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-gold"
                   />
 
                   <select
                     value={formData.bhkPreference}
                     onChange={e => setFormData({ ...formData, bhkPreference: e.target.value })}
-                    className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded px-3 py-2 text-[var(--text-primary)] font-inter text-sm focus:outline-none focus:ring-2 focus:ring-[var(--gold)]"
+                    className="w-full rounded border border-border-gold bg-bg-primary px-3 py-2 font-inter text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-gold"
                   >
                     <option value="2BHK">2 BHK</option>
                     <option value="3BHK">3 BHK</option>
@@ -180,7 +180,7 @@ export default function ExitIntentModal() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-2 bg-[var(--gold)] text-[var(--text-dark)] rounded font-inter font-semibold hover:shadow-lg hover:shadow-[var(--gold)]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full rounded bg-gold py-2 font-inter font-semibold text-text-dark transition-all hover:shadow-lg hover:shadow-gold/30 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {isLoading ? 'Submitting...' : 'Get Details Now →'}
                   </button>
@@ -188,7 +188,7 @@ export default function ExitIntentModal() {
                   <button
                     type="button"
                     onClick={() => setIsVisible(false)}
-                    className="w-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-sm font-inter transition-colors"
+                    className="w-full font-inter text-sm text-text-secondary transition-colors hover:text-text-primary"
                   >
                     Not now, maybe later
                   </button>
