@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
@@ -25,247 +25,285 @@ import {
   Shield,
 } from 'lucide-react';
 import { getAmenities } from '@/lib/firestore';
-import { AMENITIES_LIST } from '@/lib/constants';
+import { resolveAmenities } from '@/lib/fallbacks';
+import MediaCover from '@/components/ui/MediaCover';
+import { PROJECT_DATA } from '@/lib/constants';
 import type { Amenity } from '@/types';
+import { cn } from '@/lib/cn';
+import {
+  Section,
+  PageContainer,
+  SectionKicker,
+  SectionHeading,
+  SectionLead,
+  GoldRule,
+  Button,
+} from '@/components/ui/design';
 
 const AMENITY_ICONS: Record<string, React.ReactNode> = {
-  'Swimming Pool': <Waves size={24} />,
-  'Gymnasium': <Dumbbell size={24} />,
-  'Clubhouse': <Users size={24} />,
-  'Amphitheatre': <Music size={24} />,
-  'Basketball Court': <Target size={24} />,
-  'Badminton Court': <Award size={24} />,
-  'Indoor Game Zone': <Gamepad2 size={24} />,
-  'Banquet Hall': <Coffee size={24} />,
-  'Children Playing Zone': <Smile size={24} />,
-  'Yoga & Meditation Park': <Leaf size={24} />,
-  'Temple Area': <Building2 size={24} />,
-  'Nana Nani Park': <Trees size={24} />,
-  'Gazebo Seating': <Sparkles size={24} />,
-  'Jogging Track': <Zap size={24} />,
-  'Water Body with Bridge': <Waves size={24} />,
-  'Commercial Plaza': <ShoppingCart size={24} />,
-  'Kids Play Zone': <Clapperboard size={24} />,
-  'Performance Stage': <Mic2 size={24} />,
-  'Activity Park': <Package size={24} />,
-  '24/7 Security': <Shield size={24} />,
+  'Swimming Pool': <Waves size={22} />,
+  'Gymnasium': <Dumbbell size={22} />,
+  'Clubhouse': <Users size={22} />,
+  'Amphitheatre': <Music size={22} />,
+  'Basketball Court': <Target size={22} />,
+  'Badminton Court': <Award size={22} />,
+  'Indoor Game Zone': <Gamepad2 size={22} />,
+  'Banquet Hall': <Coffee size={22} />,
+  'Children Playing Zone': <Smile size={22} />,
+  'Yoga & Meditation Park': <Leaf size={22} />,
+  'Temple Area': <Building2 size={22} />,
+  'Nana Nani Park': <Trees size={22} />,
+  'Gazebo Seating': <Sparkles size={22} />,
+  'Jogging Track': <Zap size={22} />,
+  'Water Body with Bridge': <Waves size={22} />,
+  'Commercial Plaza': <ShoppingCart size={22} />,
+  'Kids Play Zone': <Clapperboard size={22} />,
+  'Performance Stage': <Mic2 size={22} />,
+  'Activity Park': <Package size={22} />,
+  '24/7 Security': <Shield size={22} />,
 };
+
+function amenityDescription(text: string | undefined) {
+  if (!text) return null;
+  if (text.toLowerCase().startsWith('experience our')) return null;
+  return text;
+}
+
+function FeaturedAmenityCard({
+  amenity,
+  className,
+  priority = false,
+  spotlight = false,
+}: {
+  amenity: Amenity;
+  className?: string;
+  priority?: boolean;
+  spotlight?: boolean;
+}) {
+  const desc = amenityDescription(amenity.description);
+
+  return (
+    <article
+      className={cn(
+        'group relative min-h-[14rem] overflow-hidden rounded-2xl transition-[box-shadow,ring-color] duration-500 sm:min-h-[18rem] sm:rounded-[1.5rem]',
+        spotlight &&
+          'z-10 ring-2 ring-gold shadow-[0_0_0_1px_rgba(201,168,76,0.35),0_16px_40px_rgba(201,168,76,0.18)]',
+        !spotlight && 'ring-1 ring-transparent',
+        className,
+      )}
+    >
+      <MediaCover
+        src={amenity.imageUrl ?? ''}
+        alt={amenity.title}
+        sizes="(max-width: 1024px) 100vw, 50vw"
+        overlay="strong"
+        fallbackKind="amenity"
+        fallbackSeed={amenity.title}
+        priority={priority}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/40 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
+        <span className="inline-flex items-center gap-2 text-gold" aria-hidden>
+          {AMENITY_ICONS[amenity.title] || <Users size={20} />}
+        </span>
+        <h3 className="mt-3 font-cormorant text-2xl font-semibold leading-tight text-text-primary sm:text-[1.65rem]">
+          {amenity.title}
+        </h3>
+        {desc && (
+          <p className="mt-2 line-clamp-2 max-w-lg text-sm leading-relaxed text-text-secondary">
+            {desc}
+          </p>
+        )}
+      </div>
+    </article>
+  );
+}
+
+function AmenityTile({ amenity }: { amenity: Amenity }) {
+  return (
+    <article className="group overflow-hidden rounded-xl border border-border-gold/70 bg-bg-card transition-[border-color,transform] duration-300 hover:-translate-y-0.5 hover:border-gold/50">
+      <div className="relative aspect-[5/4] overflow-hidden">
+        <MediaCover
+          src={amenity.imageUrl ?? ''}
+          alt={amenity.title}
+          sizes="(max-width: 640px) 50vw, 15vw"
+          overlay="card"
+          fallbackKind="amenity"
+          fallbackSeed={amenity.title}
+        />
+      </div>
+      <div className="flex items-center gap-3 border-t border-border-gold/50 px-3.5 py-3.5 sm:px-4">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border-gold bg-black/20 text-gold">
+          {AMENITY_ICONS[amenity.title] || <Users size={18} />}
+        </span>
+        <p className="min-w-0 font-inter text-sm font-medium leading-snug text-text-primary">
+          {amenity.title}
+        </p>
+      </div>
+    </article>
+  );
+}
+
+const SPOTLIGHT_INTERVAL_MS = 2000;
 
 export default function AmenitiesSection() {
   const [amenities, setAmenities] = useState<Amenity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [spotlightIndex, setSpotlightIndex] = useState(0);
 
   useEffect(() => {
     const loadAmenities = async () => {
       try {
         const data = await getAmenities();
-        if (data && data.length > 0) {
-          setAmenities(data);
-        } else {
-          setAmenities(
-            AMENITIES_LIST.map((name, idx) => ({
-              id: `amenity-${idx}`,
-              title: name,
-              description: `Experience our world-class ${name.toLowerCase()}`,
-              iconName: name,
-              order: idx,
-            }))
-          );
-        }
+        setAmenities(resolveAmenities(data));
       } catch (error) {
         console.error('Error loading amenities:', error);
-        setAmenities(
-          AMENITIES_LIST.map((name, idx) => ({
-            id: `amenity-${idx}`,
-            title: name,
-            description: `Experience our world-class ${name.toLowerCase()}`,
-            iconName: name,
-            order: idx,
-          }))
-        );
+        setAmenities(resolveAmenities([]));
       } finally {
         setLoading(false);
       }
     };
 
-    loadAmenities();
+    void loadAmenities();
   }, []);
 
-  const sectionVariants = {
-    hidden: { opacity: 0, y: 40 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.7, ease: 'easeOut' },
-    },
-  };
-
-  const containerVariants = {
-    visible: {
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5 },
-    },
-  };
-
   const featured = amenities.slice(0, 3);
+
+  useEffect(() => {
+    if (featured.length < 2) return;
+    const timer = window.setInterval(() => {
+      setSpotlightIndex((prev) => (prev + 1) % featured.length);
+    }, SPOTLIGHT_INTERVAL_MS);
+    return () => window.clearInterval(timer);
+  }, [featured.length]);
+
+  const spotlightOrder = featured.map(
+    (_, i) => featured[(spotlightIndex + i) % featured.length]!,
+  );
+  const hero = spotlightOrder[0];
+  const secondary = spotlightOrder.slice(1);
   const grid = amenities.slice(3);
 
+  const handleVisitClick = () => {
+    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
-    <section id="amenities" className="section-shell bg-[var(--bg-section)]">
-      <div className="page-container">
+    <Section id="amenities" tone="muted" className="relative overflow-hidden">
+      <div
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_0%,rgba(201,168,76,0.03)_50%,transparent_100%)]"
+        aria-hidden
+      />
+
+      <PageContainer className="relative">
         <motion.div
-          initial="hidden"
-          whileInView="visible"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
-          variants={sectionVariants}
+          transition={{ duration: 0.55 }}
+          className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between"
         >
-          <div className="section-header grid-safe grid gap-6 lg:grid-cols-[1fr_minmax(0,18rem)] lg:items-end lg:gap-8">
-            <div className="min-w-0">
-              <span className="section-kicker">Lifestyle</span>
-              <h2 className="section-heading text-[var(--text-primary)]">
-                Unmatched Lifestyle
-              </h2>
-              <div className="gold-rule my-4 sm:my-5" />
-              <p className="section-lead">
-                Club amenities, green breathing spaces, active recreation, and calm corners are
-                arranged to make the project feel inhabited, not just occupied.
-              </p>
-            </div>
-            <div className="panel-dark min-w-0 rounded-2xl panel-padding">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]/80">
-                Community Focus
-              </p>
-              <p className="section-lead !mt-3 !max-w-none">
-                From fitness and leisure to family gathering spaces, the amenity mix is designed
-                for daily use instead of brochure filler.
-              </p>
-            </div>
+          <div className="max-w-2xl">
+            <SectionKicker>Lifestyle</SectionKicker>
+            <SectionHeading className="mt-4">Spaces you will actually use</SectionHeading>
+            <GoldRule className="mt-6" />
+            <SectionLead className="mt-6">
+              Recreation, wellness, and gathering areas are distributed across the master plan—not
+              clustered as afterthoughts. The amenity mix supports families, fitness, and
+              everyday leisure on site.
+            </SectionLead>
           </div>
+          <p className="max-w-xs font-inter text-sm leading-relaxed text-text-secondary lg:text-right">
+            <span className="font-cormorant text-4xl font-semibold text-gold">
+              {amenities.length || '20'}
+            </span>
+            <span className="mt-1 block">curated lifestyle touchpoints</span>
+          </p>
+        </motion.div>
 
-          {!loading && featured.length > 0 && (
-            <motion.div
-              variants={containerVariants}
-              className="grid-safe mb-8 grid grid-cols-1 gap-4 sm:mb-10 sm:gap-5 md:grid-cols-2 lg:mb-12 lg:grid-cols-3 lg:gap-6"
-            >
-              {featured.map((amenity) => {
-                const hasImage = Boolean(
-                  amenity.imageUrl && !amenity.imageUrl.includes('placeholder')
-                );
+        {loading && (
+          <div className="flex items-center justify-center py-20">
+            <p className="text-sm text-text-secondary">Loading amenities…</p>
+          </div>
+        )}
 
-                return (
-                  <motion.article
-                    key={amenity.id}
-                    variants={itemVariants}
-                    className="group relative flex min-h-[16rem] min-w-0 flex-col rounded-2xl border border-[var(--border)] bg-[var(--bg-primary)] sm:min-h-[18rem] sm:rounded-[1.75rem]"
-                  >
-                    <div className="absolute inset-0 overflow-hidden rounded-2xl sm:rounded-[1.75rem]">
-                      {hasImage ? (
-                        <div
-                          role="img"
-                          aria-label={amenity.title}
-                          className="h-full w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                          style={{ backgroundImage: `url(${amenity.imageUrl})` }}
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top_left,rgba(201,168,76,0.28),transparent_42%),linear-gradient(135deg,rgba(33,32,42,0.98),rgba(16,15,22,1))]">
-                          <div className="text-[var(--gold)]/25 transition-transform duration-500 group-hover:scale-110">
-                            {AMENITY_ICONS[amenity.title] || <Users size={56} />}
-                          </div>
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[rgba(9,8,15,0.96)] via-[rgba(9,8,15,0.5)] to-[rgba(9,8,15,0.15)]" />
-                    </div>
-
-                    <div className="relative flex min-h-[16rem] flex-1 flex-col justify-between p-5 sm:min-h-[18rem] sm:p-6 lg:p-7">
-                      <div className="flex items-start justify-between gap-3">
-                        <span className="badge-pill shrink border border-[var(--gold)]/25 bg-[rgba(9,8,15,0.7)] text-[var(--gold)] backdrop-blur-sm">
-                          Featured
-                        </span>
-                        <div className="shrink-0 text-[var(--gold)]">
-                          {AMENITY_ICONS[amenity.title] || <Users size={26} />}
-                        </div>
-                      </div>
-                      <div className="min-w-0 pt-4">
-                        <h3 className="font-cormorant text-2xl font-semibold leading-tight text-[var(--text-primary)] text-balance sm:text-3xl">
-                          {amenity.title}
-                        </h3>
-                        <p className="mt-2 text-sm leading-relaxed text-[rgba(247,243,233,0.85)]">
-                          {amenity.description}
-                        </p>
-                      </div>
-                    </div>
-                  </motion.article>
-                );
-              })}
-            </motion.div>
-          )}
-
-          {!loading && grid.length > 0 && (
-            <motion.div
-              variants={containerVariants}
-              className="grid-safe grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5"
-            >
-              {grid.map(amenity => (
+        {!loading && hero && (
+          <motion.div
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.12 }}
+            transition={{ duration: 0.55 }}
+            className="mt-12 lg:mt-16"
+          >
+            <div className="grid gap-4 lg:grid-cols-12 lg:grid-rows-2 lg:gap-5">
+              <motion.div
+                key={hero.id}
+                layout
+                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                className="lg:col-span-7 lg:row-span-2"
+              >
+                <FeaturedAmenityCard
+                  amenity={hero}
+                  priority
+                  spotlight
+                  className="h-full min-h-[14rem] lg:min-h-[22rem]"
+                />
+              </motion.div>
+              {secondary.map((amenity, i) => (
                 <motion.div
                   key={amenity.id}
-                  variants={itemVariants}
-                  className="panel-dark group flex min-h-[9.5rem] min-w-0 flex-col gap-3 rounded-xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-[var(--gold)]/50 sm:min-h-[10.5rem] sm:rounded-2xl sm:p-5"
+                  layout
+                  transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                  className={cn('lg:col-span-5', i === 0 ? 'lg:row-start-1' : 'lg:row-start-2')}
                 >
-                  <div className="inline-flex w-fit rounded-xl border border-[var(--gold)]/15 bg-[rgba(201,168,76,0.08)] p-2.5 text-[var(--gold)]">
-                    {AMENITY_ICONS[amenity.title] || <Users size={22} />}
-                  </div>
-                  <p className="font-inter text-xs font-semibold uppercase leading-snug tracking-[0.1em] text-[var(--text-primary)] text-balance sm:text-[0.8125rem] sm:tracking-[0.12em]">
-                    {amenity.title}
-                  </p>
+                  <FeaturedAmenityCard amenity={amenity} className="h-full" />
                 </motion.div>
               ))}
-            </motion.div>
-          )}
-
-          {loading && (
-            <div className="flex items-center justify-center py-16">
-              <div className="animate-pulse text-[var(--text-secondary)]">Loading amenities...</div>
             </div>
-          )}
+          </motion.div>
+        )}
 
+        {!loading && grid.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-            className="mt-8 min-w-0 rounded-2xl border border-[var(--border)] bg-[linear-gradient(135deg,rgba(201,168,76,0.12),rgba(17,16,24,0.98))] panel-padding sm:mt-12 sm:rounded-[1.75rem]"
+            viewport={{ once: true, amount: 0.1 }}
+            transition={{ duration: 0.5 }}
+            className="mt-10 lg:mt-14"
           >
-            <div className="flex min-w-0 flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
-              <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]/80">
-                  Experience On Site
-                </p>
-                <h3 className="section-subheading mt-3 text-[var(--text-primary)]">
-                  Walk through the spaces before you make the decision.
-                </h3>
-                <p className="section-lead !max-w-none">
-                  A site visit will show the scale, circulation, green cover, and amenity planning
-                  far better than a brochure grid can.
-                </p>
-              </div>
-              <button type="button" className="btn-primary shrink-0 lg:min-w-[12rem]">
-                Schedule a Visit
-                <ArrowRight size={16} />
-              </button>
+            <p className="mb-6 font-inter text-xs font-semibold uppercase tracking-[0.22em] text-gold/90">
+              Complete amenity roster
+            </p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
+              {grid.map((amenity) => (
+                <AmenityTile key={amenity.id} amenity={amenity} />
+              ))}
             </div>
           </motion.div>
+        )}
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.45 }}
+          className="mt-14 flex flex-col items-start justify-between gap-6 border-t border-border-gold pt-10 sm:flex-row sm:items-center lg:mt-20 lg:pt-12"
+        >
+          <div>
+            <p className="font-cormorant text-xl font-semibold text-text-primary sm:text-2xl">
+              Walk the master plan on site
+            </p>
+            <p className="mt-2 max-w-lg text-sm leading-relaxed text-text-secondary">
+              Scale, green cover, and amenity placement are best understood in person. Schedule a
+              visit with our team at {PROJECT_DATA.location}.
+            </p>
+          </div>
+          <Button type="button" onClick={handleVisitClick} className="shrink-0">
+            Schedule a visit
+            <ArrowRight size={16} />
+          </Button>
         </motion.div>
-      </div>
-    </section>
+      </PageContainer>
+    </Section>
   );
 }

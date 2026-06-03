@@ -4,158 +4,131 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { getSpecifications } from '@/lib/firestore';
+import { resolveSpecifications } from '@/lib/fallbacks';
 import type { Specification } from '@/types';
-
-const MOCK_SPECIFICATIONS: Specification[] = [
-  {
-    id: '1',
-    category: 'STRUCTURE',
-    items: [
-      { label: 'Steel', value: 'Tata, JSW & Jindal' },
-      { label: 'Cement', value: 'Branded cement' },
-      { label: 'R.C.C.', value: 'In-house RMC plant' },
-      { label: 'Frame', value: 'Earthquake resistant, vetted by IIT BHU' },
-    ],
-    order: 1,
-  },
-  {
-    id: '2',
-    category: 'FLOORING',
-    items: [
-      { label: 'Living & Dining', value: '4×2 Glazed Vitrified Tiles' },
-      { label: 'Master Bedroom', value: '4×2 Glazed Vitrified Tiles' },
-      { label: 'Kitchen', value: 'Ceramic Tiles' },
-      { label: 'Toilet', value: 'Anti Skid Ceramic Tiles' },
-    ],
-    order: 2,
-  },
-  {
-    id: '3',
-    category: 'ELECTRICAL',
-    items: [
-      { label: 'Supply', value: '3-Phase with concealed wiring' },
-      { label: 'Bedrooms', value: 'AC wiring with AC point' },
-      { label: 'Kitchen', value: 'Multiple power points + Geyser point' },
-    ],
-    order: 3,
-  },
-];
+import { cn } from '@/lib/cn';
+import {
+  Section,
+  PageContainer,
+  SectionKicker,
+  SectionHeading,
+  GoldRule,
+  SectionHeaderCenter,
+} from '@/components/ui/design';
 
 export default function SpecificationsSection() {
   const [specifications, setSpecifications] = useState<Specification[]>([]);
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>('STRUCTURE');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadSpecs = async () => {
       try {
         const data = await getSpecifications();
-        if (data && data.length > 0) {
-          setSpecifications(data);
-        } else {
-          setSpecifications(MOCK_SPECIFICATIONS);
-        }
+        const resolved = resolveSpecifications(data);
+        setSpecifications(resolved);
+        setExpandedCategory(resolved[0]?.category ?? null);
       } catch (error) {
         console.error('Error loading specifications:', error);
-        setSpecifications(MOCK_SPECIFICATIONS);
+        const resolved = resolveSpecifications([]);
+        setSpecifications(resolved);
+        setExpandedCategory(resolved[0]?.category ?? null);
       } finally {
         setLoading(false);
       }
     };
 
-    loadSpecs();
+    void loadSpecs();
   }, []);
 
-  const sectionVariants = {
-    hidden: { opacity: 0, y: 40 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.7, ease: 'easeOut' },
-    },
-  };
-
   return (
-    <section className="section-shell bg-[var(--bg-light)]">
-      <div className="page-container">
+    <Section tone="light">
+      <PageContainer>
         <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          variants={sectionVariants}
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.15 }}
+          transition={{ duration: 0.55, ease: 'easeOut' }}
         >
-          {/* Heading */}
-          <div className="section-header-center">
-            <span className="section-kicker text-[var(--text-dark)]/70 justify-center">Specifications</span>
-            <h2 className="section-heading text-[var(--text-dark)]">
-              Premium Specifications
-            </h2>
-            <div className="gold-rule mx-auto mt-4 sm:mt-6" />
-          </div>
+          <SectionHeaderCenter className="mb-10 sm:mb-14">
+            <SectionKicker centered>Specifications</SectionKicker>
+            <SectionHeading className="mt-3 sm:mt-4">Premium Specifications</SectionHeading>
+            <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-muted-on-light sm:text-base sm:leading-7">
+              Materials, finishes, and systems chosen for durability, comfort, and long-term
+              value — documented clearly for your purchase decision.
+            </p>
+            <GoldRule className="mx-auto mt-5 sm:mt-6" />
+          </SectionHeaderCenter>
 
-          {/* Specifications Accordion */}
           {loading ? (
-            <div className="flex items-center justify-center py-16">
-              <div className="text-[var(--text-dark)] animate-pulse">Loading specifications...</div>
-            </div>
+            <p className="py-12 text-center text-sm text-muted-on-light">Loading specifications…</p>
           ) : (
-            <div className="max-w-4xl mx-auto space-y-3">
-              {specifications.map(spec => (
-                <motion.div
-                  key={spec.id}
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  className="border border-[var(--border)] rounded-lg overflow-hidden"
-                >
-                  <button
-                    onClick={() =>
-                      setExpandedCategory(expandedCategory === spec.category ? null : spec.category)
-                    }
-                    className="flex w-full items-center justify-between gap-4 bg-[var(--bg-card)] px-4 py-4 text-left transition-colors duration-300 hover:bg-[var(--bg-section)] sm:px-5 sm:py-5"
-                  >
-                    <span className="font-cormorant text-base font-bold text-[var(--text-dark)] text-balance sm:text-lg">
-                      {spec.category}
-                    </span>
-                    <ChevronDown
-                      size={20}
-                      className={`text-[var(--gold)] transition-transform duration-300 ${
-                        expandedCategory === spec.category ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </button>
+            <div className="space-y-3" role="region" aria-label="Project specifications">
+              {specifications.map((spec) => {
+                const isOpen = expandedCategory === spec.category;
+                const panelId = `spec-panel-${spec.id}`;
 
-                  {expandedCategory === spec.category && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="bg-[var(--bg-primary)] px-4 py-5 sm:px-5 sm:py-6"
+                return (
+                  <div
+                    key={spec.id}
+                    className="overflow-hidden rounded-xl border border-border-on-light bg-white"
+                  >
+                    <button
+                      type="button"
+                      id={`spec-trigger-${spec.id}`}
+                      aria-expanded={isOpen}
+                      aria-controls={panelId}
+                      onClick={() =>
+                        setExpandedCategory(isOpen ? null : spec.category)
+                      }
+                      className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6 sm:py-5"
                     >
-                      <div className="space-y-3">
-                        {spec.items.map((item, idx) => (
-                          <div
-                            key={idx}
-                            className="flex justify-between items-start border-b border-[var(--border)] pb-3 last:border-0"
-                          >
-                            <span className="min-w-0 flex-1 font-inter text-sm text-[var(--text-secondary)]">
-                              {item.label}
-                            </span>
-                            <span className="ml-4 max-w-[55%] shrink-0 text-right font-inter text-sm font-semibold text-[var(--text-dark)]">
-                              {item.value}
-                            </span>
-                          </div>
-                        ))}
+                      <span className="font-inter text-sm font-semibold uppercase tracking-[0.12em] text-text-dark sm:text-base">
+                        {spec.category}
+                      </span>
+                      <span
+                        className={cn(
+                          'shrink-0 text-gold-dark transition-transform duration-200',
+                          isOpen && 'rotate-180',
+                        )}
+                        aria-hidden
+                      >
+                        <ChevronDown size={22} strokeWidth={2} />
+                      </span>
+                    </button>
+
+                    <div
+                      id={panelId}
+                      role="region"
+                      aria-labelledby={`spec-trigger-${spec.id}`}
+                      hidden={!isOpen}
+                      className="border-t border-border-on-light"
+                    >
+                      <div className="px-5 py-4 sm:px-6 sm:pb-6">
+                        <ul className="divide-y divide-border-on-light">
+                          {spec.items.map((item, idx) => (
+                            <li
+                              key={idx}
+                              className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-start sm:justify-between sm:gap-6"
+                            >
+                              <span className="text-sm font-medium text-text-dark">
+                                {item.label}
+                              </span>
+                              <span className="text-sm leading-relaxed text-muted-on-light sm:max-w-[55%] sm:text-right">
+                                {item.value}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                    </motion.div>
-                  )}
-                </motion.div>
-              ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </motion.div>
-      </div>
-    </section>
+      </PageContainer>
+    </Section>
   );
 }
