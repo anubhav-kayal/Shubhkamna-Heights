@@ -4,9 +4,9 @@ import { getBlogPosts } from '@/lib/firestore';
 import { getBlogPostsWithFallback, getAbsoluteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: 'Blog & Insights',
+  title: 'Browse Our Resources',
   description:
-    'Read updates, market perspective, and buyer guidance from Shubh Kamna Heights in Chandauli.',
+    'Articles, market perspective, and buyer guidance from Shubh Kamna Heights in Chandauli.',
   alternates: {
     canonical: '/blog',
   },

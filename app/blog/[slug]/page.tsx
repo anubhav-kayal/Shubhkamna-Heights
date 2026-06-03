@@ -2,16 +2,19 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Calendar, User } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, User } from 'lucide-react';
 import { getBlogPostBySlug, getBlogPosts } from '@/lib/firestore';
+import { resolveImageUrl } from '@/lib/placeholders';
 import {
   FALLBACK_BLOG_POSTS,
+  estimateReadMinutes,
   formatDisplayDate,
   getAbsoluteUrl,
   getBlogPostsWithFallback,
   stripHtml,
   toDate,
 } from '@/lib/site';
+import { EditorialHero, KickerLight, PageContainer } from '@/components/ui/design';
 
 type PageProps = {
   params: Promise<{
@@ -20,7 +23,19 @@ type PageProps = {
 };
 
 async function resolvePost(slug: string) {
-  return (await getBlogPostBySlug(slug)) ?? FALLBACK_BLOG_POSTS.find((post) => post.slug === slug) ?? null;
+  const post =
+    (await getBlogPostBySlug(slug)) ??
+    FALLBACK_BLOG_POSTS.find((entry) => entry.slug === slug) ??
+    null;
+
+  if (!post) {
+    return null;
+  }
+
+  return {
+    ...post,
+    coverImage: resolveImageUrl(post.coverImage, 'blog', post.slug),
+  };
 }
 
 export async function generateStaticParams() {
@@ -35,21 +50,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!post) {
     return {
       title: 'Article Not Found',
-      robots: {
-        index: false,
-        follow: false,
-      },
+      robots: { index: false, follow: false },
     };
   }
 
-  const description = post.excerpt || stripHtml(post.content).slice(0, 160);
+  const description =
+    post.metaDescription || post.excerpt || stripHtml(post.content).slice(0, 160);
 
   return {
     title: post.title,
     description,
-    alternates: {
-      canonical: `/blog/${post.slug}`,
-    },
+    alternates: { canonical: `/blog/${post.slug}` },
     openGraph: {
       title: post.title,
       description,
@@ -67,6 +78,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+function AuthorAvatar({ name }: { name: string }) {
+  const initial = name.trim().charAt(0).toUpperCase() || 'S';
+  return (
+    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/15 font-inter text-xs font-semibold text-gold-dark">
+      {initial}
+    </span>
+  );
+}
+
 export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params;
   const post = await resolvePost(slug);
@@ -77,13 +97,15 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   const posts = getBlogPostsWithFallback(await getBlogPosts());
   const relatedPosts = posts
-    .filter((candidate) => candidate.slug !== post.slug && candidate.category === post.category)
+    .filter((candidate) => candidate.slug !== post.slug)
     .slice(0, 3);
 
-  const description = post.excerpt || stripHtml(post.content).slice(0, 160);
+  const readMin = estimateReadMinutes(post.content, post.excerpt, post.readTimeMinutes);
+  const description =
+    post.metaDescription || post.excerpt || stripHtml(post.content).slice(0, 160);
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)]">
+    <article className="min-h-screen bg-bg-light text-text-dark">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -93,116 +115,100 @@ export default async function BlogPostPage({ params }: PageProps) {
             headline: post.title,
             description,
             datePublished: toDate(post.publishedAt).toISOString(),
-            author: {
-              '@type': 'Person',
-              name: post.author,
-            },
+            author: { '@type': 'Person', name: post.author },
             image: post.coverImage ? [post.coverImage] : undefined,
             mainEntityOfPage: getAbsoluteUrl(`/blog/${post.slug}`),
           }),
         }}
       />
 
-      <div className="border-b border-[var(--border)] bg-[var(--bg-card)] py-6 sm:py-8">
-        <div className="page-container max-w-4xl">
+      <EditorialHero className="pb-8 sm:pb-10">
+        <PageContainer className="max-w-3xl">
           <Link
             href="/blog"
-            className="mb-6 inline-flex items-center gap-2 text-[var(--gold)] transition-colors hover:text-[var(--gold-light)]"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-gold-dark transition-colors hover:text-gold"
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={16} />
             Back to Blog
           </Link>
-
-          <span className="inline-flex rounded-full bg-[var(--gold)]/10 px-3 py-1 text-sm font-semibold text-[var(--gold)]">
+          <p className="mt-6 font-inter text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-gold-dark">
             {post.category}
-          </span>
-
-          <h1 className="section-heading mt-4 sm:mt-5">
+          </p>
+          <h1 className="mt-3 font-cormorant text-[clamp(2rem,5vw,3rem)] font-semibold leading-tight text-text-dark">
             {post.title}
           </h1>
-
-          <div className="mt-6 flex flex-col gap-3 text-sm text-[var(--text-secondary)] sm:flex-row sm:items-center sm:gap-6">
-            <span className="flex items-center gap-2">
-              <User size={16} />
+          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-on-light">
+            <span className="inline-flex items-center gap-2">
+              <User size={16} aria-hidden />
               {post.author}
             </span>
-            <span className="flex items-center gap-2">
-              <Calendar size={16} />
+            <span className="inline-flex items-center gap-2">
+              <Calendar size={16} aria-hidden />
               {formatDisplayDate(post.publishedAt)}
             </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="page-container max-w-4xl py-8 sm:py-10 lg:py-12">
-        {post.coverImage ? (
-          <div className="relative mb-8 h-48 overflow-hidden rounded-2xl border border-[var(--border)] sm:mb-10 sm:h-72 sm:rounded-3xl lg:h-[28rem]">
-            <Image src={post.coverImage} alt={post.title} fill className="object-cover" />
-          </div>
-        ) : (
-          <div className="mb-8 flex h-48 items-center justify-center rounded-2xl border border-[var(--border)] bg-gradient-to-br from-[var(--gold)]/20 to-[var(--bg-section)] sm:mb-10 sm:h-72 sm:rounded-3xl lg:h-[28rem]">
-            <span className="font-cormorant text-4xl font-bold text-[var(--gold)]/70 sm:text-6xl">
-              {post.title.charAt(0)}
+            <span className="inline-flex items-center gap-2">
+              <Clock size={16} aria-hidden />
+              {readMin} min read
             </span>
+          </div>
+        </PageContainer>
+      </EditorialHero>
+
+      <PageContainer className="max-w-3xl py-10 sm:py-12">
+        {post.coverImage && (
+          <div className="relative mb-8 aspect-[16/9] overflow-hidden rounded-2xl border border-border-on-light bg-white shadow-[0_12px_36px_rgba(26,26,36,0.06)] sm:mb-10">
+            <Image
+              src={post.coverImage}
+              alt={post.title}
+              fill
+              priority
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 720px"
+            />
           </div>
         )}
 
-        <article className="space-y-6 text-base leading-8 text-[var(--text-primary)]">
-          {post.content ? (
-            <div
-              className="space-y-6 [&_h2]:font-cormorant [&_h2]:text-3xl [&_h2]:font-semibold [&_h2]:text-[var(--text-primary)] [&_p]:text-[var(--text-secondary)]"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
-          ) : (
-            <p className="text-[var(--text-secondary)]">{post.excerpt}</p>
-          )}
-        </article>
+        <div
+          className="blog-prose"
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        />
 
         {relatedPosts.length > 0 && (
-          <section className="mt-10 border-t border-[var(--border)] pt-8 sm:mt-12 sm:pt-10">
-            <h2 className="section-subheading text-[var(--text-primary)]">
-              Related Articles
-            </h2>
-
-            <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {relatedPosts.map((relatedPost) => (
-                <article
-                  key={relatedPost.id}
-                  className="overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg-card)]"
+          <section className="mt-14 border-t border-border-on-light pt-10 sm:mt-16">
+            <KickerLight className="mb-6">More from the blog</KickerLight>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {relatedPosts.map((related) => (
+                <Link
+                  key={related.id}
+                  href={`/blog/${related.slug}`}
+                  className="flex gap-3 rounded-xl border border-border-on-light bg-white p-3 transition-colors hover:border-gold-dark/30"
                 >
-                  <div className="relative h-44 bg-gradient-to-br from-[var(--gold)]/20 to-[var(--bg-section)]">
-                    {relatedPost.coverImage ? (
-                      <Image
-                        src={relatedPost.coverImage}
-                        alt={relatedPost.title}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : null}
+                  <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg">
+                    <Image
+                      src={related.coverImage}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="200px"
+                    />
                   </div>
-                  <div className="p-5">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">
-                      {relatedPost.category}
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-gold-dark">
+                      {related.category}
                     </p>
-                    <h3 className="mt-3 font-cormorant text-2xl font-semibold text-[var(--text-primary)]">
-                      {relatedPost.title}
-                    </h3>
-                    <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">
-                      {relatedPost.excerpt}
+                    <p className="mt-1 line-clamp-2 text-sm font-semibold leading-snug text-text-dark">
+                      {related.title}
                     </p>
-                    <Link
-                      href={`/blog/${relatedPost.slug}`}
-                      className="mt-5 inline-flex items-center gap-2 font-semibold text-[var(--gold)] transition-colors hover:text-[var(--gold-light)]"
-                    >
-                      Read Article
-                    </Link>
+                    <p className="mt-1 text-xs text-subtle-on-light">
+                      {formatDisplayDate(related.publishedAt)}
+                    </p>
                   </div>
-                </article>
+                </Link>
               ))}
             </div>
           </section>
         )}
-      </div>
-    </div>
+      </PageContainer>
+    </article>
   );
 }
