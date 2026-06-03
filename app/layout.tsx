@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Cormorant_Garamond, Inter } from 'next/font/google';
 import './globals.css';
 import { CalculatorProvider } from '@/context/CalculatorContext';
+import { EnquiryModalProvider } from '@/context/EnquiryModalContext';
 import AppShell from '@/components/layout/AppShell';
 import { PROJECT_DATA } from '@/lib/constants';
 import { SITE_URL } from '@/lib/site';
@@ -72,7 +73,9 @@ export default function RootLayout({
       lang="en"
       className={`${cormorant.variable} ${inter.variable} h-full scroll-smooth antialiased`}
     >
-      <body className="h-full w-full bg-[var(--bg-primary)] text-[var(--text-primary)]">
+      <body
+        className={`${inter.className} min-h-full w-full bg-bg-primary font-inter text-text-primary antialiased`}
+      >
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -93,7 +96,9 @@ export default function RootLayout({
           }}
         />
         <CalculatorProvider>
-          <AppShell>{children}</AppShell>
+          <EnquiryModalProvider>
+            <AppShell>{children}</AppShell>
+          </EnquiryModalProvider>
         </CalculatorProvider>
       </body>
     </html>
