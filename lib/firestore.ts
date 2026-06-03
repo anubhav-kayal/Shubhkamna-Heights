@@ -215,6 +215,7 @@ export async function getFloorPlans(bhkType?: string): Promise<FloorPlan[]> {
 
 // Blog
 function mapBlogPostData(id: string, data: Record<string, unknown>): BlogPost {
+  const tags = data.tags;
   return {
     id,
     title: String(data.title ?? ''),
@@ -226,6 +227,9 @@ function mapBlogPostData(id: string, data: Record<string, unknown>): BlogPost {
     publishedAt: (data.publishedAt as BlogPost['publishedAt']) ?? new Date(),
     category: String(data.category ?? ''),
     published: Boolean(data.published),
+    tags: Array.isArray(tags) ? tags.map(String) : undefined,
+    metaDescription: data.metaDescription ? String(data.metaDescription) : undefined,
+    readTimeMinutes: data.readTimeMinutes ? Number(data.readTimeMinutes) : undefined,
   };
 }
 

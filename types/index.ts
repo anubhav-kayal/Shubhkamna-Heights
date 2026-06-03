@@ -88,6 +88,9 @@ export interface BlogPost {
   publishedAt: FirestoreDateLike;
   category: string;
   published: boolean;
+  tags?: string[];
+  metaDescription?: string;
+  readTimeMinutes?: number;
 }
 
 export interface Testimonial {

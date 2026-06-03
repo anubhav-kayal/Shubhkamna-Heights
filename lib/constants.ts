@@ -8,7 +8,7 @@ export const PROJECT_DATA = {
   reraUrl: 'https://www.up-rera.in',
   vdaApproved: true,
   credaiMember: true,
-  credaiText: 'CREDAI Purvanchal + PREA',
+  credaiText: 'Purvanchal + PREA Member',
   totalFamilies: 1000,
   openSpace: 65,
   contactPhone: '+91 70841 65214',
@@ -81,5 +81,11 @@ export const AMENITIES_LIST = [
   'Activity Park',
   '24/7 Security',
 ];
+
+/** Place project film at public/videos/shubh-kamna-heights.mp4 or set NEXT_PUBLIC_PROJECT_VIDEO_URL */
+export const PROJECT_MEDIA = {
+  videoUrl: process.env.NEXT_PUBLIC_PROJECT_VIDEO_URL ?? '/videos/shubh-kamna-heights.mp4',
+  posterUrl: process.env.NEXT_PUBLIC_PROJECT_VIDEO_POSTER_URL ?? '',
+};
 
 export const DISCLAIMER = 'The images shown are artistic impressions and are for illustration purposes only. The actual features, design, and amenities may differ from the visual representations. We recommend visiting the site and consulting with the sales team for accurate information. This website is for informational purposes only and does not constitute an offer to sell or solicitation to buy. Prices and specifications are subject to change.';
