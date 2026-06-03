@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface CalculatorContextType {
   isOpen: boolean;
@@ -13,6 +13,15 @@ const CalculatorContext = createContext<CalculatorContextType | undefined>(undef
 
 export function CalculatorProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    document.body.dataset.calculatorOpen = isOpen ? 'true' : '';
+    document.body.classList.toggle('calculator-open', isOpen);
+    return () => {
+      delete document.body.dataset.calculatorOpen;
+      document.body.classList.remove('calculator-open');
+    };
+  }, [isOpen]);
 
   const openCalculator = () => setIsOpen(true);
   const closeCalculator = () => setIsOpen(false);
