@@ -1,162 +1,200 @@
 'use client';
 
-import React from 'react';
-import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ArrowUpRight, MapPin } from 'lucide-react';
 import { PROJECT_DATA, LANDMARKS, KEY_FEATURES } from '@/lib/constants';
+import { cn } from '@/lib/cn';
+import {
+  Section,
+  PageContainer,
+  SectionKicker,
+  SectionHeading,
+  SectionLead,
+  GoldRule,
+} from '@/components/ui/design';
+
+const METRICS = [
+  { figure: `${PROJECT_DATA.openSpace}%`, unit: '+', caption: 'Open space across the master plan' },
+  { figure: String(PROJECT_DATA.totalFamilies), unit: '+', caption: 'Families in the integrated community' },
+  { figure: '2 & 3', unit: 'BHK', caption: 'Thoughtfully planned home formats' },
+  { figure: 'NH-2', unit: '', caption: 'Direct highway frontage at PDDU Nagar' },
+] as const;
+
+const HIGHLIGHT_FEATURES = KEY_FEATURES.slice(0, 10);
 
 export default function ProjectOverviewSection() {
-  const sectionVariants = {
-    hidden: { opacity: 0, y: 40 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.7, ease: 'easeOut' },
-    },
-  };
-
-  const containerVariants = {
-    visible: {
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5 },
-    },
-  };
-
   return (
-    <section id="overview" className="section-shell bg-[var(--bg-primary)]">
-      <div className="page-container">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          variants={sectionVariants}
+    <Section id="overview" tone="dark" className="relative overflow-hidden">
+      <div
+        className="pointer-events-none absolute -right-32 top-20 h-96 w-96 rounded-full bg-gold/[0.04] blur-3xl"
+        aria-hidden
+      />
+
+      <PageContainer className="relative">
+        <motion.header
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.25 }}
+          transition={{ duration: 0.55 }}
+          className="max-w-3xl"
         >
-          <div className="section-header max-w-3xl">
-            <div className="section-kicker">Project Overview</div>
-            <h2 className="section-heading">A Landmark in Chandauli</h2>
-            <div className="gold-rule mt-4 sm:mt-6" />
-          </div>
+          <SectionKicker>Project overview</SectionKicker>
+          <SectionHeading className="mt-4">
+            A residential address built for the NH-2 corridor
+          </SectionHeading>
+          <SectionLead className="mt-5">
+            Regulated approvals, generous open planning, and homes designed for ventilation and
+            daily comfort—not speculative stacking on the Varanasi–Chandauli route.
+          </SectionLead>
+          <GoldRule className="mt-8" />
+        </motion.header>
 
-          <div className="grid-safe grid gap-6 lg:grid-cols-2 lg:gap-8">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              variants={itemVariants}
-              className="panel-dark min-w-0 rounded-2xl panel-padding sm:rounded-[1.75rem]"
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.5, delay: 0.05 }}
+          className="mt-12 grid grid-cols-2 border-y border-border-gold lg:mt-16 lg:grid-cols-4"
+        >
+          {METRICS.map((metric, i) => (
+            <div
+              key={metric.caption}
+              className={cn(
+                'px-4 py-8 sm:px-6 sm:py-10',
+                i > 0 && 'border-l border-border-gold/60',
+                i >= 2 && 'border-t border-border-gold/60 lg:border-t-0',
+              )}
             >
-              <p className="section-copy">
-                Shubh Kamna Heights stands as a beacon of modern living in the spiritual city of
-                Varanasi. Built at the confluence of Varanasi&apos;s rich spiritual heritage and
-                Chandauli&apos;s natural beauty, our project offers more than just homes. It offers
-                a lifestyle steeped in tradition and comfort.
+              <p className="font-cormorant text-4xl font-semibold leading-none tracking-tight text-gold sm:text-5xl">
+                {metric.figure}
+                {metric.unit && (
+                  <span className="ml-1 text-2xl text-text-primary/90 sm:text-3xl">
+                    {metric.unit}
+                  </span>
+                )}
               </p>
-              <p className="section-copy mt-4 sm:mt-5">
-                Located on 8-lane NH-2, the project enjoys seamless connectivity while maintaining the serenity
-                of its surroundings. With {PROJECT_DATA.totalFamilies}+ planned families, over {PROJECT_DATA.openSpace}% open space,
-                and world-class amenities, Shubh Kamna Heights redefines residential excellence in Uttar Pradesh.
+              <p className="mt-3 max-w-[14rem] text-sm leading-relaxed text-text-secondary">
+                {metric.caption}
               </p>
+            </div>
+          ))}
+        </motion.div>
 
-              <motion.div
-                variants={containerVariants}
-                className="mt-8 grid grid-cols-1 gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-4"
-              >
-                {[
-                  { label: 'PDDU Nagar, Chandauli', value: 'Prime Location' },
-                  { label: `${PROJECT_DATA.totalFamilies}+ Families`, value: 'Integrated Community' },
-                  { label: '2BHK & 3BHK', value: 'Unit Types' },
-                  { label: `${PROJECT_DATA.openSpace}%+ Open Space`, value: 'Green Living' },
-                ].map((stat, idx) => (
-                  <motion.div key={idx} variants={itemVariants} className="stat-card">
-                    <p className="stat-card__label">{stat.label}</p>
-                    <p className="stat-card__meta">{stat.value}</p>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </motion.div>
-
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              variants={itemVariants}
-              className="panel-dark min-w-0 rounded-2xl panel-padding sm:rounded-[1.75rem]"
+        <div className="mt-14 grid gap-12 lg:mt-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:items-start">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.55 }}
+          >
+            <blockquote className="border-l-2 border-gold pl-6 sm:pl-8">
+              <p className="font-cormorant text-2xl font-medium leading-snug text-text-primary sm:text-[1.75rem]">
+                Where Varanasi&apos;s spiritual heritage meets Chandauli&apos;s open landscape.
+              </p>
+            </blockquote>
+            <p className="mt-8 text-[0.9375rem] leading-[1.8] text-text-secondary">
+              Shubh Kamna Heights is positioned on the 8-lane NH-2 corridor with planning that
+              prioritises light, circulation, and community scale. The development is conceived as
+              a long-term neighbourhood—not a one-time sales event.
+            </p>
+            <p className="mt-5 text-[0.9375rem] leading-[1.8] text-text-secondary">
+              With RERA registration, VDA approval, and CREDAI membership, buyers get the
+              documentation clarity expected from a serious residential launch in Uttar Pradesh.
+            </p>
+            <a
+              href="#location"
+              className="mt-8 inline-flex items-center gap-2 font-inter text-sm font-semibold text-gold transition-colors hover:text-gold-light"
             >
-              <div className="section-kicker">Highlights</div>
-              <h3 className="section-subheading text-[var(--text-primary)]">
-                Key Features
-              </h3>
-
-              <motion.div
-                variants={containerVariants}
-                className="mt-6 grid grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4"
-              >
-                {KEY_FEATURES.slice(0, 8).map((feature, idx) => (
-                  <motion.div key={idx} variants={itemVariants} className="feature-card">
-                    <div className="flex items-start gap-3">
-                      <span className="mt-0.5 shrink-0 text-[var(--gold)]" aria-hidden>
-                        ✓
-                      </span>
-                      <span className="feature-card__text">{feature}</span>
-                    </div>
-                  </motion.div>
-                ))}
-              </motion.div>
-
-              <button type="button" className="btn-ghost mt-6 sm:mt-8">
-                View All Features ({KEY_FEATURES.length})
-                <ArrowRight size={16} />
-              </button>
-            </motion.div>
-          </div>
+              Explore location &amp; connectivity
+              <ArrowUpRight size={16} />
+            </a>
+          </motion.div>
 
           <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={itemVariants}
-            className="mt-8 min-w-0 rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] panel-padding sm:mt-12 lg:mt-14 sm:rounded-[1.75rem]"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.55, delay: 0.08 }}
           >
-            <div className="border-b border-[var(--border)] pb-5 sm:pb-6">
-              <div className="section-kicker">Connectivity</div>
-              <h3 className="section-subheading text-[var(--text-primary)]">
-                Strategic Location &amp; Connectivity
+            <p className="font-inter text-xs font-semibold uppercase tracking-[0.22em] text-gold">
+              Planning highlights
+            </p>
+            <ul className="mt-6 divide-y divide-border-gold/80">
+              {HIGHLIGHT_FEATURES.map((feature) => (
+                <li
+                  key={feature}
+                  className="flex gap-4 py-4 first:pt-0 last:pb-0 sm:py-5"
+                >
+                  <span
+                    className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-gold"
+                    aria-hidden
+                  />
+                  <span className="text-[0.9375rem] leading-relaxed text-text-primary/95">
+                    {feature}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-6 text-sm text-text-secondary">
+              {KEY_FEATURES.length} specifications across structure, services, and community
+              design—see the full list in Specifications.
+            </p>
+          </motion.div>
+        </div>
+
+        <motion.section
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.12 }}
+          transition={{ duration: 0.55 }}
+          className="mt-12 lg:mt-16"
+          aria-labelledby="connectivity-heading"
+        >
+          <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border-gold pb-4">
+            <div>
+              <SectionKicker>Connectivity</SectionKicker>
+              <h3
+                id="connectivity-heading"
+                className="mt-2 font-cormorant text-xl font-semibold text-text-primary sm:text-2xl"
+              >
+                Minutes that matter on NH-2
               </h3>
             </div>
+            <p className="max-w-sm text-xs leading-relaxed text-text-secondary">
+              Distances from the project site
+            </p>
+          </div>
 
-            <motion.div
-              variants={containerVariants}
-              className="mt-6 grid grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4"
-            >
-              {LANDMARKS.map((landmark, idx) => (
-                <motion.div
-                  key={idx}
-                  variants={itemVariants}
-                  className="stat-card bg-[var(--bg-card)] transition-colors hover:border-[var(--gold)]"
-                >
-                  <p className="text-lg font-bold leading-none text-[var(--gold)]">
-                    {landmark.distance} KM
-                  </p>
-                  <p className="stat-card__label mt-3 !text-[var(--text-primary)] !font-medium">
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2 lg:gap-2.5">
+            {LANDMARKS.map((landmark) => (
+              <li
+                key={landmark.name}
+                className="group flex items-center gap-3 rounded-lg border border-border-gold/50 bg-bg-card/40 px-3 py-2.5 transition-colors hover:border-gold/40"
+              >
+                <div className="flex shrink-0 items-baseline gap-1.5 tabular-nums">
+                  <span className="font-cormorant text-xl font-semibold text-gold">
+                    {landmark.distance === 0 ? '0' : landmark.distance}
+                  </span>
+                  <span className="font-inter text-[0.625rem] font-semibold uppercase tracking-wider text-text-secondary">
+                    km
+                  </span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-inter text-sm font-medium text-text-primary">
                     {landmark.name}
                   </p>
-                  <p className="stat-card__meta">{landmark.category}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-          </motion.div>
-        </motion.div>
-      </div>
-    </section>
+                  <p className="text-xs text-text-secondary">{landmark.category}</p>
+                </div>
+                <MapPin
+                  size={14}
+                  className="shrink-0 text-gold/35 transition-colors group-hover:text-gold"
+                  aria-hidden
+                />
+              </li>
+            ))}
+          </ul>
+        </motion.section>
+      </PageContainer>
+    </Section>
   );
 }
