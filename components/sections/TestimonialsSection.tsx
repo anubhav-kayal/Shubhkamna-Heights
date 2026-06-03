@@ -1,40 +1,33 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getTestimonials } from '@/lib/firestore';
-import type { Testimonial } from '@/types';
+import { resolveTestimonials } from '@/lib/fallbacks';
+import { cn } from '@/lib/cn';
+import {
+  Section,
+  PageContainer,
+  SectionHeaderCenter,
+  SectionKicker,
+  SectionHeading,
+  SectionLead,
+  GoldRule,
+  PanelDark,
+} from '@/components/ui/design';
 
-const MOCK_TESTIMONIALS: Testimonial[] = [
-  {
-    id: '1',
-    name: 'Rajesh Kumar',
-    flatType: '3BHK',
-    quote: 'Shubh Kamna Heights has exceeded all my expectations. The location is perfect, and the community is wonderful. Highly recommended!',
-    rating: 5,
-    active: true,
-  },
-  {
-    id: '2',
-    name: 'Priya Singh',
-    flatType: '2BHK',
-    quote: 'The entire process was smooth and transparent. The team was very helpful and professional. Love my new home!',
-    rating: 5,
-    active: true,
-  },
-  {
-    id: '3',
-    name: 'Amit Patel',
-    flatType: '3BHK',
-    quote: 'The amenities are top-notch and the green spaces are truly relaxing. It\'s more than just a home, it\'s a lifestyle!',
-    rating: 4,
-    active: true,
-  },
-];
+function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
 
 export default function TestimonialsSection() {
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [testimonials, setTestimonials] = useState<ReturnType<typeof resolveTestimonials>>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -42,14 +35,10 @@ export default function TestimonialsSection() {
     const loadTestimonials = async () => {
       try {
         const data = await getTestimonials();
-        if (data && data.length > 0) {
-          setTestimonials(data);
-        } else {
-          setTestimonials(MOCK_TESTIMONIALS);
-        }
+        setTestimonials(resolveTestimonials(data));
       } catch (error) {
         console.error('Error loading testimonials:', error);
-        setTestimonials(MOCK_TESTIMONIALS);
+        setTestimonials(resolveTestimonials([]));
       } finally {
         setLoading(false);
       }
@@ -58,145 +47,214 @@ export default function TestimonialsSection() {
     loadTestimonials();
   }, []);
 
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % Math.max(testimonials.length, 1));
-  };
+  const count = testimonials.length;
 
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + Math.max(testimonials.length, 1)) % Math.max(testimonials.length, 1));
-  };
-
-  const sectionVariants = {
-    hidden: { opacity: 0, y: 40 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.7, ease: 'easeOut' },
+  const goTo = useCallback(
+    (index: number) => {
+      if (count === 0) return;
+      setCurrentIndex(((index % count) + count) % count);
     },
-  };
+    [count],
+  );
+
+  const nextSlide = () => goTo(currentIndex + 1);
+  const prevSlide = () => goTo(currentIndex - 1);
+
+  useEffect(() => {
+    if (count <= 1) return;
+    const timer = window.setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % count);
+    }, 8000);
+    return () => window.clearInterval(timer);
+  }, [count]);
 
   if (loading) {
     return (
-      <section className="section-shell bg-[var(--bg-section)]">
-        <div className="page-container flex items-center justify-center py-12 sm:py-16">
-          <div className="animate-pulse text-[var(--text-secondary)]">Loading testimonials...</div>
-        </div>
-      </section>
+      <Section tone="dark">
+        <PageContainer className="flex items-center justify-center py-16">
+          <div className="animate-pulse text-text-secondary">Loading testimonials...</div>
+        </PageContainer>
+      </Section>
     );
   }
 
-  if (testimonials.length === 0) {
+  if (count === 0) {
     return null;
   }
 
-  const currentTestimonial = testimonials[currentIndex];
+  const active = testimonials[currentIndex];
+  const avgRating =
+    testimonials.reduce((sum, t) => sum + t.rating, 0) / Math.max(count, 1);
 
   return (
-    <section className="section-shell bg-[var(--bg-section)]">
-      <div className="page-container">
+    <Section tone="dark">
+      <PageContainer>
         <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          variants={sectionVariants}
+          initial={{ opacity: 0, y: 32 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.15 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
         >
-          {/* Heading */}
-          <div className="section-header-center">
-            <span className="section-kicker justify-center">Testimonials</span>
-            <h2 className="section-heading">What Our Residents Say</h2>
-            <div className="gold-rule mx-auto mt-4 sm:mt-6" />
-          </div>
+          <SectionHeaderCenter className="mb-10 lg:mb-14">
+            <SectionKicker centered>Testimonials</SectionKicker>
+            <SectionHeading className="mt-3 sm:mt-4">What Our Residents Say</SectionHeading>
+            <SectionLead className="mx-auto mt-4 text-center">
+              Real feedback from families who chose Shubh Kamna Heights for location, planning,
+              and everyday living.
+            </SectionLead>
+            <GoldRule className="mx-auto mt-6" />
+          </SectionHeaderCenter>
 
-          {/* Carousel */}
-          <div className="max-w-3xl mx-auto">
-            <motion.div
-              key={currentIndex}
-              initial={{ opacity: 0, x: 100 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -100 }}
-              transition={{ duration: 0.5 }}
-              className="relative min-w-0 rounded-xl border border-[var(--gold)] bg-[var(--bg-card)] panel-padding sm:rounded-2xl"
-            >
-              {/* Quote Mark */}
-              <div className="absolute top-4 left-4 text-[var(--gold)] opacity-50">
-                <svg
-                  width="40"
-                  height="40"
-                  viewBox="0 0 40 40"
-                  fill="currentColor"
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,340px)_1fr] lg:gap-8">
+            <div className="flex flex-col gap-3 lg:order-1">
+              {testimonials.map((item, idx) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => goTo(idx)}
+                  className={cn(
+                    'rounded-2xl border p-4 text-left transition-all duration-200 sm:p-5',
+                    idx === currentIndex
+                      ? 'border-gold/60 bg-gold/10 shadow-[0_8px_24px_rgba(201,168,76,0.12)]'
+                      : 'border-border-gold bg-bg-card/40 hover:border-gold/40 hover:bg-bg-card/70',
+                  )}
+                  aria-current={idx === currentIndex ? 'true' : undefined}
                 >
-                  <path d="M8 20c0-4.42 3.58-8 8-8s8 3.58 8 8v12H8V20zm16 0c0-4.42 3.58-8 8-8s8 3.58 8 8v12h-16V20z" />
-                </svg>
-              </div>
-
-              {/* Content */}
-              <p className="mb-6 pl-4 text-base italic leading-relaxed text-[var(--text-secondary)] sm:pl-6 sm:text-lg">
-                &ldquo;{currentTestimonial.quote}&rdquo;
-              </p>
-
-              {/* Rating */}
-              <div className="flex gap-1 mb-4">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    size={18}
-                    className={
-                      i < currentTestimonial.rating
-                        ? 'fill-[var(--gold)] text-[var(--gold)]'
-                        : 'text-[var(--border)]'
-                    }
-                  />
-                ))}
-              </div>
-
-              {/* Author */}
-              <div className="border-t border-[var(--border)] pt-4">
-                <p className="font-cormorant text-lg font-bold text-[var(--text-primary)]">
-                  {currentTestimonial.name}
-                </p>
-                <p className="text-[var(--text-secondary)] text-sm">
-                  {currentTestimonial.flatType} Resident
-                </p>
-              </div>
-            </motion.div>
-
-            {/* Navigation */}
-            <div className="flex items-center justify-between mt-8">
-              <button
-                onClick={prevSlide}
-                className="p-3 bg-[var(--bg-card)] border border-[var(--gold)] rounded-full text-[var(--gold)] hover:bg-[var(--gold)] hover:text-[var(--text-dark)] transition-all duration-300"
-              >
-                <ChevronLeft size={20} />
-              </button>
-
-              {/* Dots */}
-              <div className="flex gap-2">
-                {testimonials.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentIndex(idx)}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      idx === currentIndex ? 'bg-[var(--gold)] w-6' : 'bg-[var(--border)]'
-                    }`}
-                  />
-                ))}
-              </div>
-
-              <button
-                onClick={nextSlide}
-                className="p-3 bg-[var(--bg-card)] border border-[var(--gold)] rounded-full text-[var(--gold)] hover:bg-[var(--gold)] hover:text-[var(--text-dark)] transition-all duration-300"
-              >
-                <ChevronRight size={20} />
-              </button>
+                  <p className="line-clamp-3 text-sm leading-relaxed text-text-secondary">
+                    &ldquo;{item.quote}&rdquo;
+                  </p>
+                  <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <span className="text-sm font-semibold text-text-primary">{item.name}</span>
+                    <span className="text-xs text-text-secondary">{item.flatType}</span>
+                  </div>
+                </button>
+              ))}
             </div>
 
-            {/* Counter */}
-            <p className="text-center text-[var(--text-secondary)] text-sm mt-6">
-              {currentIndex + 1} / {testimonials.length}
-            </p>
+            <PanelDark className="flex min-h-[20rem] flex-col lg:order-2">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={active.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.35, ease: 'easeOut' }}
+                  className="flex min-h-0 flex-1 flex-col"
+                >
+                  <span
+                    className="font-cormorant text-6xl leading-none text-gold/30 sm:text-7xl"
+                    aria-hidden
+                  >
+                    &ldquo;
+                  </span>
+                  <blockquote className="mt-2 font-cormorant text-xl leading-snug text-text-primary sm:text-2xl sm:leading-relaxed">
+                    {active.quote}
+                  </blockquote>
+
+                  <div
+                    className="mt-5 flex gap-1"
+                    aria-label={`${active.rating} out of 5 stars`}
+                  >
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        size={20}
+                        className={
+                          i < active.rating
+                            ? 'fill-gold text-gold'
+                            : 'text-border-gold'
+                        }
+                      />
+                    ))}
+                  </div>
+
+                  <div className="mt-auto flex flex-col gap-5 pt-8 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gold/40 bg-gold/15 font-inter text-sm font-semibold text-gold"
+                        aria-hidden
+                      >
+                        {initials(active.name)}
+                      </div>
+                      <div>
+                        <p className="font-inter text-sm font-semibold text-text-primary">
+                          {active.name}
+                        </p>
+                        <p className="text-xs text-text-secondary">
+                          {active.flatType} Resident
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={prevSlide}
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border-gold text-text-secondary transition-colors hover:border-gold hover:text-gold"
+                        aria-label="Previous testimonial"
+                      >
+                        <ChevronLeft size={20} />
+                      </button>
+                      <div className="flex gap-2" role="tablist" aria-label="Testimonials">
+                        {testimonials.map((_, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            role="tab"
+                            aria-selected={idx === currentIndex}
+                            onClick={() => goTo(idx)}
+                            className={cn(
+                              'h-2 rounded-full transition-all duration-200',
+                              idx === currentIndex
+                                ? 'w-6 bg-gold'
+                                : 'w-2 bg-border-gold hover:bg-gold/50',
+                            )}
+                          />
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={nextSlide}
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border-gold text-text-secondary transition-colors hover:border-gold hover:text-gold"
+                        aria-label="Next testimonial"
+                      >
+                        <ChevronRight size={20} />
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </PanelDark>
+          </div>
+
+          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8 lg:mt-14">
+            <div className="text-center">
+              <p className="font-cormorant text-3xl font-semibold text-gold sm:text-4xl">
+                {avgRating.toFixed(1)}
+              </p>
+              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary">
+                Average rating
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="font-cormorant text-3xl font-semibold text-gold sm:text-4xl">
+                {count}+
+              </p>
+              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary">
+                Resident stories
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="font-cormorant text-3xl font-semibold text-gold sm:text-4xl">
+                RERA
+              </p>
+              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary">
+                Registered project
+              </p>
+            </div>
           </div>
         </motion.div>
-      </div>
-    </section>
+      </PageContainer>
+    </Section>
   );
 }
