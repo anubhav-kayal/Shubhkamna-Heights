@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Award, CheckCircle, Users, Building2 } from 'lucide-react';
+import { useTranslation } from '@/context/LocaleContext';
 import {
   Section,
   PageContainer,
@@ -34,6 +35,38 @@ const Counter = ({ target, label }: { target: number; label: string }) => {
 };
 
 export default function AboutSection() {
+  const { t } = useTranslation();
+
+  const stats = [
+    { target: 1000, label: t('sections.about.statFamilies') },
+    { target: 2, label: t('sections.about.statBlocks') },
+    { target: 65, label: t('sections.about.statOpen') },
+    { target: 20, label: t('sections.about.statAmenities') },
+  ];
+
+  const certs = [
+    {
+      icon: <Award size={28} />,
+      label: t('sections.about.certRera'),
+      detail: t('sections.about.certReraDetail'),
+    },
+    {
+      icon: <CheckCircle size={28} />,
+      label: t('sections.about.certVda'),
+      detail: t('sections.about.certVdaDetail'),
+    },
+    {
+      icon: <Users size={28} />,
+      label: t('sections.about.certCredai'),
+      detail: t('sections.about.certCredaiDetail'),
+    },
+    {
+      icon: <Building2 size={28} />,
+      label: t('sections.about.certIit'),
+      detail: t('sections.about.certIitDetail'),
+    },
+  ];
+
   return (
     <Section tone="muted">
       <PageContainer>
@@ -44,63 +77,28 @@ export default function AboutSection() {
           transition={{ duration: 0.55, ease: 'easeOut' }}
         >
           <SectionHeaderCenter className="mb-8 sm:mb-10">
-            <SectionKicker centered>About</SectionKicker>
-            <SectionHeading className="mt-3 sm:mt-4">Built on Trust. Standing on Excellence.</SectionHeading>
+            <SectionKicker centered>{t('sections.about.kicker')}</SectionKicker>
+            <SectionHeading className="mt-3 sm:mt-4">{t('sections.about.title')}</SectionHeading>
             <GoldRule className="mx-auto mt-4 sm:mt-6" />
           </SectionHeaderCenter>
 
           <div className="mx-auto max-w-3xl text-center">
-            <SectionCopy>
-              Shubh Kamna Heights is built by a team of developers with decades of experience in
-              the real estate sector. We believe in creating not just buildings, but communities
-              that resonate with the spiritual and natural essence of their surroundings.
-            </SectionCopy>
-            <SectionCopy className="mt-5">
-              Located in Chandauli, where the spiritual heritage of Varanasi meets the natural
-              beauty of the surrounding regions, our project embodies the perfect balance of
-              tradition and modernity. Every detail is crafted with care, ensuring that our
-              residents live in homes that are as beautiful as they are functional.
-            </SectionCopy>
+            <SectionCopy>{t('sections.about.p1')}</SectionCopy>
+            <SectionCopy className="mt-5">{t('sections.about.p2')}</SectionCopy>
           </div>
 
           <div className="mt-10 grid grid-cols-2 gap-6 sm:mt-14 sm:grid-cols-4 sm:gap-8">
-            {[
-              { target: 1000, label: 'Families' },
-              { target: 2, label: 'Active Blocks' },
-              { target: 65, label: '% Open Space' },
-              { target: 20, label: 'Amenities' },
-            ].map((item) => (
+            {stats.map((item) => (
               <Counter key={item.label} target={item.target} label={item.label} />
             ))}
           </div>
 
           <div className="mt-12 sm:mt-16">
             <SectionSubheading className="text-center text-text-primary">
-              Certifications & Memberships
+              {t('sections.about.certsTitle')}
             </SectionSubheading>
             <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
-              {[
-                {
-                  icon: <Award size={28} />,
-                  label: 'RERA Registered',
-                  detail: 'UPRERAPRJ757815/04/2025',
-                },
-                {
-                  icon: <CheckCircle size={28} />,
-                  label: 'VDA Approved',
-                  detail: 'By Uttar Pradesh Government',
-                },
-                {
-                  icon: <Users size={28} />,
-                  label: 'CREDAI Member',
-                  detail: 'CREDAI Purvanchal + PREA',
-                },
-                {
-                  icon: <Building2 size={28} />,
-                  label: 'IIT BHU Vetted',
-                  detail: 'Earthquake Resistant Structure',
-                },
-              ].map((cert) => (
+              {certs.map((cert) => (
                 <FeatureCard
                   key={cert.label}
                   className="flex-col items-center justify-center text-center"

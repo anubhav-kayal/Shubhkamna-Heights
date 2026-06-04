@@ -28,6 +28,8 @@ import { getAmenities } from '@/lib/firestore';
 import { resolveAmenities } from '@/lib/fallbacks';
 import MediaCover from '@/components/ui/MediaCover';
 import { PROJECT_DATA } from '@/lib/constants';
+import { useTranslation } from '@/context/LocaleContext';
+import { useEnquiryModal } from '@/context/EnquiryModalContext';
 import type { Amenity } from '@/types';
 import { cn } from '@/lib/cn';
 import {
@@ -85,7 +87,7 @@ function FeaturedAmenityCard({
   return (
     <article
       className={cn(
-        'group relative min-h-[14rem] overflow-hidden rounded-2xl transition-[box-shadow,ring-color] duration-500 sm:min-h-[18rem] sm:rounded-[1.5rem]',
+        'group relative min-h-[14rem] overflow-hidden transition-[box-shadow,ring-color] duration-500 sm:min-h-[18rem] sm:',
         spotlight &&
           'z-10 ring-2 ring-gold shadow-[0_0_0_1px_rgba(201,168,76,0.35),0_16px_40px_rgba(201,168,76,0.18)]',
         !spotlight && 'ring-1 ring-transparent',
@@ -101,8 +103,8 @@ function FeaturedAmenityCard({
         fallbackSeed={amenity.title}
         priority={priority}
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/40 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
+      <div className="media-caption-gradient pointer-events-none absolute inset-0" aria-hidden />
+      <div className="absolute inset-x-0 bottom-0 z-[1] p-5 sm:p-7">
         <span className="inline-flex items-center gap-2 text-gold" aria-hidden>
           {AMENITY_ICONS[amenity.title] || <Users size={20} />}
         </span>
@@ -121,7 +123,7 @@ function FeaturedAmenityCard({
 
 function AmenityTile({ amenity }: { amenity: Amenity }) {
   return (
-    <article className="group overflow-hidden rounded-xl border border-border-gold/70 bg-bg-card transition-[border-color,transform] duration-300 hover:-translate-y-0.5 hover:border-gold/50">
+    <article className="group overflow-hidden border border-border-gold/70 bg-bg-card transition-[border-color,transform] duration-300 hover:-translate-y-0.5 hover:border-gold/50">
       <div className="relative aspect-[5/4] overflow-hidden">
         <MediaCover
           src={amenity.imageUrl ?? ''}
@@ -133,7 +135,7 @@ function AmenityTile({ amenity }: { amenity: Amenity }) {
         />
       </div>
       <div className="flex items-center gap-3 border-t border-border-gold/50 px-3.5 py-3.5 sm:px-4">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border-gold bg-black/20 text-gold">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-border-gold bg-bg-section text-gold">
           {AMENITY_ICONS[amenity.title] || <Users size={18} />}
         </span>
         <p className="min-w-0 font-inter text-sm font-medium leading-snug text-text-primary">
@@ -147,6 +149,8 @@ function AmenityTile({ amenity }: { amenity: Amenity }) {
 const SPOTLIGHT_INTERVAL_MS = 2000;
 
 export default function AmenitiesSection() {
+  const { t } = useTranslation();
+  const { openEnquiry } = useEnquiryModal();
   const [amenities, setAmenities] = useState<Amenity[]>([]);
   const [loading, setLoading] = useState(true);
   const [spotlightIndex, setSpotlightIndex] = useState(0);
@@ -185,7 +189,7 @@ export default function AmenitiesSection() {
   const grid = amenities.slice(3);
 
   const handleVisitClick = () => {
-    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+    openEnquiry();
   };
 
   return (
@@ -204,26 +208,22 @@ export default function AmenitiesSection() {
           className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between"
         >
           <div className="max-w-2xl">
-            <SectionKicker>Lifestyle</SectionKicker>
-            <SectionHeading className="mt-4">Spaces you will actually use</SectionHeading>
+            <SectionKicker>{t('sections.amenities.kicker')}</SectionKicker>
+            <SectionHeading className="mt-4">{t('sections.amenities.title')}</SectionHeading>
             <GoldRule className="mt-6" />
-            <SectionLead className="mt-6">
-              Recreation, wellness, and gathering areas are distributed across the master plan—not
-              clustered as afterthoughts. The amenity mix supports families, fitness, and
-              everyday leisure on site.
-            </SectionLead>
+            <SectionLead className="mt-6">{t('sections.amenities.lead')}</SectionLead>
           </div>
           <p className="max-w-xs font-inter text-sm leading-relaxed text-text-secondary lg:text-right">
             <span className="font-cormorant text-4xl font-semibold text-gold">
               {amenities.length || '20'}
             </span>
-            <span className="mt-1 block">curated lifestyle touchpoints</span>
+            <span className="mt-1 block">{t('sections.amenities.touchpoints')}</span>
           </p>
         </motion.div>
 
         {loading && (
           <div className="flex items-center justify-center py-20">
-            <p className="text-sm text-text-secondary">Loading amenities…</p>
+            <p className="text-sm text-text-secondary">{t('sections.amenities.loading')}</p>
           </div>
         )}
 
@@ -272,7 +272,7 @@ export default function AmenitiesSection() {
             className="mt-10 lg:mt-14"
           >
             <p className="mb-6 font-inter text-xs font-semibold uppercase tracking-[0.22em] text-gold/90">
-              Complete amenity roster
+              {t('sections.amenities.roster')}
             </p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
               {grid.map((amenity) => (
@@ -291,15 +291,14 @@ export default function AmenitiesSection() {
         >
           <div>
             <p className="font-cormorant text-xl font-semibold text-text-primary sm:text-2xl">
-              Walk the master plan on site
+              {t('sections.amenities.visitTitle')}
             </p>
             <p className="mt-2 max-w-lg text-sm leading-relaxed text-text-secondary">
-              Scale, green cover, and amenity placement are best understood in person. Schedule a
-              visit with our team at {PROJECT_DATA.location}.
+              {t('sections.amenities.visitLead', { location: PROJECT_DATA.location })}
             </p>
           </div>
           <Button type="button" onClick={handleVisitClick} className="shrink-0">
-            Schedule a visit
+            {t('sections.amenities.scheduleVisit')}
             <ArrowRight size={16} />
           </Button>
         </motion.div>
