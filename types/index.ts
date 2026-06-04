@@ -32,6 +32,17 @@ export interface HeroSettings {
   subheadline: string;
 }
 
+/** Firestore `settings/landing` — media URLs for homepage (copy stays in i18n) */
+export interface LandingSettings {
+  heroVideoUrl?: string;
+  heroPosterUrl?: string;
+  heroImageUrl?: string;
+  emotionalImageUrl?: string;
+  curatedImageHomes?: string;
+  curatedImageCommunity?: string;
+  curatedImageConnect?: string;
+}
+
 export interface PricingSettings {
   bhk2BasePrice: number;
   bhk3BasePrice: number;

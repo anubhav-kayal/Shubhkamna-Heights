@@ -17,6 +17,7 @@ import type {
   BlogPost,
   Enquiry,
   FloorPlan,
+  LandingSettings,
   PricingSettings,
   Specification,
   Testimonial,
@@ -37,6 +38,39 @@ export async function getHeroSettings() {
   const docRef = doc(firestore, 'settings', 'hero');
   const docSnap = await getDoc(docRef);
   return docSnap.exists() ? docSnap.data() : null;
+}
+
+function mapLandingSettings(data: Record<string, unknown>): LandingSettings {
+  return {
+    heroVideoUrl: data.heroVideoUrl ? String(data.heroVideoUrl) : undefined,
+    heroPosterUrl: data.heroPosterUrl ? String(data.heroPosterUrl) : undefined,
+    heroImageUrl: data.heroImageUrl ? String(data.heroImageUrl) : undefined,
+    emotionalImageUrl: data.emotionalImageUrl ? String(data.emotionalImageUrl) : undefined,
+    curatedImageHomes: data.curatedImageHomes ? String(data.curatedImageHomes) : undefined,
+    curatedImageCommunity: data.curatedImageCommunity
+      ? String(data.curatedImageCommunity)
+      : undefined,
+    curatedImageConnect: data.curatedImageConnect ? String(data.curatedImageConnect) : undefined,
+  };
+}
+
+export async function getLandingSettings(): Promise<LandingSettings | null> {
+  if (!isFirebaseConfigured) {
+    return null;
+  }
+
+  try {
+    const docSnap = await getDoc(doc(firestore, 'settings', 'landing'));
+    return docSnap.exists() ? mapLandingSettings(docSnap.data()) : null;
+  } catch (error) {
+    console.warn('Failed to fetch landing settings:', error);
+    return null;
+  }
+}
+
+export async function saveLandingSettings(data: LandingSettings) {
+  requireFirebaseConfig();
+  await setDoc(doc(firestore, 'settings', 'landing'), data, { merge: true });
 }
 
 export async function getPricingSettings(): Promise<PricingSettings | null> {

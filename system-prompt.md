@@ -296,7 +296,7 @@ Data can be hardcoded (from brochure) OR loaded from Firestore `/specifications`
 **Categories and data:**
 ```
 STRUCTURE:
-  Steel: Tata, JSW & Jindal | Cement: Branded cement
+  Steel: Tata, JSW & Jindal | Cement: Shree Cement
   R.C.C.: In-house RMC plant | Frame: Earthquake resistant, vetted by IIT BHU
 
 WALL FINISHING:

@@ -10,6 +10,7 @@ import {
   Building2,
   FileText,
   Images,
+  Layout,
   LogOut,
   MessageSquare,
   Users,
@@ -84,6 +85,15 @@ export default function AdminDashboard() {
       count: stats.enquiries,
       href: '/admin/enquiries',
       description: 'Review inbound sales leads',
+    },
+    {
+      id: 'landing',
+      title: 'Landing',
+      icon: Layout,
+      color: 'from-rose-500 to-rose-600',
+      count: undefined,
+      href: '/admin/landing',
+      description: 'Homepage hero video, emotional image, and curated cards',
     },
     {
       id: 'gallery',
