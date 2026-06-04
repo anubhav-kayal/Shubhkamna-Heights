@@ -3,7 +3,9 @@ import { Cormorant_Garamond, Inter } from 'next/font/google';
 import './globals.css';
 import { CalculatorProvider } from '@/context/CalculatorContext';
 import { EnquiryModalProvider } from '@/context/EnquiryModalContext';
+import AppProviders from '@/components/providers/AppProviders';
 import AppShell from '@/components/layout/AppShell';
+import ThemeScript from '@/components/ThemeScript';
 import { PROJECT_DATA } from '@/lib/constants';
 import { SITE_URL } from '@/lib/site';
 
@@ -59,8 +61,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0A0A0F',
-  colorScheme: 'dark',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#F7F5F0' },
+    { media: '(prefers-color-scheme: dark)', color: '#0A0A0F' },
+  ],
 };
 
 export default function RootLayout({
@@ -71,8 +75,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-theme="light"
+      suppressHydrationWarning
       className={`${cormorant.variable} ${inter.variable} h-full scroll-smooth antialiased`}
     >
+      <head>
+        <ThemeScript />
+      </head>
       <body
         className={`${inter.className} min-h-full w-full bg-bg-primary font-inter text-text-primary antialiased`}
       >
@@ -95,11 +104,13 @@ export default function RootLayout({
             }),
           }}
         />
-        <CalculatorProvider>
-          <EnquiryModalProvider>
-            <AppShell>{children}</AppShell>
-          </EnquiryModalProvider>
-        </CalculatorProvider>
+        <AppProviders>
+          <CalculatorProvider>
+            <EnquiryModalProvider>
+              <AppShell>{children}</AppShell>
+            </EnquiryModalProvider>
+          </CalculatorProvider>
+        </AppProviders>
       </body>
     </html>
   );
