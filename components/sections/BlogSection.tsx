@@ -9,6 +9,7 @@ import { getBlogPosts } from '@/lib/firestore';
 import type { BlogPost } from '@/types';
 import { formatDisplayDate } from '@/lib/site';
 import { resolveBlogPosts } from '@/lib/fallbacks';
+import { useTranslation } from '@/context/LocaleContext';
 import {
   PageContainer,
   Section,
@@ -21,6 +22,7 @@ import {
 } from '@/components/ui/design';
 
 export default function BlogSection() {
+  const { t } = useTranslation();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -50,17 +52,15 @@ export default function BlogSection() {
           transition={{ duration: 0.6, ease: 'easeOut' }}
         >
           <SectionHeaderCenter>
-            <SectionKicker centered>Blog</SectionKicker>
-            <SectionHeading className="mt-3">Insights &amp; Updates</SectionHeading>
-            <SectionCopy className="mx-auto mt-3 max-w-xl text-center">
-              Stay informed with our latest blog posts
-            </SectionCopy>
+            <SectionKicker centered>{t('sections.blog.kicker')}</SectionKicker>
+            <SectionHeading className="mt-3">{t('sections.blog.title')}</SectionHeading>
+            <SectionCopy className="mx-auto mt-3 max-w-xl text-center">{t('sections.blog.lead')}</SectionCopy>
             <GoldRule className="mx-auto mt-6" />
           </SectionHeaderCenter>
 
           {loading ? (
             <div className="flex items-center justify-center py-16">
-              <div className="animate-pulse text-text-secondary">Loading blog posts...</div>
+              <div className="animate-pulse text-text-secondary">{t('sections.blog.loading')}</div>
             </div>
           ) : (
             <motion.div
@@ -75,7 +75,7 @@ export default function BlogSection() {
                   initial={{ opacity: 0, y: 16 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  className="group min-w-0 overflow-hidden rounded-2xl border border-border-gold bg-bg-card transition-colors hover:border-gold"
+                  className="group min-w-0 overflow-hidden border border-border-gold bg-bg-card transition-colors hover:border-gold"
                 >
                   <div className="relative h-48 overflow-hidden">
                     <Image
@@ -89,7 +89,7 @@ export default function BlogSection() {
                   </div>
 
                   <div className="space-y-4 p-5 sm:p-6">
-                    <span className="inline-block rounded-full border border-gold/50 bg-gold/20 px-3 py-1 text-xs font-medium text-gold">
+                    <span className="inline-block border border-gold/50 bg-gold/20 px-3 py-1 text-xs font-medium text-gold">
                       {post.category}
                     </span>
 
@@ -111,7 +111,7 @@ export default function BlogSection() {
                       href={`/blog/${post.slug}`}
                       className="mt-4 inline-flex items-center gap-2 font-inter text-sm font-semibold text-gold transition-colors hover:text-gold-light"
                     >
-                      Read More <ArrowRight size={16} />
+                      {t('sections.blog.readMore')} <ArrowRight size={16} />
                     </Link>
                   </div>
                 </motion.article>
@@ -122,7 +122,7 @@ export default function BlogSection() {
           <div className="border-t border-border-gold pt-8 text-center">
             <Link href="/blog">
               <Button className="inline-flex">
-                View All Posts <ArrowRight size={18} />
+                {t('sections.blog.viewAll')} <ArrowRight size={18} />
               </Button>
             </Link>
           </div>

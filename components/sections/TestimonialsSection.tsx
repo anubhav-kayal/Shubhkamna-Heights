@@ -6,6 +6,7 @@ import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getTestimonials } from '@/lib/firestore';
 import { resolveTestimonials } from '@/lib/fallbacks';
 import { cn } from '@/lib/cn';
+import { useTranslation } from '@/context/LocaleContext';
 import {
   Section,
   PageContainer,
@@ -27,6 +28,7 @@ function initials(name: string) {
 }
 
 export default function TestimonialsSection() {
+  const { t } = useTranslation();
   const [testimonials, setTestimonials] = useState<ReturnType<typeof resolveTestimonials>>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -72,7 +74,7 @@ export default function TestimonialsSection() {
     return (
       <Section tone="dark">
         <PageContainer className="flex items-center justify-center py-16">
-          <div className="animate-pulse text-text-secondary">Loading testimonials...</div>
+          <div className="animate-pulse text-text-secondary">{t('sections.testimonials.loading')}</div>
         </PageContainer>
       </Section>
     );
@@ -96,12 +98,9 @@ export default function TestimonialsSection() {
           transition={{ duration: 0.6, ease: 'easeOut' }}
         >
           <SectionHeaderCenter className="mb-10 lg:mb-14">
-            <SectionKicker centered>Testimonials</SectionKicker>
-            <SectionHeading className="mt-3 sm:mt-4">What Our Residents Say</SectionHeading>
-            <SectionLead className="mx-auto mt-4 text-center">
-              Real feedback from families who chose Shubh Kamna Heights for location, planning,
-              and everyday living.
-            </SectionLead>
+            <SectionKicker centered>{t('sections.testimonials.kicker')}</SectionKicker>
+            <SectionHeading className="mt-3 sm:mt-4">{t('sections.testimonials.title')}</SectionHeading>
+            <SectionLead className="mx-auto mt-4 text-center">{t('sections.testimonials.lead')}</SectionLead>
             <GoldRule className="mx-auto mt-6" />
           </SectionHeaderCenter>
 
@@ -113,7 +112,7 @@ export default function TestimonialsSection() {
                   type="button"
                   onClick={() => goTo(idx)}
                   className={cn(
-                    'rounded-2xl border p-4 text-left transition-all duration-200 sm:p-5',
+                    ' border p-4 text-left transition-all duration-200 sm:p-5',
                     idx === currentIndex
                       ? 'border-gold/60 bg-gold/10 shadow-[0_8px_24px_rgba(201,168,76,0.12)]'
                       : 'border-border-gold bg-bg-card/40 hover:border-gold/40 hover:bg-bg-card/70',
@@ -153,7 +152,7 @@ export default function TestimonialsSection() {
 
                   <div
                     className="mt-5 flex gap-1"
-                    aria-label={`${active.rating} out of 5 stars`}
+                    aria-label={`${active.rating} ${t('sections.testimonials.ofFive')}`}
                   >
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star
@@ -171,7 +170,7 @@ export default function TestimonialsSection() {
                   <div className="mt-auto flex flex-col gap-5 pt-8 sm:flex-row sm:items-end sm:justify-between">
                     <div className="flex items-center gap-3">
                       <div
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gold/40 bg-gold/15 font-inter text-sm font-semibold text-gold"
+                        className="flex h-11 w-11 shrink-0 items-center justify-center border border-gold/40 bg-gold/15 font-inter text-sm font-semibold text-gold"
                         aria-hidden
                       >
                         {initials(active.name)}
@@ -181,7 +180,7 @@ export default function TestimonialsSection() {
                           {active.name}
                         </p>
                         <p className="text-xs text-text-secondary">
-                          {active.flatType} Resident
+                          {t('sections.testimonials.residentLabel', { type: active.flatType })}
                         </p>
                       </div>
                     </div>
@@ -190,8 +189,8 @@ export default function TestimonialsSection() {
                       <button
                         type="button"
                         onClick={prevSlide}
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border-gold text-text-secondary transition-colors hover:border-gold hover:text-gold"
-                        aria-label="Previous testimonial"
+                        className="inline-flex h-10 w-10 items-center justify-center border border-border-gold text-text-secondary transition-colors hover:border-gold hover:text-gold"
+                        aria-label={t('sections.testimonials.prev')}
                       >
                         <ChevronLeft size={20} />
                       </button>
@@ -204,7 +203,7 @@ export default function TestimonialsSection() {
                             aria-selected={idx === currentIndex}
                             onClick={() => goTo(idx)}
                             className={cn(
-                              'h-2 rounded-full transition-all duration-200',
+                              'h-2 transition-all duration-200',
                               idx === currentIndex
                                 ? 'w-6 bg-gold'
                                 : 'w-2 bg-border-gold hover:bg-gold/50',
@@ -215,8 +214,8 @@ export default function TestimonialsSection() {
                       <button
                         type="button"
                         onClick={nextSlide}
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border-gold text-text-secondary transition-colors hover:border-gold hover:text-gold"
-                        aria-label="Next testimonial"
+                        className="inline-flex h-10 w-10 items-center justify-center border border-border-gold text-text-secondary transition-colors hover:border-gold hover:text-gold"
+                        aria-label={t('sections.testimonials.next')}
                       >
                         <ChevronRight size={20} />
                       </button>
@@ -233,7 +232,7 @@ export default function TestimonialsSection() {
                 {avgRating.toFixed(1)}
               </p>
               <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary">
-                Average rating
+                {t('sections.testimonials.avgRating')}
               </p>
             </div>
             <div className="text-center">
@@ -241,15 +240,15 @@ export default function TestimonialsSection() {
                 {count}+
               </p>
               <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary">
-                Resident stories
+                {t('sections.testimonials.residentStories')}
               </p>
             </div>
             <div className="text-center">
               <p className="font-cormorant text-3xl font-semibold text-gold sm:text-4xl">
-                RERA
+                {t('common.rera')}
               </p>
               <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary">
-                Registered project
+                {t('sections.testimonials.registeredProject')}
               </p>
             </div>
           </div>
