@@ -7,6 +7,7 @@ import { getSpecifications } from '@/lib/firestore';
 import { resolveSpecifications } from '@/lib/fallbacks';
 import type { Specification } from '@/types';
 import { cn } from '@/lib/cn';
+import { useTranslation } from '@/context/LocaleContext';
 import {
   Section,
   PageContainer,
@@ -17,6 +18,7 @@ import {
 } from '@/components/ui/design';
 
 export default function SpecificationsSection() {
+  const { t } = useTranslation();
   const [specifications, setSpecifications] = useState<Specification[]>([]);
   const [expandedCategory, setExpandedCategory] = useState<string | null>('STRUCTURE');
   const [loading, setLoading] = useState(true);
@@ -51,17 +53,16 @@ export default function SpecificationsSection() {
           transition={{ duration: 0.55, ease: 'easeOut' }}
         >
           <SectionHeaderCenter className="mb-10 sm:mb-14">
-            <SectionKicker centered>Specifications</SectionKicker>
-            <SectionHeading className="mt-3 sm:mt-4">Premium Specifications</SectionHeading>
+            <SectionKicker centered>{t('sections.specs.kicker')}</SectionKicker>
+            <SectionHeading className="mt-3 sm:mt-4">{t('sections.specs.title')}</SectionHeading>
             <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-muted-on-light sm:text-base sm:leading-7">
-              Materials, finishes, and systems chosen for durability, comfort, and long-term
-              value — documented clearly for your purchase decision.
+              {t('sections.specs.lead')}
             </p>
             <GoldRule className="mx-auto mt-5 sm:mt-6" />
           </SectionHeaderCenter>
 
           {loading ? (
-            <p className="py-12 text-center text-sm text-muted-on-light">Loading specifications…</p>
+            <p className="py-12 text-center text-sm text-muted-on-light">{t('sections.specs.loading')}</p>
           ) : (
             <div className="space-y-3" role="region" aria-label="Project specifications">
               {specifications.map((spec) => {
@@ -71,7 +72,7 @@ export default function SpecificationsSection() {
                 return (
                   <div
                     key={spec.id}
-                    className="overflow-hidden rounded-xl border border-border-on-light bg-white"
+                    className="overflow-hidden border border-border-on-light bg-white"
                   >
                     <button
                       type="button"
