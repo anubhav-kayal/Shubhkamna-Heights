@@ -4,11 +4,13 @@ import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useEnquiryModal } from '@/context/EnquiryModalContext';
+import { useTranslation } from '@/context/LocaleContext';
 import EnquiryForm from '@/components/forms/EnquiryForm';
 import { cn } from '@/lib/cn';
 
 export default function EnquiryModal() {
   const { isOpen, closeEnquiry } = useEnquiryModal();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -44,27 +46,27 @@ export default function EnquiryModal() {
               transition={{ type: 'spring', damping: 28, stiffness: 320 }}
               className={cn(
                 'pointer-events-auto flex w-full max-w-lg flex-col',
-                'max-h-[min(90dvh,44rem)] overflow-hidden rounded-2xl border border-gold/40',
+                'max-h-[min(90dvh,44rem)] overflow-hidden border border-gold/40',
                 'bg-bg-card shadow-[0_24px_80px_rgba(0,0,0,0.55)]',
               )}
             >
             <div className="flex shrink-0 items-center justify-between gap-4 border-b border-border-gold px-5 py-4 sm:px-6">
               <div>
                 <p className="font-inter text-[0.625rem] font-semibold uppercase tracking-[0.2em] text-gold">
-                  Book a visit
+                  {t('enquiry.modalKicker')}
                 </p>
                 <h2
                   id="enquiry-modal-title"
                   className="mt-1 font-cormorant text-xl font-semibold text-text-primary sm:text-2xl"
                 >
-                  Schedule your site visit
+                  {t('enquiry.modalTitle')}
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={closeEnquiry}
                 aria-label="Close"
-                className="shrink-0 rounded-full border border-border-gold p-2 text-text-secondary transition-colors hover:border-gold hover:text-gold"
+                className="shrink-0 border border-border-gold p-2 text-text-secondary transition-colors hover:border-gold hover:text-gold"
               >
                 <X size={20} />
               </button>

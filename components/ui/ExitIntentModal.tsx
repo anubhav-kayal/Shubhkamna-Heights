@@ -100,7 +100,7 @@ export default function ExitIntentModal() {
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
-            <div className="w-full max-w-md overflow-hidden rounded-lg border border-gold bg-bg-card">
+            <div className="w-full max-w-md overflow-hidden border border-gold bg-bg-card">
               {/* Header */}
               <div className="relative bg-gradient-to-r from-gold to-gold-light p-6">
                 <button
@@ -124,7 +124,7 @@ export default function ExitIntentModal() {
                   animate={{ opacity: 1 }}
                   className="p-6 text-center"
                 >
-                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-accent/20">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center bg-green-accent/20">
                     <svg
                       className="h-8 w-8 text-green-accent"
                       fill="none"
@@ -154,7 +154,7 @@ export default function ExitIntentModal() {
                     value={formData.name}
                     onChange={e => setFormData({ ...formData, name: e.target.value })}
                     required
-                    className="w-full rounded border border-border-gold bg-bg-primary px-3 py-2 font-inter text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                    className="w-full border border-border-gold bg-bg-primary px-3 py-2 font-inter text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-gold"
                   />
 
                   <input
@@ -164,13 +164,13 @@ export default function ExitIntentModal() {
                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
                     required
                     pattern="[0-9\-\+\(\)\s]+"
-                    className="w-full rounded border border-border-gold bg-bg-primary px-3 py-2 font-inter text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-gold"
+                    className="w-full border border-border-gold bg-bg-primary px-3 py-2 font-inter text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-gold"
                   />
 
                   <select
                     value={formData.bhkPreference}
                     onChange={e => setFormData({ ...formData, bhkPreference: e.target.value })}
-                    className="w-full rounded border border-border-gold bg-bg-primary px-3 py-2 font-inter text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-gold"
+                    className="w-full border border-border-gold bg-bg-primary px-3 py-2 font-inter text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-gold"
                   >
                     <option value="2BHK">2 BHK</option>
                     <option value="3BHK">3 BHK</option>
@@ -180,9 +180,9 @@ export default function ExitIntentModal() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full rounded bg-gold py-2 font-inter font-semibold text-text-dark transition-all hover:shadow-lg hover:shadow-gold/30 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="w-full bg-gold py-2 font-inter font-semibold text-text-dark transition-all hover:shadow-lg hover:shadow-gold/30 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {isLoading ? 'Submitting...' : 'Get Details Now →'}
+                    {isLoading ? 'Submitting...' : 'Get Details Now'}
                   </button>
 
                   <button
