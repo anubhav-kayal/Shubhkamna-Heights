@@ -13,18 +13,20 @@ import {
 import { getPricingSettings } from '@/lib/firestore';
 import { PROJECT_DATA } from '@/lib/constants';
 import { Button } from '@/components/ui/design';
+import { useTranslation } from '@/context/LocaleContext';
 import { cn } from '@/lib/cn';
 
 const fieldLabelClassName =
   'block text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary';
 
 const selectClassName =
-  'w-full rounded-lg border border-border-gold bg-bg-primary px-3 py-2.5 text-sm text-text-primary focus:border-gold focus:outline-none';
+  'w-full border border-border-gold bg-bg-primary px-3 py-2.5 text-sm text-text-primary focus:border-gold focus:outline-none';
 
 const numberInputClassName =
-  'w-full rounded-lg border border-border-gold bg-bg-primary px-3 py-2.5 font-inter text-sm text-text-primary tabular-nums placeholder:text-text-secondary/60 focus:border-gold focus:outline-none';
+  'w-full border border-border-gold bg-bg-primary px-3 py-2.5 font-inter text-sm text-text-primary tabular-nums placeholder:text-text-secondary/60 focus:border-gold focus:outline-none';
 
 export default function CostCalculatorWidget() {
+  const { t } = useTranslation();
   const { isOpen, openCalculator, closeCalculator } = useCalculator();
   const DEFAULT_PRICE_PER_SQFT = 3500;
 
@@ -101,9 +103,9 @@ export default function CostCalculatorWidget() {
         <button
           type="button"
           onClick={openCalculator}
-          aria-label="Open EMI calculator"
+          aria-label={t('sections.calculator.open')}
           className={cn(
-            'fixed z-[48] inline-flex items-center justify-center rounded-full border border-gold/50',
+            'fixed z-[48] inline-flex items-center justify-center border border-gold/50',
             'bg-gradient-to-br from-gold to-gold-light font-inter text-sm font-semibold text-text-dark',
             'shadow-[0_8px_24px_rgba(201,168,76,0.25)] transition-all duration-200 hover:shadow-[0_12px_32px_rgba(201,168,76,0.35)]',
             'max-sm:right-[max(1rem,env(safe-area-inset-right,0px))]',
@@ -115,7 +117,7 @@ export default function CostCalculatorWidget() {
           )}
         >
           <Calculator size={22} className="shrink-0" />
-          <span className="hidden sm:inline">EMI Calculator</span>
+          <span className="hidden sm:inline">{t('sections.calculator.title')}</span>
         </button>
       )}
 
@@ -165,7 +167,7 @@ export default function CostCalculatorWidget() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25 }}
-              className="fixed inset-x-0 bottom-0 z-50 flex h-[88dvh] max-h-[40rem] flex-col overflow-hidden rounded-t-2xl border-t border-gold bg-bg-card lg:hidden"
+              className="fixed inset-x-0 bottom-0 z-50 flex h-[88dvh] max-h-[40rem] flex-col overflow-hidden border-t border-gold bg-bg-card lg:hidden"
             >
               <CalculatorContent
                 inputs={inputs}
@@ -206,15 +208,17 @@ function CalculatorContent({
   closeCalculator,
   handleWhatsAppClick,
 }: CalculatorContentProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex shrink-0 items-center justify-between border-b border-border-gold px-5 py-4 sm:px-6 sm:py-5">
-        <h2 className="font-cormorant text-2xl font-bold text-gold">EMI Calculator</h2>
+        <h2 className="font-cormorant text-2xl font-bold text-gold">{t('sections.calculator.title')}</h2>
         <button
           type="button"
           onClick={closeCalculator}
           aria-label="Close calculator"
-          className="rounded-full p-1 text-text-secondary transition-colors hover:text-text-primary"
+          className=" p-1 text-text-secondary transition-colors hover:text-text-primary"
         >
           <X size={24} />
         </button>
@@ -223,13 +227,13 @@ function CalculatorContent({
       <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6">
         {loading ? (
           <div className="flex h-48 items-center justify-center">
-            <div className="animate-pulse text-text-secondary">Loading rates…</div>
+            <div className="animate-pulse text-text-secondary">{t('sections.calculator.loadingRates')}</div>
           </div>
         ) : (
           <div className="space-y-5">
             <div>
               <label htmlFor="bhk-type" className={fieldLabelClassName}>
-                BHK Type
+                {t('sections.calculator.bhk')}
               </label>
               <select
                 id="bhk-type"
@@ -244,7 +248,7 @@ function CalculatorContent({
 
             <div>
               <label htmlFor="price-per-sqft" className={fieldLabelClassName}>
-                Price per sq ft (₹)
+                {t('sections.calculator.pricePerSqft')}
               </label>
               <input
                 id="price-per-sqft"
@@ -267,7 +271,7 @@ function CalculatorContent({
 
             <div>
               <label htmlFor="area-sqft" className={fieldLabelClassName}>
-                Carpet area (sq ft)
+                {t('sections.calculator.area')}
               </label>
               <input
                 id="area-sqft"
@@ -296,16 +300,16 @@ function CalculatorContent({
                 onChange={(e) =>
                   setInputs({ ...inputs, areaScftFt: Number(e.target.value) })
                 }
-                className="mt-3 h-2 w-full cursor-pointer appearance-none rounded-full bg-border-gold accent-gold"
+                className="mt-3 h-2 w-full cursor-pointer appearance-none bg-border-gold accent-gold"
                 aria-label="Adjust carpet area"
               />
-              <p className="mt-1.5 text-xs text-text-secondary">800 – 2000 sq ft</p>
+              <p className="mt-1.5 text-xs text-text-secondary">800 to 2000 sq ft</p>
             </div>
 
             <div>
               <div className="mb-2 flex items-center justify-between gap-4">
                 <label htmlFor="down-payment-range" className={fieldLabelClassName}>
-                  Down Payment
+                  {t('sections.calculator.downPayment')}
                 </label>
                 <span className="text-sm font-semibold text-gold">
                   {inputs.downPaymentPercent}%
@@ -321,14 +325,14 @@ function CalculatorContent({
                 onChange={(e) =>
                   setInputs({ ...inputs, downPaymentPercent: Number(e.target.value) })
                 }
-                className="h-2 w-full cursor-pointer appearance-none rounded-full bg-border-gold accent-gold"
+                className="h-2 w-full cursor-pointer appearance-none bg-border-gold accent-gold"
               />
-              <p className="mt-1.5 text-xs text-text-secondary">10% – 40%</p>
+              <p className="mt-1.5 text-xs text-text-secondary">10% to 40%</p>
             </div>
 
             <div>
               <label htmlFor="loan-tenure" className={fieldLabelClassName}>
-                Loan Tenure (Years)
+                {t('sections.calculator.tenure')}
               </label>
               <select
                 id="loan-tenure"
@@ -338,17 +342,17 @@ function CalculatorContent({
                 }
                 className={cn('mt-2', selectClassName)}
               >
-                <option value="10">10 Years</option>
-                <option value="15">15 Years</option>
-                <option value="20">20 Years</option>
-                <option value="25">25 Years</option>
+                <option value="10">{t('sections.calculator.years', { n: 10 })}</option>
+                <option value="15">{t('sections.calculator.years', { n: 15 })}</option>
+                <option value="20">{t('sections.calculator.years', { n: 20 })}</option>
+                <option value="25">{t('sections.calculator.years', { n: 25 })}</option>
               </select>
             </div>
 
             <div>
               <div className="mb-2 flex items-center justify-between gap-4">
                 <label htmlFor="interest-range" className={fieldLabelClassName}>
-                  Interest Rate
+                  {t('sections.calculator.interest')}
                 </label>
                 <span className="text-sm font-semibold text-gold">
                   {inputs.interestRateAnnual}%
@@ -364,21 +368,20 @@ function CalculatorContent({
                 onChange={(e) =>
                   setInputs({ ...inputs, interestRateAnnual: Number(e.target.value) })
                 }
-                className="h-2 w-full cursor-pointer appearance-none rounded-full bg-border-gold accent-gold"
+                className="h-2 w-full cursor-pointer appearance-none bg-border-gold accent-gold"
               />
               <p className="mt-1.5 text-xs text-text-secondary">
-                Indicative rate — banks may vary
+                Indicative rate. Banks may vary.
               </p>
             </div>
 
             {!resultsRevealed && (
-              <div className="rounded-xl border border-dashed border-border-gold bg-bg-primary/60 px-4 py-8 text-center">
+              <div className=" border border-dashed border-border-gold bg-bg-primary/60 px-4 py-8 text-center">
                 <p className="font-inter text-sm font-medium text-text-primary">
-                  Ready to estimate
+                  {t('sections.calculator.ready')}
                 </p>
                 <p className="mt-2 text-xs leading-relaxed text-text-secondary">
-                  Set your preferences above, then calculate to view total cost, loan amount,
-                  and monthly EMI.
+                  {t('sections.calculator.readyLead')}
                 </p>
               </div>
             )}
@@ -390,25 +393,25 @@ function CalculatorContent({
                 transition={{ duration: 0.35 }}
                 className="space-y-4"
               >
-                <div className="rounded-xl border border-gold bg-gradient-to-br from-gold/15 to-transparent p-5">
+                <div className=" border border-gold bg-gradient-to-br from-gold/15 to-transparent p-5">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-text-secondary">
-                    Estimated monthly EMI
+                    {t('sections.calculator.estimatedEmi')}
                   </p>
                   <p className="mt-2 font-cormorant text-4xl font-semibold text-gold">
                     {formatEmi(outputs.monthlyEmi)}
                     <span className="ml-2 font-inter text-base font-medium text-text-secondary">
-                      / month
+                      {t('sections.calculator.perMonth')}
                     </span>
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-border-gold bg-bg-primary p-4">
+                <div className=" border border-border-gold bg-bg-primary p-4">
                   <h3 className="text-xs font-bold uppercase tracking-wide text-gold">
-                    Cost breakdown
+                    {t('sections.calculator.costBreakdown')}
                   </h3>
                   <dl className="mt-3 space-y-2.5 text-sm">
                     <div className="flex justify-between gap-4">
-                      <dt className="text-text-secondary">Property cost</dt>
+                      <dt className="text-text-secondary">{t('sections.calculator.propertyCost')}</dt>
                       <dd className="font-semibold text-text-primary">
                         {formatCurrency(outputs.totalCost)}
                       </dd>
@@ -428,25 +431,25 @@ function CalculatorContent({
                       </dd>
                     </div>
                     <div className="flex justify-between gap-4 border-t border-border-gold pt-2.5 font-semibold">
-                      <dt className="text-text-primary">All-in cost</dt>
+                      <dt className="text-text-primary">{t('sections.calculator.allIn')}</dt>
                       <dd className="text-gold">{formatCurrency(outputs.allInCost)}</dd>
                     </div>
                   </dl>
                 </div>
 
-                <div className="rounded-xl border border-border-gold bg-bg-primary/80 p-4">
+                <div className=" border border-border-gold bg-bg-primary/80 p-4">
                   <h4 className="text-xs font-bold uppercase tracking-wide text-gold">
-                    Loan summary
+                    {t('sections.calculator.loanSummary')}
                   </h4>
                   <dl className="mt-3 space-y-2 text-sm">
                     <div className="flex justify-between gap-4">
-                      <dt className="text-text-secondary">Down payment</dt>
+                      <dt className="text-text-secondary">{t('sections.calculator.downPaymentLabel')}</dt>
                       <dd className="font-semibold text-text-primary">
                         {formatCurrency(outputs.downPayment)}
                       </dd>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <dt className="text-text-secondary">Loan amount</dt>
+                      <dt className="text-text-secondary">{t('sections.calculator.loanAmount')}</dt>
                       <dd className="font-semibold text-text-primary">
                         {formatCurrency(outputs.loanAmount)}
                       </dd>
@@ -455,8 +458,7 @@ function CalculatorContent({
                 </div>
 
                 <p className="text-center text-[0.6875rem] leading-relaxed text-text-secondary">
-                  Estimates are indicative. Final figures depend on bank approval and current
-                  rates.
+                  {t('sections.calculator.disclaimer')}
                 </p>
               </motion.div>
             )}
@@ -472,15 +474,15 @@ function CalculatorContent({
             disabled={loading || !outputs}
             className="w-full"
           >
-            Calculate EMI
+            {t('sections.calculator.calculate')}
           </Button>
         ) : (
           <Button type="button" onClick={handleWhatsAppClick} className="w-full">
-            Talk to Our Home Loan Expert →
+            {t('sections.calculator.expert')}
           </Button>
         )}
         <Button type="button" variant="secondary" onClick={closeCalculator} className="w-full">
-          Close
+          {t('common.close')}
         </Button>
       </div>
     </div>
