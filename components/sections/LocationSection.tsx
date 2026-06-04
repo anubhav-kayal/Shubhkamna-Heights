@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
 import { LANDMARKS, PROJECT_DATA } from '@/lib/constants';
+import { useTranslation } from '@/context/LocaleContext';
 import { cn } from '@/lib/cn';
 import {
   Section,
@@ -18,6 +19,7 @@ import {
 } from '@/components/ui/design';
 
 export default function LocationSection() {
+  const { t } = useTranslation();
   const sectionVariants = {
     hidden: { opacity: 0, y: 40 },
     visible: {
@@ -37,10 +39,8 @@ export default function LocationSection() {
           variants={sectionVariants}
         >
           <SectionHeaderCenter className="mb-10 sm:mb-14">
-            <SectionKicker centered>Location</SectionKicker>
-            <SectionHeading className="mt-3 sm:mt-4">
-              Prime Location. Perfect Connectivity.
-            </SectionHeading>
+            <SectionKicker centered>{t('sections.location.kicker')}</SectionKicker>
+            <SectionHeading className="mt-3 sm:mt-4">{t('sections.location.title')}</SectionHeading>
             <GoldRule className="mx-auto mt-4 sm:mt-6" />
           </SectionHeaderCenter>
 
@@ -50,7 +50,7 @@ export default function LocationSection() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="min-h-[280px] overflow-hidden rounded-2xl border border-border-gold sm:min-h-[360px] lg:min-h-[420px]"
+              className="min-h-[280px] overflow-hidden border border-border-gold sm:min-h-[360px] lg:min-h-[420px]"
             >
               <iframe
                 src="https://maps.google.com/maps?q=PDDU+Nagar+Chandauli+UP&output=embed"
@@ -71,20 +71,22 @@ export default function LocationSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <SectionSubheading className="mb-6 text-text-primary">How to Reach</SectionSubheading>
+              <SectionSubheading className="mb-6 text-text-primary">
+                {t('sections.location.howToReach')}
+              </SectionSubheading>
 
               <div className="flex flex-col gap-4">
                 {LANDMARKS.map((landmark, idx) => (
                   <div
                     key={idx}
-                    className="flex gap-4 rounded-2xl border border-border-gold bg-black/15 p-5"
+                    className="flex gap-4 border border-border-gold bg-bg-card/60 p-5"
                   >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold/15">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-gold/15">
                       <MapPin size={18} className="text-gold" aria-hidden />
                     </div>
                     <div className="min-w-0">
                       <p className="font-inter text-sm font-bold text-gold">
-                        {landmark.distance} KM
+                        {landmark.distance} {t('sections.location.km')}
                       </p>
                       <p className="mt-0.5 font-inter text-sm font-medium text-text-primary">
                         {landmark.name}
@@ -107,7 +109,9 @@ export default function LocationSection() {
             className="mt-10 lg:mt-14"
           >
             <PanelDark>
-              <SectionSubheading className="mb-4 text-text-primary">Project Address</SectionSubheading>
+              <SectionSubheading className="mb-4 text-text-primary">
+                {t('sections.location.addressTitle')}
+              </SectionSubheading>
               <p className="text-sm leading-relaxed text-text-secondary">
                 {PROJECT_DATA.fullAddress}
               </p>
@@ -115,20 +119,20 @@ export default function LocationSection() {
                 <a
                   href={`tel:${PROJECT_DATA.contactPhone}`}
                   className={cn(
-                    'inline-flex w-full items-center justify-center rounded-full px-5 py-3 font-inter text-sm font-semibold transition-all duration-200 sm:w-auto',
+                    'inline-flex w-full items-center justify-center px-5 py-3 font-inter text-sm font-semibold transition-all duration-200 sm:w-auto',
                     'border border-gold/50 bg-gradient-to-br from-gold to-gold-light text-text-dark shadow-[0_8px_24px_rgba(201,168,76,0.25)] hover:shadow-[0_12px_32px_rgba(201,168,76,0.35)]',
                   )}
                 >
-                  Call: {PROJECT_DATA.contactPhone}
+                  {t('sections.location.call')}: {PROJECT_DATA.contactPhone}
                 </a>
                 <a
                   href={`mailto:${PROJECT_DATA.contactEmail}`}
                   className={cn(
-                    'inline-flex w-full items-center justify-center rounded-full px-5 py-3 font-inter text-sm font-semibold transition-all duration-200 sm:w-auto',
+                    'inline-flex w-full items-center justify-center px-5 py-3 font-inter text-sm font-semibold transition-all duration-200 sm:w-auto',
                     'border border-border-gold text-gold hover:border-gold hover:bg-gold/10',
                   )}
                 >
-                  Email: {PROJECT_DATA.contactEmail}
+                  {t('sections.location.email')}: {PROJECT_DATA.contactEmail}
                 </a>
               </BtnRow>
             </PanelDark>

@@ -7,6 +7,7 @@ import { getBanks } from '@/lib/firestore';
 import { PROJECT_DATA } from '@/lib/constants';
 import { resolveBanks } from '@/lib/fallbacks';
 import type { Bank } from '@/types';
+import { useTranslation } from '@/context/LocaleContext';
 import {
   Section,
   PageContainer,
@@ -19,6 +20,7 @@ import {
 } from '@/components/ui/design';
 
 export default function TieUpBanksSection() {
+  const { t } = useTranslation();
   const [banks, setBanks] = useState<Bank[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -55,67 +57,43 @@ export default function TieUpBanksSection() {
           transition={{ duration: 0.55, ease: 'easeOut' }}
         >
           <SectionHeaderCenter>
-            <SectionKicker centered>Financing</SectionKicker>
-            <SectionHeading className="mt-3 sm:mt-4">Easy Home Loans Available</SectionHeading>
-            <SectionCopy className="mx-auto mt-3 max-w-xl">
-              Pre-approved tie-ups with leading banks
-            </SectionCopy>
+            <SectionKicker centered>{t('sections.banks.kicker')}</SectionKicker>
+            <SectionHeading className="mt-3 sm:mt-4">{t('sections.banks.title')}</SectionHeading>
+            <SectionCopy className="mx-auto mt-3 max-w-xl">{t('sections.banks.lead')}</SectionCopy>
             <GoldRule className="mx-auto mt-4 sm:mt-6" />
           </SectionHeaderCenter>
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-pulse text-text-secondary">Loading banks...</div>
+              <div className="animate-pulse text-text-secondary">{t('sections.banks.loading')}</div>
             </div>
           ) : (
-            <div className="mt-10 grid min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 lg:mt-14 lg:grid-cols-4 lg:gap-8">
+            <ul className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:mt-14 lg:grid-cols-3 lg:gap-6">
               {banks.map((bank) => (
-                <article
+                <li
                   key={bank.id}
-                  className="flex min-w-0 flex-col rounded-2xl border border-border-gold bg-bg-card/90 p-6 shadow-[0_12px_36px_rgba(0,0,0,0.2)] transition-colors hover:border-gold/40 sm:rounded-[1.75rem]"
+                  className="flex min-h-[7.5rem] flex-col items-center justify-center border border-border-gold bg-bg-card/90 px-4 py-6 shadow-[0_12px_36px_rgba(0,0,0,0.2)] transition-colors hover:border-gold/40 sm:min-h-[8.5rem]"
                 >
-                  <div className="relative mx-auto h-14 w-full max-w-[10rem] overflow-hidden rounded-lg bg-black/20 sm:h-16">
+                  <div className="relative h-12 w-full max-w-[11rem] sm:h-14">
                     <Image
                       src={bank.logoUrl}
                       alt={`${bank.name} logo`}
                       fill
-                      className="object-contain p-2"
-                      sizes="240px"
+                      className="object-contain object-center"
+                      sizes="(max-width: 640px) 40vw, 180px"
                     />
                   </div>
-                  <p className="mt-4 text-center font-inter text-sm font-semibold text-text-primary sm:text-base">
+                  <p className="mt-4 text-center font-inter text-xs font-semibold uppercase tracking-wide text-text-primary sm:text-sm">
                     {bank.name}
                   </p>
-                  <div className="mt-4 rounded-xl border border-border-gold bg-black/15 px-4 py-3 text-center">
-                    <p className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-text-secondary">
-                      Interest Rate
-                    </p>
-                    <p className="mt-1 font-cormorant text-2xl font-semibold text-gold">
-                      {bank.interestRate.toFixed(2)}%
-                    </p>
-                  </div>
-                  <div className="mt-4 space-y-3 border-t border-border-gold pt-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-xs text-text-secondary">Max Loan</p>
-                      <p className="font-inter text-sm font-semibold text-text-primary">
-                        Up to ₹{(bank.maxLoanAmount / 100000).toFixed(0)}L
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-xs text-text-secondary">Processing Fee</p>
-                      <p className="font-inter text-sm font-semibold text-text-primary">
-                        {bank.processingFee.toFixed(2)}%
-                      </p>
-                    </div>
-                  </div>
-                </article>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
 
           <div className="mt-10 border-t border-border-gold pt-10 text-center lg:mt-14">
             <Button type="button" onClick={handleWhatsAppClick} className="inline-flex">
-              Get Pre-Approved Today →
+              {t('sections.banks.preApproved')}
             </Button>
           </div>
         </motion.div>
