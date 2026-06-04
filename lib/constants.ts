@@ -12,7 +12,7 @@ export const PROJECT_DATA = {
   totalFamilies: 1000,
   openSpace: 65,
   contactPhone: '+91 70841 65214',
-  contactEmail: 'subh.0263@gmail.com',
+  contactEmail: 'shubhkamnaheights@gmail.com',
   whatsappNumber: '+917084165214',
   whatsappMessage: 'Hello! I\'m interested in Shubh Kamna Heights. Please share details.',
   unitTypes: ['2BHK (Units 04, 07)', '3BHK (Units 01, 02, 03, 05, 06, 08, 09, 10)'],
@@ -23,7 +23,7 @@ export const PROJECT_DATA = {
 };
 
 export const LANDMARKS = [
-  { distance: 0.0, name: 'NH-2 (Delhi - Kolkata)', category: 'Highway' },
+  { distance: 0.0, name: 'NH-2 (Delhi to Kolkata)', category: 'Highway' },
   { distance: 3.0, name: 'P.W. Gurukulam', category: 'Educational' },
   { distance: 5.0, name: 'DDU Nagar Railway Station', category: 'Transport' },
   { distance: 6.5, name: 'IP Mugalsarai', category: 'Industrial' },
@@ -33,6 +33,7 @@ export const LANDMARKS = [
 ];
 
 export const KEY_FEATURES = [
+  'On site commercial complex with daily retail, services, and convenience at your doorstep',
   'Integrated community of 2BHK & 3BHK Flats',
   'Wide Range of Spacious and well ventilated flats',
   'Designer Gate & Boundary walled Complex',
@@ -47,13 +48,13 @@ export const KEY_FEATURES = [
   'Prime location with easy access to amenities',
   'Modern amenities for a luxurious lifestyle',
   '24/7 security and CCTV surveillance',
-  'Sustainable design and energy-efficient systems',
+  'Sustainable design and energy efficient systems',
   'Gated Society',
   'Antitermite treatment',
   'Rain Water Harvesting',
   'Piped Gas Supply Arrangement',
-  '24 hr Power Back-up in common areas',
-  '24 hr Power Back-up in flats (condition apply)',
+  '24 hr Power backup in common areas',
+  '24 hr Power backup in flats (condition apply)',
   'Intercom Facility within the Complex',
   'Earthquake Resistant RCC Frame Structure',
   'VDA approved & RERA registered project',

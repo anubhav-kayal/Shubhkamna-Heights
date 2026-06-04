@@ -1,3 +1,4 @@
+import { toFallbackBanks } from '@/lib/bank-partners';
 import { AMENITIES_LIST } from '@/lib/constants';
 import { getPlaceholderUrl, resolveImageUrl } from '@/lib/placeholders';
 import { FALLBACK_BLOG_POSTS } from '@/lib/site';
@@ -50,40 +51,7 @@ export const FALLBACK_AMENITIES: Amenity[] = AMENITIES_LIST.map((name, idx) => (
   order: idx,
 }));
 
-export const FALLBACK_BANKS: Bank[] = [
-  {
-    id: 'bank-1',
-    name: 'State Bank of India',
-    logoUrl: resolveImageUrl('', 'bank', 'sbi'),
-    interestRate: 8.5,
-    maxLoanAmount: 7500000,
-    processingFee: 0.35,
-  },
-  {
-    id: 'bank-2',
-    name: 'HDFC Bank',
-    logoUrl: resolveImageUrl('', 'bank', 'hdfc'),
-    interestRate: 8.75,
-    maxLoanAmount: 10000000,
-    processingFee: 0.5,
-  },
-  {
-    id: 'bank-3',
-    name: 'ICICI Bank',
-    logoUrl: resolveImageUrl('', 'bank', 'icici'),
-    interestRate: 8.75,
-    maxLoanAmount: 10000000,
-    processingFee: 0.5,
-  },
-  {
-    id: 'bank-4',
-    name: 'Punjab National Bank',
-    logoUrl: resolveImageUrl('', 'bank', 'pnb'),
-    interestRate: 8.5,
-    maxLoanAmount: 7500000,
-    processingFee: 0.35,
-  },
-];
+export const FALLBACK_BANKS: Bank[] = toFallbackBanks();
 
 export const FALLBACK_TESTIMONIALS: Testimonial[] = [
   {
@@ -120,8 +88,8 @@ export const FALLBACK_SPECIFICATIONS: Specification[] = [
     id: 'spec-1',
     category: 'STRUCTURE',
     items: [
-      { label: 'Steel', value: 'Tata, JSW & Jindal' },
-      { label: 'Cement', value: 'Branded cement' },
+      { label: 'Steel', value: 'Tata' },
+      { label: 'Cement', value: 'Shree Cement' },
       { label: 'Frame', value: 'Earthquake resistant, IIT BHU vetted' },
     ],
     order: 1,
@@ -138,13 +106,24 @@ export const FALLBACK_SPECIFICATIONS: Specification[] = [
   },
   {
     id: 'spec-3',
-    category: 'ELECTRICAL',
+    category: 'ELECTRICAL & PLUMBING',
     items: [
+      { label: 'Wires', value: 'Anchor' },
+      { label: 'Plumbing', value: 'Astral Pipes' },
       { label: 'Supply', value: '3-Phase with concealed wiring' },
       { label: 'Bedrooms', value: 'AC wiring with AC point' },
       { label: 'Kitchen', value: 'Multiple power points + geyser point' },
     ],
     order: 3,
+  },
+  {
+    id: 'spec-4',
+    category: 'FITTINGS & FINISHES',
+    items: [
+      { label: 'Bathroom fittings', value: 'Jaguar' },
+      { label: 'Plywood', value: 'Greenply' },
+    ],
+    order: 4,
   },
 ];
 
@@ -170,10 +149,13 @@ function mapAmenityImages(amenities: Amenity[]): Amenity[] {
 }
 
 function mapBankLogos(banks: Bank[]): Bank[] {
-  return banks.map((bank) => ({
-    ...bank,
-    logoUrl: resolveImageUrl(bank.logoUrl, 'bank', bank.name),
-  }));
+  return banks.map((bank) => {
+    const localLogo = bank.logoUrl?.startsWith('/images/banks/');
+    return {
+      ...bank,
+      logoUrl: localLogo ? bank.logoUrl : resolveImageUrl(bank.logoUrl, 'bank', bank.id || bank.name),
+    };
+  });
 }
 
 function mapBlogCovers(posts: BlogPost[]): BlogPost[] {
@@ -202,18 +184,16 @@ export function resolveAmenities(data: Amenity[]): Amenity[] {
   return mapAmenityImages(amenities);
 }
 
-export function resolveBanks(data: Bank[]): Bank[] {
-  const banks = data.length > 0 ? data : FALLBACK_BANKS;
-  return mapBankLogos(banks);
+export function resolveBanks(_data: Bank[]): Bank[] {
+  return mapBankLogos(FALLBACK_BANKS);
 }
 
 export function resolveTestimonials(data: Testimonial[]): Testimonial[] {
   return data.length > 0 ? data : FALLBACK_TESTIMONIALS;
 }
 
-export function resolveSpecifications(data: Specification[]): Specification[] {
-  const specs = data.length > 0 ? data : FALLBACK_SPECIFICATIONS;
-  return specs.length > 0 ? specs : FALLBACK_SPECIFICATIONS;
+export function resolveSpecifications(_data: Specification[]): Specification[] {
+  return FALLBACK_SPECIFICATIONS;
 }
 
 export function resolveBlogPosts(data: BlogPost[], limit?: number): BlogPost[] {
