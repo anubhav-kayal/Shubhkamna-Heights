@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { getGalleryImages } from '@/lib/firestore';
 import { FALLBACK_GALLERY, resolveGallery } from '@/lib/fallbacks';
+import { useTranslation } from '@/context/LocaleContext';
 import MediaCover from '@/components/ui/MediaCover';
 import type { GalleryImage } from '@/types';
 import {
@@ -24,12 +25,26 @@ import {
   PanelDark,
 } from '@/components/ui/design';
 
-export default function GallerySection() {
-  const [images, setImages] = useState<GalleryImage[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [loading, setLoading] = useState(true);
+const CATEGORIES = ['All', 'Exterior', 'Interior', 'Amenities', 'Views'] as const;
 
-  const categories = ['All', 'Exterior', 'Interior', 'Amenities', 'Views'];
+const CATEGORY_KEYS: Record<(typeof CATEGORIES)[number], string> = {
+  All: 'sections.gallery.catAll',
+  Exterior: 'sections.gallery.catExterior',
+  Interior: 'sections.gallery.catInterior',
+  Amenities: 'sections.gallery.catAmenities',
+  Views: 'sections.gallery.catViews',
+};
+
+function categoryLabel(category: string, t: (key: string) => string) {
+  const key = CATEGORY_KEYS[category as (typeof CATEGORIES)[number]];
+  return key ? t(key) : category;
+}
+
+export default function GallerySection() {
+  const { t } = useTranslation();
+  const [images, setImages] = useState<GalleryImage[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<(typeof CATEGORIES)[number]>('All');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadGallery = async () => {
@@ -45,8 +60,8 @@ export default function GallerySection() {
           filtered.length > 0
             ? filtered
             : FALLBACK_GALLERY.filter(
-                (image) => selectedCategory === 'All' || image.category === selectedCategory
-              )
+                (image) => selectedCategory === 'All' || image.category === selectedCategory,
+              ),
         );
       } catch (error) {
         console.error('Error loading gallery:', error);
@@ -79,24 +94,21 @@ export default function GallerySection() {
         >
           <SectionToolbar>
             <div className="min-w-0">
-              <SectionKicker>Gallery</SectionKicker>
-              <SectionHeading className="mt-3 sm:mt-4">See It to Believe It</SectionHeading>
+              <SectionKicker>{t('sections.gallery.kicker')}</SectionKicker>
+              <SectionHeading className="mt-3 sm:mt-4">{t('sections.gallery.title')}</SectionHeading>
               <GoldRule className="my-4 sm:my-5" />
-              <SectionLead>
-                Explore exterior views, interiors, amenities, and surroundings — curated to show
-                scale, finish quality, and the lived experience on site.
-              </SectionLead>
+              <SectionLead>{t('sections.gallery.lead')}</SectionLead>
             </div>
 
-            <SegmentControl tone="dark" className="self-start lg:self-end">
-              {categories.map((category) => (
+            <SegmentControl tone="dark" className="w-full min-w-[min(100%,20rem)] lg:max-w-md lg:justify-self-end">
+              {CATEGORIES.map((category) => (
                 <SegmentButton
                   key={category}
                   tone="dark"
                   active={selectedCategory === category}
                   onClick={() => setSelectedCategory(category)}
                 >
-                  {category}
+                  {t(CATEGORY_KEYS[category])}
                 </SegmentButton>
               ))}
             </SegmentControl>
@@ -104,15 +116,12 @@ export default function GallerySection() {
 
           {loading ? (
             <div className="flex items-center justify-center py-16">
-              <div className="animate-pulse text-text-secondary">Loading gallery...</div>
+              <div className="animate-pulse text-text-secondary">{t('sections.gallery.loading')}</div>
             </div>
           ) : (
             <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
               {images.map((image) => (
-                <MediaCardShell
-                  key={image.id}
-                  className="group min-h-[13rem] sm:min-h-[15rem]"
-                >
+                <MediaCardShell key={image.id} className="group min-h-[13rem] sm:min-h-[15rem]">
                   <MediaCover
                     src={image.imageUrl}
                     alt={image.caption}
@@ -122,15 +131,17 @@ export default function GallerySection() {
                     fallbackSeed={image.category}
                   />
                   <MediaCardBody className="min-h-[13rem] sm:min-h-[15rem]">
-                    <BadgePill className="w-fit border border-gold/25 bg-[rgba(9,8,15,0.65)] text-gold backdrop-blur-sm">
-                      {image.category}
+                    <BadgePill className="w-fit border border-gold/25 bg-bg-card/80 text-gold backdrop-blur-sm">
+                      {categoryLabel(image.category, t)}
                     </BadgePill>
                     <div className="min-w-0 pt-3">
                       <p className="font-cormorant text-xl leading-tight text-text-primary sm:text-2xl">
                         {image.caption}
                       </p>
-                      <p className="mt-2 text-sm leading-relaxed text-[rgba(247,243,233,0.88)]">
-                        Visual preview from the {image.category.toLowerCase()} collection.
+                      <p className="mt-2 text-sm leading-relaxed text-text-secondary">
+                        {t('sections.gallery.preview', {
+                          category: categoryLabel(image.category, t),
+                        })}
                       </p>
                     </div>
                   </MediaCardBody>
@@ -139,17 +150,18 @@ export default function GallerySection() {
             </div>
           )}
 
-          <PanelDark className="mt-10 bg-[linear-gradient(135deg,rgba(201,168,76,0.1),rgba(16,15,22,1))] sm:mt-12">
+          <PanelDark className="mt-10 bg-[linear-gradient(135deg,rgba(201,168,76,0.1),var(--theme-bg-card))] sm:mt-12">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-gold/75">Visual Tour</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-gold/75">
+                  {t('sections.gallery.tourKicker')}
+                </p>
                 <p className="mt-3 max-w-2xl text-sm leading-7 text-text-secondary">
-                  Once the final project photography, drone shots, and interiors arrive, this
-                  section will carry the visual weight it is supposed to.
+                  {t('sections.gallery.tourLead')}
                 </p>
               </div>
               <Button className="inline-flex shrink-0">
-                View Full Gallery
+                {t('sections.gallery.viewFull')}
                 <ArrowRight size={16} />
               </Button>
             </div>

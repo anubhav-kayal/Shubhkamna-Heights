@@ -16,6 +16,12 @@ type MediaCoverProps = {
   fallbackSeed?: string | number;
 };
 
+const OVERLAY_CLASS = {
+  hero: 'media-overlay-hero',
+  strong: 'media-overlay-strong',
+  card: 'media-overlay-card',
+} as const;
+
 export default function MediaCover({
   src,
   alt,
@@ -27,15 +33,7 @@ export default function MediaCover({
   fallbackSeed = 'default',
 }: MediaCoverProps) {
   const [imgSrc, setImgSrc] = useState(src);
-
-  const overlayClass =
-    overlay === 'hero'
-      ? 'bg-gradient-to-b from-[#0a0a0f]/20 via-[#0a0a0f]/55 to-[#0a0a0f]/88'
-      : overlay === 'strong'
-        ? 'bg-gradient-to-b from-[#08080c]/35 via-[#08080c]/72 to-[#08080c]/97'
-        : overlay === 'none'
-          ? ''
-          : 'bg-gradient-to-b from-[#08080c]/12 via-[#08080c]/45 to-[#08080c]/92';
+  const overlayClass = overlay === 'none' ? '' : OVERLAY_CLASS[overlay];
 
   return (
     <div className={`absolute inset-0 overflow-hidden ${className}`}>
