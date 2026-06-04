@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { PROJECT_DATA } from '@/lib/constants';
+import { useTranslation } from '@/context/LocaleContext';
 import { getHeroPosterUrl } from '@/lib/placeholders';
 import {
   BadgePill,
@@ -23,15 +24,16 @@ interface HeroSettings {
   posterUrl?: string;
 }
 
-const HERO_STATS = [
-  { value: '1000+', label: 'Planned families' },
-  { value: '2 & 3 BHK', label: 'Smartly planned homes' },
-  { value: '65%+', label: 'Open, breathable grounds' },
-  { value: 'RERA Ready', label: 'Regulated residential launch' },
-] as const;
-
 export default function HeroSection({ settings = {} as HeroSettings }) {
+  const { t } = useTranslation();
   const heroPoster = getHeroPosterUrl(settings.posterUrl);
+
+  const heroStats = [
+    { value: '1000+', labelKey: 'hero.statFamilies' },
+    { value: '2 & 3 BHK', labelKey: 'hero.statBhk' },
+    { value: '65%+', labelKey: 'hero.statOpen' },
+    { value: 'RERA Ready', labelKey: 'hero.statRera' },
+  ] as const;
 
   const handleWhatsAppClick = () => {
     const message = encodeURIComponent(PROJECT_DATA.whatsappMessage);
@@ -72,7 +74,7 @@ export default function HeroSection({ settings = {} as HeroSettings }) {
           />
         )}
 
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,15,0.28)_0%,rgba(10,10,15,0.58)_48%,rgba(10,10,15,0.94)_100%)]" />
+        <div className="hero-overlay absolute inset-0" />
       </div>
 
       <PageContainer className="relative z-10 flex flex-1 items-center py-8 sm:py-12 lg:py-16">
@@ -82,25 +84,21 @@ export default function HeroSection({ settings = {} as HeroSettings }) {
           transition={{ duration: 0.6 }}
           className="w-full min-w-0"
         >
-          <PanelDark className="w-full min-w-0 p-[clamp(1.5rem,4vw,2.75rem)]">
-            <BadgePill className="mb-5 border border-gold/35 bg-black/25 text-gold sm:mb-6">
-              Now Accepting Bookings — Chandauli, UP
+          <PanelDark className="hero-panel w-full min-w-0 border-border-gold/50 p-[clamp(1.5rem,4vw,2.75rem)]">
+            <BadgePill className="mb-5 border border-gold/35 bg-[var(--theme-surface-overlay)] text-gold sm:mb-6">
+              {t('hero.badge')}
             </BadgePill>
 
             <div className="space-y-5 sm:space-y-6">
               <div className="space-y-1 sm:space-y-1.5">
                 <h1 className="font-cormorant text-[clamp(2rem,5.5vw,4.25rem)] font-bold leading-[1.1] tracking-[-0.02em] text-text-primary text-balance">
-                  Crafted for Comfort.
+                  {t('hero.title1')}
                 </h1>
                 <p className="font-cormorant text-[clamp(2rem,5.5vw,4.25rem)] font-bold leading-[1.1] tracking-[-0.02em] text-gold text-balance">
-                  Designed for Life.
+                  {t('hero.title2')}
                 </p>
               </div>
-              <SectionLead className="sm:mt-1">
-                Experience elevated living on the 8-lane NH-2 corridor with generous
-                open space, direct regional connectivity, and a residential address built
-                for long-term comfort.
-              </SectionLead>
+              <SectionLead className="sm:mt-1">{t('hero.lead')}</SectionLead>
             </div>
 
             <BtnRow className="mt-8 sm:mt-10">
@@ -112,7 +110,7 @@ export default function HeroSection({ settings = {} as HeroSettings }) {
                   document.getElementById('overview')?.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                Explore Project
+                {t('hero.explore')}
                 <ArrowRight size={16} />
               </Button>
               <Button
@@ -121,17 +119,17 @@ export default function HeroSection({ settings = {} as HeroSettings }) {
                 className="w-full sm:w-auto"
                 onClick={handleWhatsAppClick}
               >
-                Talk to Us on WhatsApp
+                {t('hero.whatsapp')}
                 <ArrowRight size={16} />
               </Button>
             </BtnRow>
 
-            <div className="mt-8 grid grid-cols-2 gap-4 border-t border-white/10 pt-6 sm:mt-10 sm:grid-cols-4 sm:pt-8">
-              {HERO_STATS.map((stat) => (
-                <StatCard key={stat.label} className="min-h-0 border-0 bg-transparent p-0 sm:p-0">
+            <div className="hero-stats mt-8 grid grid-cols-2 gap-4 border-t border-border-gold pt-6 sm:mt-10 sm:grid-cols-4 sm:pt-8">
+              {heroStats.map((stat) => (
+                <StatCard key={stat.labelKey} className="min-h-0 border-0 bg-transparent p-0 sm:p-0">
                   <StatValue className="text-base text-gold sm:text-lg">{stat.value}</StatValue>
                   <StatMeta className="normal-case tracking-normal sm:text-sm">
-                    {stat.label}
+                    {t(stat.labelKey)}
                   </StatMeta>
                 </StatCard>
               ))}
