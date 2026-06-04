@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Calendar, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslation } from '@/context/LocaleContext';
 import { cn } from '@/lib/cn';
 
 type VisitDatePickerProps = {
@@ -87,6 +88,7 @@ export default function VisitDatePicker({
   minDaysFromToday = 1,
   maxDaysFromToday = 120,
 }: VisitDatePickerProps) {
+  const { t } = useTranslation();
   const generatedId = useId();
   const inputId = idProp ?? generatedId;
   const rootRef = useRef<HTMLDivElement>(null);
@@ -181,7 +183,7 @@ export default function VisitDatePicker({
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         className={cn(
-          'flex w-full items-center gap-3 rounded-xl border border-border-gold bg-bg-primary/80 px-4 py-3.5 text-left',
+          'flex w-full items-center gap-3 border border-border-gold bg-bg-primary/80 px-4 py-3.5 text-left',
           'transition-[border-color,box-shadow,background] duration-200',
           'hover:border-gold/60 hover:bg-bg-primary',
           'focus-visible:border-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/25',
@@ -192,16 +194,16 @@ export default function VisitDatePicker({
         aria-expanded={open}
         aria-controls={`${inputId}-calendar`}
       >
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gold/30 bg-gold/10 text-gold">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-gold/30 bg-gold/10 text-gold">
           <Calendar size={18} strokeWidth={1.75} />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block font-inter text-sm font-medium leading-snug">
-            {display ?? 'Choose your preferred visit date'}
+            {display ?? t('enquiry.visitPlaceholder')}
           </span>
           {!display && (
             <span className="mt-0.5 block text-xs text-text-secondary">
-              Tap to open calendar · {minDaysFromToday}–{maxDaysFromToday} days ahead
+              {t('enquiry.visitHint', { min: minDaysFromToday, max: maxDaysFromToday })}
             </span>
           )}
         </span>
@@ -219,7 +221,7 @@ export default function VisitDatePicker({
           id={`${inputId}-calendar`}
           role="dialog"
           aria-label="Choose visit date"
-          className="absolute top-[calc(100%+0.375rem)] right-0 z-50 w-[15.5rem] max-w-[calc(100vw-2rem)] rounded-lg border border-gold/35 bg-bg-card p-2.5 shadow-[0_12px_32px_rgba(0,0,0,0.5)] sm:left-auto sm:right-0"
+          className="absolute top-[calc(100%+0.375rem)] right-0 z-50 w-[15.5rem] max-w-[calc(100vw-2rem)] border border-gold/35 bg-bg-card p-2.5 shadow-[0_12px_32px_rgba(0,0,0,0.5)] sm:left-auto sm:right-0"
         >
           <div className="mb-2 flex items-center justify-between gap-1">
             <button
@@ -227,7 +229,7 @@ export default function VisitDatePicker({
               onClick={goPrevMonth}
               disabled={!canGoPrev}
               aria-label="Previous month"
-              className="rounded-md border border-border-gold p-1 text-gold transition-colors hover:border-gold hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-30"
+              className=" border border-border-gold p-1 text-gold transition-colors hover:border-gold hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-30"
             >
               <ChevronLeft size={14} />
             </button>
@@ -237,7 +239,7 @@ export default function VisitDatePicker({
               onClick={goNextMonth}
               disabled={!canGoNext}
               aria-label="Next month"
-              className="rounded-md border border-border-gold p-1 text-gold transition-colors hover:border-gold hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-30"
+              className=" border border-border-gold p-1 text-gold transition-colors hover:border-gold hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-30"
             >
               <ChevronRight size={14} />
             </button>
@@ -268,7 +270,7 @@ export default function VisitDatePicker({
                   disabled={disabled}
                   onClick={() => pickDate(date)}
                   className={cn(
-                    'mx-auto flex h-7 w-7 items-center justify-center rounded-md font-inter text-xs transition-colors',
+                    'mx-auto flex h-7 w-7 items-center justify-center font-inter text-xs transition-colors',
                     disabled && 'cursor-not-allowed text-text-secondary/25',
                     !disabled && !isSelected && 'text-text-primary hover:bg-gold/15',
                     isSelected &&
@@ -290,7 +292,7 @@ export default function VisitDatePicker({
           onClick={() => onChange('')}
           className="mt-2 font-inter text-xs font-medium text-gold/80 transition-colors hover:text-gold"
         >
-          Clear date
+          {t('enquiry.clearDate')}
         </button>
       )}
     </div>

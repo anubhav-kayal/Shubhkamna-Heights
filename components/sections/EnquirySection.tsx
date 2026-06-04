@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import EnquiryForm from '@/components/forms/EnquiryForm';
+import { useTranslation } from '@/context/LocaleContext';
 import {
   Section,
   PageContainer,
@@ -12,6 +13,8 @@ import {
 } from '@/components/ui/design';
 
 export default function EnquirySection() {
+  const { t } = useTranslation();
+
   return (
     <Section id="contact" tone="card">
       <PageContainer>
@@ -22,10 +25,8 @@ export default function EnquirySection() {
           transition={{ duration: 0.6, ease: 'easeOut' }}
         >
           <SectionHeaderCenter className="mb-10 lg:mb-14">
-            <SectionKicker centered>Enquire</SectionKicker>
-            <SectionHeading className="mt-3 sm:mt-4">
-              Your Dream Home is One Step Away
-            </SectionHeading>
+            <SectionKicker centered>{t('enquiry.kicker')}</SectionKicker>
+            <SectionHeading className="mt-3 sm:mt-4">{t('enquiry.title')}</SectionHeading>
             <GoldRule className="mx-auto mt-6" />
           </SectionHeaderCenter>
 

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { submitEnquiry } from '@/lib/firestore';
 import { PROJECT_DATA } from '@/lib/constants';
+import { useTranslation } from '@/context/LocaleContext';
 import VisitDatePicker from '@/components/ui/VisitDatePicker';
 import { Button, BtnRow, PanelDark } from '@/components/ui/design';
 import { cn } from '@/lib/cn';
@@ -27,16 +28,16 @@ const EMPTY_FORM: EnquiryFormData = {
 };
 
 const inputClassName =
-  'w-full rounded-xl border border-border-gold bg-bg-primary px-4 py-3 font-inter text-sm text-text-primary placeholder:text-text-secondary/60 transition-colors focus:border-gold focus:outline-none';
+  'w-full border border-border-gold bg-bg-primary px-4 py-3 font-inter text-sm text-text-primary placeholder:text-text-secondary/60 transition-colors focus:border-gold focus:outline-none';
 
 const labelClassName =
   'font-inter text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary';
 
 const linkPrimaryClassName =
-  'inline-flex w-full items-center justify-center gap-2 rounded-full border border-gold/50 bg-gradient-to-br from-gold to-gold-light px-5 py-3 font-inter text-sm font-semibold text-text-dark shadow-[0_8px_24px_rgba(201,168,76,0.25)] transition-all duration-200 hover:shadow-[0_12px_32px_rgba(201,168,76,0.35)] sm:w-auto';
+  'inline-flex w-full items-center justify-center gap-2 border border-gold/50 bg-gradient-to-br from-gold to-gold-light px-5 py-3 font-inter text-sm font-semibold text-text-dark shadow-[0_8px_24px_rgba(201,168,76,0.25)] transition-all duration-200 hover:shadow-[0_12px_32px_rgba(201,168,76,0.35)] sm:w-auto';
 
 const linkSecondaryClassName =
-  'inline-flex items-center justify-center gap-2 rounded-full border border-border-gold bg-transparent px-5 py-3 font-inter text-sm font-semibold text-gold transition-all duration-200 hover:border-gold hover:bg-gold/10';
+  'inline-flex items-center justify-center gap-2 border border-border-gold bg-transparent px-5 py-3 font-inter text-sm font-semibold text-gold transition-all duration-200 hover:border-gold hover:bg-gold/10';
 
 type EnquiryFormProps = {
   source: string;
@@ -53,6 +54,7 @@ export default function EnquiryForm({
   onSuccess,
   className,
 }: EnquiryFormProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<EnquiryFormData>(EMPTY_FORM);
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -72,7 +74,7 @@ export default function EnquiryForm({
 
     try {
       if (!formData.name || !formData.phone || !formData.email) {
-        setError('Please fill in all required fields.');
+        setError(t('enquiry.fillRequired'));
         return;
       }
 
@@ -89,7 +91,7 @@ export default function EnquiryForm({
         setSubmitted(false);
       }, 4000);
     } catch (err) {
-      setError('Error submitting form. Please try again.');
+      setError(t('enquiry.submitError'));
       console.error('Error:', err);
     } finally {
       setIsLoading(false);
@@ -104,7 +106,7 @@ export default function EnquiryForm({
         className={className}
       >
         <PanelDark className={cn('text-center', compact && 'p-5 sm:p-6')}>
-          <div className="mx-auto mb-4 inline-flex rounded-full border border-green-accent bg-green-accent/15 p-3">
+          <div className="mx-auto mb-4 inline-flex border border-green-accent bg-green-accent/15 p-3">
             <svg
               className="h-7 w-7 text-green-accent"
               fill="none"
@@ -120,20 +122,18 @@ export default function EnquiryForm({
             </svg>
           </div>
           <h3 className="font-cormorant text-xl font-semibold text-text-primary sm:text-2xl">
-            Thank You!
+            {t('enquiry.thankYou')}
           </h3>
-          <p className="mt-2 text-sm text-text-secondary">
-            We&apos;ve received your enquiry and will be in touch soon.
-          </p>
+          <p className="mt-2 text-sm text-text-secondary">{t('enquiry.thankYouMessage')}</p>
           <BtnRow className="mt-6 justify-center">
             <a href={`tel:${PROJECT_DATA.contactPhone}`} className={linkPrimaryClassName}>
-              Call Us Now
+              {t('enquiry.callUs')}
             </a>
             <a
               href={`https://wa.me/${PROJECT_DATA.whatsappNumber}`}
               className={linkSecondaryClassName}
             >
-              WhatsApp →
+              {t('enquiry.whatsappUs')}
             </a>
           </BtnRow>
         </PanelDark>
@@ -144,7 +144,7 @@ export default function EnquiryForm({
   const formBody = (
     <form onSubmit={handleSubmit} className={cn('flex flex-col', compact ? 'gap-5' : 'gap-7')}>
       {error && (
-        <div className="rounded-lg border border-red-500/50 bg-red-500/15 p-3 text-sm text-red-300">
+        <div className=" border border-red-500/50 bg-red-500/15 p-3 text-sm text-red-300">
           {error}
         </div>
       )}
@@ -152,7 +152,7 @@ export default function EnquiryForm({
       <div className={cn('grid gap-5 sm:grid-cols-2', !compact && 'gap-7')}>
         <div className="flex flex-col gap-2">
           <label htmlFor={`${idPrefix}-name`} className={labelClassName}>
-            Full Name *
+            {t('enquiry.fullName')}
           </label>
           <input
             id={`${idPrefix}-name`}
@@ -162,13 +162,13 @@ export default function EnquiryForm({
             onChange={handleChange}
             required
             className={inputClassName}
-            placeholder="Rajesh Kumar"
+            placeholder={t('enquiry.namePlaceholder')}
           />
         </div>
 
         <div className="flex flex-col gap-2">
           <label htmlFor={`${idPrefix}-phone`} className={labelClassName}>
-            Phone Number *
+            {t('enquiry.phone')}
           </label>
           <input
             id={`${idPrefix}-phone`}
@@ -178,13 +178,13 @@ export default function EnquiryForm({
             onChange={handleChange}
             required
             className={inputClassName}
-            placeholder="+91 70841 65214"
+            placeholder={t('enquiry.phonePlaceholder')}
           />
         </div>
 
         <div className="flex flex-col gap-2">
           <label htmlFor={`${idPrefix}-email`} className={labelClassName}>
-            Email Address *
+            {t('enquiry.email')}
           </label>
           <input
             id={`${idPrefix}-email`}
@@ -194,13 +194,13 @@ export default function EnquiryForm({
             onChange={handleChange}
             required
             className={inputClassName}
-            placeholder="rajesh@example.com"
+            placeholder={t('enquiry.emailPlaceholder')}
           />
         </div>
 
         <div className="flex flex-col gap-2">
           <label htmlFor={`${idPrefix}-bhk`} className={labelClassName}>
-            Preferred BHK *
+            {t('enquiry.bhk')}
           </label>
           <select
             id={`${idPrefix}-bhk`}
@@ -209,15 +209,15 @@ export default function EnquiryForm({
             onChange={handleChange}
             className={inputClassName}
           >
-            <option value="2BHK">2 BHK</option>
-            <option value="3BHK">3 BHK</option>
-            <option value="Not decided">Not decided</option>
+            <option value="2BHK">{t('enquiry.bhk2')}</option>
+            <option value="3BHK">{t('enquiry.bhk3')}</option>
+            <option value="Not decided">{t('enquiry.bhkUndecided')}</option>
           </select>
         </div>
 
         <div className="flex flex-col gap-2 sm:col-span-2">
           <label id={`${idPrefix}-date-label`} className={labelClassName}>
-            Preferred Visit Date
+            {t('enquiry.visitDate')}
           </label>
           <VisitDatePicker
             id={`${idPrefix}-date`}
@@ -229,7 +229,7 @@ export default function EnquiryForm({
 
         <div className="flex flex-col gap-2 sm:col-span-2">
           <label htmlFor={`${idPrefix}-message`} className={labelClassName}>
-            Message (Optional)
+            {t('enquiry.message')}
           </label>
           <textarea
             id={`${idPrefix}-message`}
@@ -238,29 +238,27 @@ export default function EnquiryForm({
             onChange={handleChange}
             rows={compact ? 3 : 4}
             className={`${inputClassName} resize-y`}
-            placeholder="Tell us about your preferences..."
+            placeholder={t('enquiry.messagePlaceholder')}
           />
         </div>
       </div>
 
       <BtnRow className={cn('justify-center', !compact && 'sm:justify-start')}>
         <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
-          {isLoading ? 'Submitting...' : 'Get Details Now'}
+          {isLoading ? t('enquiry.submitting') : t('enquiry.submit')}
         </Button>
         <a href={`tel:${PROJECT_DATA.contactPhone}`} className={linkSecondaryClassName}>
-          Call: {PROJECT_DATA.contactPhone}
+          {t('common.call')}: {PROJECT_DATA.contactPhone}
         </a>
         <a
           href={`https://wa.me/${PROJECT_DATA.whatsappNumber}`}
           className={linkSecondaryClassName}
         >
-          WhatsApp Us →
+          {t('enquiry.whatsappUs')}
         </a>
       </BtnRow>
 
-      <p className="text-center text-xs text-text-secondary">
-        By submitting this form, you agree to our privacy policy and terms of service.
-      </p>
+      <p className="text-center text-xs text-text-secondary">{t('enquiry.privacy')}</p>
     </form>
   );
 
