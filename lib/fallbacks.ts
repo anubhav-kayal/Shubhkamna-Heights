@@ -184,16 +184,17 @@ export function resolveAmenities(data: Amenity[]): Amenity[] {
   return mapAmenityImages(amenities);
 }
 
-export function resolveBanks(_data: Bank[]): Bank[] {
-  return mapBankLogos(FALLBACK_BANKS);
+export function resolveBanks(data: Bank[]): Bank[] {
+  const banks = data.length > 0 ? data : FALLBACK_BANKS;
+  return mapBankLogos(banks);
 }
 
 export function resolveTestimonials(data: Testimonial[]): Testimonial[] {
   return data.length > 0 ? data : FALLBACK_TESTIMONIALS;
 }
 
-export function resolveSpecifications(_data: Specification[]): Specification[] {
-  return FALLBACK_SPECIFICATIONS;
+export function resolveSpecifications(data: Specification[]): Specification[] {
+  return data.length > 0 ? data : FALLBACK_SPECIFICATIONS;
 }
 
 export function resolveBlogPosts(data: BlogPost[], limit?: number): BlogPost[] {

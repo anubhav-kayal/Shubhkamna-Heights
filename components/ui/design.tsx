@@ -151,7 +151,7 @@ export function PanelDark({ className, children }: { className?: string; childre
   return (
     <div
       className={cn(
-        'rounded-2xl border border-border-gold bg-bg-card/90 p-6 shadow-[0_20px_50px_rgba(0,0,0,0.25)] sm:rounded-[1.75rem] sm:p-8',
+        'border border-border-gold bg-bg-card/90 p-6 shadow-[var(--theme-panel-shadow)] sm:p-8',
         className,
       )}
     >
@@ -164,7 +164,7 @@ export function StatCard({ className, children }: { className?: string; children
   return (
     <div
       className={cn(
-        'flex min-w-0 min-h-[7.5rem] flex-col justify-start rounded-2xl border border-border-gold bg-black/15 p-5 sm:p-6',
+        'flex min-h-[7.5rem] min-w-0 flex-col justify-start border border-border-gold bg-[var(--theme-surface-overlay)] p-5 sm:p-6',
         className,
       )}
     >
@@ -203,7 +203,7 @@ export function FeatureCard({ className, children }: { className?: string; child
   return (
     <div
       className={cn(
-        'flex min-h-[5.5rem] min-w-0 items-start rounded-2xl border border-border-gold bg-black/15 p-5 sm:p-6',
+        'flex min-h-[5.5rem] min-w-0 items-start border border-border-gold bg-[var(--theme-surface-overlay)] p-5 sm:p-6',
         className,
       )}
     >
@@ -216,7 +216,7 @@ export function BadgePill({ className, children }: { className?: string; childre
   return (
     <span
       className={cn(
-        'inline-flex max-w-full items-center rounded-full px-3 py-1.5 text-[0.625rem] font-semibold uppercase tracking-[0.14em] sm:px-3.5 sm:text-[0.6875rem] sm:tracking-[0.18em]',
+        'inline-flex max-w-full items-center px-3 py-1.5 text-[0.625rem] font-semibold uppercase tracking-[0.14em] sm:px-3.5 sm:text-[0.6875rem] sm:tracking-[0.18em]',
         className,
       )}
     >
@@ -248,7 +248,7 @@ export function Button({
     <button
       type="button"
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 font-inter text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
+        'inline-flex items-center justify-center gap-2 px-5 py-3 font-inter text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
         buttonVariant[variant],
         className,
       )}
@@ -278,7 +278,7 @@ export function LightCard({ className, children }: { className?: string; childre
   return (
     <div
       className={cn(
-        'rounded-2xl border border-border-on-light bg-white shadow-[0_12px_36px_rgba(26,26,36,0.06)] sm:rounded-[1.75rem]',
+        'border border-border-on-light bg-white shadow-[0_12px_36px_rgba(26,26,36,0.06)]',
         className,
       )}
     >
@@ -361,10 +361,10 @@ export function SegmentControl({
   return (
     <div
       className={cn(
-        'inline-flex flex-wrap gap-1 rounded-full border p-1',
+        'inline-flex w-full max-w-full flex-wrap border sm:flex-nowrap',
         tone === 'dark'
-          ? 'border-border-gold bg-black/25'
-          : 'border-border-on-light bg-white shadow-sm',
+          ? 'border-border-gold bg-bg-card'
+          : 'border-border-on-light bg-white',
         className,
       )}
       role="tablist"
@@ -387,14 +387,16 @@ export function SegmentButton({
       role="tab"
       aria-selected={active}
       className={cn(
-        'rounded-full px-4 py-2 font-inter text-sm font-semibold transition-colors',
+        'min-h-[2.75rem] flex-1 basis-0 px-3 py-2.5 font-inter text-[0.6875rem] font-semibold uppercase tracking-[0.12em] transition-colors sm:px-4 sm:text-xs',
+        'border-r border-b sm:border-b-0 last:border-r-0',
+        tone === 'dark' ? 'border-border-gold' : 'border-border-on-light',
         tone === 'dark'
           ? active
             ? 'bg-gold text-text-dark'
-            : 'text-text-secondary hover:text-gold'
+            : 'bg-transparent text-text-secondary hover:bg-gold/10 hover:text-gold'
           : active
             ? 'bg-gold-dark text-white'
-            : 'text-muted-on-light hover:text-text-dark',
+            : 'bg-transparent text-muted-on-light hover:bg-gold/5 hover:text-text-dark',
         className,
       )}
       {...props}
@@ -414,7 +416,7 @@ export function MediaCardShell({
   return (
     <article
       className={cn(
-        'relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-border-gold bg-bg-card sm:rounded-[1.75rem]',
+        'relative flex min-w-0 flex-col overflow-hidden border border-border-gold bg-bg-card',
         className,
       )}
     >
