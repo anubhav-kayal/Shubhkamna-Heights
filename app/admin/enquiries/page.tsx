@@ -3,25 +3,26 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, Mail, MessageSquare, Phone } from 'lucide-react';
-import { getEnquiries } from '@/lib/firestore';
+import { ArrowLeft, Calendar, Check, Mail, MessageSquare, Phone } from 'lucide-react';
+import { getEnquiries, updateEnquiryContacted } from '@/lib/firestore';
 import { formatDisplayDate } from '@/lib/site';
 import type { Enquiry } from '@/types';
 
 export default function EnquiriesPage() {
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'pending' | 'contacted'>('all');
 
-  useEffect(() => {
-    const loadEnquiries = async () => {
-      try {
-        setEnquiries(await getEnquiries());
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadEnquiries = async () => {
+    try {
+      setEnquiries(await getEnquiries());
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     void loadEnquiries();
   }, []);
 
@@ -36,6 +37,18 @@ export default function EnquiriesPage() {
 
     return true;
   });
+
+  const handleToggleContacted = async (enquiry: Enquiry) => {
+    if (!enquiry.id) return;
+
+    setUpdatingId(enquiry.id);
+    try {
+      await updateEnquiryContacted(enquiry.id, !enquiry.contacted);
+      await loadEnquiries();
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)]">
@@ -131,21 +144,40 @@ export default function EnquiriesPage() {
                     </div>
                   </div>
 
-                  <div className="grid gap-2 text-sm text-[var(--text-secondary)] lg:min-w-72">
-                    <p>
-                      <span className="font-semibold text-[var(--text-primary)]">Visit date:</span>{' '}
-                      {enquiry.visitDate || 'Not specified'}
-                    </p>
-                    <p>
-                      <span className="font-semibold text-[var(--text-primary)]">Source:</span>{' '}
-                      {enquiry.source || 'website'}
-                    </p>
-                    {enquiry.message ? (
-                      <p className="leading-6">
-                        <span className="font-semibold text-[var(--text-primary)]">Message:</span>{' '}
-                        {enquiry.message}
+                  <div className="grid gap-4 lg:min-w-72">
+                    <div className="grid gap-2 text-sm text-[var(--text-secondary)]">
+                      <p>
+                        <span className="font-semibold text-[var(--text-primary)]">Visit date:</span>{' '}
+                        {enquiry.visitDate || 'Not specified'}
                       </p>
-                    ) : null}
+                      <p>
+                        <span className="font-semibold text-[var(--text-primary)]">Source:</span>{' '}
+                        {enquiry.source || 'website'}
+                      </p>
+                      {enquiry.message ? (
+                        <p className="leading-6">
+                          <span className="font-semibold text-[var(--text-primary)]">Message:</span>{' '}
+                          {enquiry.message}
+                        </p>
+                      ) : null}
+                    </div>
+
+                    <button
+                      onClick={() => void handleToggleContacted(enquiry)}
+                      disabled={updatingId === enquiry.id}
+                      className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60 ${
+                        enquiry.contacted
+                          ? 'border border-[var(--border)] text-[var(--text-primary)]'
+                          : 'bg-[var(--gold)] text-[var(--bg-primary)]'
+                      }`}
+                    >
+                      <Check size={16} />
+                      {updatingId === enquiry.id
+                        ? 'Updating...'
+                        : enquiry.contacted
+                          ? 'Mark as pending'
+                          : 'Mark as contacted'}
+                    </button>
                   </div>
                 </div>
               </motion.article>
