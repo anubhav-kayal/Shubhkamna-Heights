@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Plus } from 'lucide-react';
+import { MediaUrlField } from '@/components/admin/MediaUrlField';
 import { getAllBlogPosts, saveBlogPost } from '@/lib/firestore';
 import { formatDisplayDate, slugify, toDate } from '@/lib/site';
 import type { BlogPost } from '@/types';
@@ -19,6 +20,9 @@ type BlogEditorState = {
   content: string;
   published: boolean;
   publishedAt?: Date;
+  tags: string;
+  metaDescription: string;
+  readTimeMinutes: number | '';
 };
 
 const EMPTY_FORM: BlogEditorState = {
@@ -30,6 +34,9 @@ const EMPTY_FORM: BlogEditorState = {
   coverImage: '',
   content: '',
   published: true,
+  tags: '',
+  metaDescription: '',
+  readTimeMinutes: '',
 };
 
 export default function AdminBlogPage() {
@@ -63,6 +70,9 @@ export default function AdminBlogPage() {
       content: post.content,
       published: post.published,
       publishedAt: toDate(post.publishedAt),
+      tags: post.tags?.join(', ') ?? '',
+      metaDescription: post.metaDescription ?? '',
+      readTimeMinutes: post.readTimeMinutes ?? '',
     });
     setMessage('');
   };
@@ -82,6 +92,11 @@ export default function AdminBlogPage() {
     setMessage('');
 
     try {
+      const tags = form.tags
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter(Boolean);
+
       await saveBlogPost({
         id: form.id,
         title: form.title.trim(),
@@ -93,6 +108,10 @@ export default function AdminBlogPage() {
         content: form.content.trim(),
         published: form.published,
         publishedAt: form.publishedAt ?? new Date(),
+        tags: tags.length > 0 ? tags : undefined,
+        metaDescription: form.metaDescription.trim() || undefined,
+        readTimeMinutes:
+          form.readTimeMinutes === '' ? undefined : Number(form.readTimeMinutes) || undefined,
       });
 
       await loadPosts();
@@ -213,7 +232,41 @@ export default function AdminBlogPage() {
             <TextField label="Excerpt" value={form.excerpt} onChange={(value) => setForm((current) => ({ ...current, excerpt: value }))} />
             <TextField label="Author" value={form.author} onChange={(value) => setForm((current) => ({ ...current, author: value }))} />
             <TextField label="Category" value={form.category} onChange={(value) => setForm((current) => ({ ...current, category: value }))} />
-            <TextField label="Cover Image URL" value={form.coverImage} onChange={(value) => setForm((current) => ({ ...current, coverImage: value }))} />
+            <MediaUrlField
+              label="Cover Image URL"
+              value={form.coverImage}
+              onChange={(value) => setForm((current) => ({ ...current, coverImage: value }))}
+              folder="blog"
+            />
+            <TextField
+              label="Tags (comma-separated)"
+              value={form.tags}
+              onChange={(value) => setForm((current) => ({ ...current, tags: value }))}
+            />
+            <TextField
+              label="Meta description (SEO)"
+              value={form.metaDescription}
+              onChange={(value) => setForm((current) => ({ ...current, metaDescription: value }))}
+            />
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-[var(--text-primary)]">
+                Read time (minutes)
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={form.readTimeMinutes}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    readTimeMinutes:
+                      event.target.value === '' ? '' : Number(event.target.value) || '',
+                  }))
+                }
+                placeholder="Auto-estimated if empty"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg-primary)] px-4 py-3 text-[var(--text-primary)] outline-none focus:border-[var(--gold)]"
+              />
+            </div>
 
             <div>
               <label className="mb-2 block text-sm font-semibold text-[var(--text-primary)]">

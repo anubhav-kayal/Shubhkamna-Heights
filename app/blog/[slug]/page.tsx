@@ -2,7 +2,12 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Calendar, Clock, User } from 'lucide-react';
+import { Calendar, Clock, User } from 'lucide-react';
+import {
+  BlogPostBackLink,
+  BlogPostReadTime,
+  BlogPostRelatedKicker,
+} from '@/components/blog/BlogPostLabels';
 import { getBlogPostBySlug, getBlogPosts } from '@/lib/firestore';
 import { resolveImageUrl } from '@/lib/placeholders';
 import {
@@ -14,7 +19,7 @@ import {
   stripHtml,
   toDate,
 } from '@/lib/site';
-import { EditorialHero, KickerLight, PageContainer } from '@/components/ui/design';
+import { EditorialHero, PageContainer } from '@/components/ui/design';
 
 type PageProps = {
   params: Promise<{
@@ -81,7 +86,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 function AuthorAvatar({ name }: { name: string }) {
   const initial = name.trim().charAt(0).toUpperCase() || 'S';
   return (
-    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/15 font-inter text-xs font-semibold text-gold-dark">
+    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center bg-gold/15 font-inter text-xs font-semibold text-gold-dark">
       {initial}
     </span>
   );
@@ -124,13 +129,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
       <EditorialHero className="pb-8 sm:pb-10">
         <PageContainer className="max-w-3xl">
-          <Link
-            href="/blog"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-gold-dark transition-colors hover:text-gold"
-          >
-            <ArrowLeft size={16} />
-            Back to Blog
-          </Link>
+          <BlogPostBackLink />
           <p className="mt-6 font-inter text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-gold-dark">
             {post.category}
           </p>
@@ -148,7 +147,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             </span>
             <span className="inline-flex items-center gap-2">
               <Clock size={16} aria-hidden />
-              {readMin} min read
+              <BlogPostReadTime minutes={readMin} />
             </span>
           </div>
         </PageContainer>
@@ -156,7 +155,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
       <PageContainer className="max-w-3xl py-10 sm:py-12">
         {post.coverImage && (
-          <div className="relative mb-8 aspect-[16/9] overflow-hidden rounded-2xl border border-border-on-light bg-white shadow-[0_12px_36px_rgba(26,26,36,0.06)] sm:mb-10">
+          <div className="relative mb-8 aspect-[16/9] overflow-hidden border border-border-on-light bg-white shadow-[0_12px_36px_rgba(26,26,36,0.06)] sm:mb-10">
             <Image
               src={post.coverImage}
               alt={post.title}
@@ -175,31 +174,31 @@ export default async function BlogPostPage({ params }: PageProps) {
 
         {relatedPosts.length > 0 && (
           <section className="mt-14 border-t border-border-on-light pt-10 sm:mt-16">
-            <KickerLight className="mb-6">More from the blog</KickerLight>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <BlogPostRelatedKicker />
+            <div className="grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {relatedPosts.map((related) => (
                 <Link
                   key={related.id}
                   href={`/blog/${related.slug}`}
-                  className="flex gap-3 rounded-xl border border-border-on-light bg-white p-3 transition-colors hover:border-gold-dark/30"
+                  className="flex h-full min-h-[5.5rem] gap-0 border border-border-on-light bg-white transition-colors hover:border-gold-dark/40 hover:bg-gold/[0.03]"
                 >
-                  <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg">
+                  <div className="relative w-20 shrink-0 self-stretch sm:w-24">
                     <Image
                       src={related.coverImage}
                       alt=""
                       fill
                       className="object-cover"
-                      sizes="200px"
+                      sizes="96px"
                     />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-gold-dark">
+                  <div className="flex min-w-0 flex-1 flex-col justify-center px-4 py-3">
+                    <p className="font-inter text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-gold-dark">
                       {related.category}
                     </p>
-                    <p className="mt-1 line-clamp-2 text-sm font-semibold leading-snug text-text-dark">
+                    <p className="mt-1.5 line-clamp-2 font-inter text-sm font-semibold leading-snug text-text-dark">
                       {related.title}
                     </p>
-                    <p className="mt-1 text-xs text-subtle-on-light">
+                    <p className="mt-1.5 text-xs tabular-nums text-subtle-on-light">
                       {formatDisplayDate(related.publishedAt)}
                     </p>
                   </div>
