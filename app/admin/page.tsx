@@ -11,17 +11,24 @@ import {
   FileText,
   Images,
   Layout,
+  Layers,
+  ListChecks,
   LogOut,
   MessageSquare,
+  Sparkles,
   Users,
+  Video,
 } from 'lucide-react';
 import { auth } from '@/lib/firebase';
 import {
   getAllBlogPosts,
+  getAllFloorPlans,
+  getAllGalleryImages,
   getAllTestimonials,
+  getAmenities,
   getBanks,
   getEnquiries,
-  getGalleryImages,
+  getSpecifications,
 } from '@/lib/firestore';
 
 type DashboardStats = {
@@ -30,6 +37,9 @@ type DashboardStats = {
   blog: number;
   testimonials: number;
   banks: number;
+  amenities: number;
+  floorplans: number;
+  specifications: number;
 };
 
 const EMPTY_STATS: DashboardStats = {
@@ -38,6 +48,9 @@ const EMPTY_STATS: DashboardStats = {
   blog: 0,
   testimonials: 0,
   banks: 0,
+  amenities: 0,
+  floorplans: 0,
+  specifications: 0,
 };
 
 export default function AdminDashboard() {
@@ -48,13 +61,17 @@ export default function AdminDashboard() {
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const [enquiries, gallery, blog, testimonials, banks] = await Promise.all([
-          getEnquiries(),
-          getGalleryImages(),
-          getAllBlogPosts(),
-          getAllTestimonials(),
-          getBanks(),
-        ]);
+        const [enquiries, gallery, blog, testimonials, banks, amenities, floorplans, specifications] =
+          await Promise.all([
+            getEnquiries(),
+            getAllGalleryImages(),
+            getAllBlogPosts(),
+            getAllTestimonials(),
+            getBanks(),
+            getAmenities(),
+            getAllFloorPlans(),
+            getSpecifications(),
+          ]);
 
         setStats({
           enquiries: enquiries.length,
@@ -62,6 +79,9 @@ export default function AdminDashboard() {
           blog: blog.length,
           testimonials: testimonials.length,
           banks: banks.length,
+          amenities: amenities.length,
+          floorplans: floorplans.length,
+          specifications: specifications.length,
         });
       } finally {
         setLoading(false);
@@ -94,6 +114,15 @@ export default function AdminDashboard() {
       count: undefined,
       href: '/admin/landing',
       description: 'Homepage hero video, emotional image, and curated cards',
+    },
+    {
+      id: 'hero',
+      title: 'Project Hero',
+      icon: Video,
+      color: 'from-fuchsia-500 to-fuchsia-600',
+      count: undefined,
+      href: '/admin/hero',
+      description: 'Project page video hero and poster',
     },
     {
       id: 'gallery',
@@ -139,6 +168,33 @@ export default function AdminDashboard() {
       count: undefined,
       href: '/admin/pricing',
       description: 'Maintain rates, taxes, and defaults',
+    },
+    {
+      id: 'amenities',
+      title: 'Amenities',
+      icon: Sparkles,
+      color: 'from-teal-500 to-teal-600',
+      count: stats.amenities,
+      href: '/admin/amenities',
+      description: 'Manage amenity cards and descriptions',
+    },
+    {
+      id: 'floorplans',
+      title: 'Floor Plans',
+      icon: Layers,
+      color: 'from-indigo-500 to-indigo-600',
+      count: stats.floorplans,
+      href: '/admin/floorplans',
+      description: '2BHK and 3BHK plans with pricing',
+    },
+    {
+      id: 'specifications',
+      title: 'Specifications',
+      icon: ListChecks,
+      color: 'from-slate-500 to-slate-600',
+      count: stats.specifications,
+      href: '/admin/specifications',
+      description: 'Construction and finish specifications',
     },
   ];
 
