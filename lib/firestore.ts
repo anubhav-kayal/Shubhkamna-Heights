@@ -1,10 +1,12 @@
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
   query,
+  updateDoc,
   where,
   orderBy,
   serverTimestamp,
@@ -17,6 +19,8 @@ import type {
   BlogPost,
   Enquiry,
   FloorPlan,
+  GalleryImage,
+  HeroSettings,
   LandingSettings,
   PricingSettings,
   Specification,
@@ -30,14 +34,32 @@ function requireFirebaseConfig() {
 }
 
 // Settings
-export async function getHeroSettings() {
+function mapHeroSettings(data: Record<string, unknown>): HeroSettings {
+  return {
+    videoUrl: String(data.videoUrl ?? ''),
+    posterUrl: String(data.posterUrl ?? ''),
+    headline: String(data.headline ?? ''),
+    subheadline: String(data.subheadline ?? ''),
+  };
+}
+
+export async function getHeroSettings(): Promise<HeroSettings | null> {
   if (!isFirebaseConfigured) {
     return null;
   }
 
-  const docRef = doc(firestore, 'settings', 'hero');
-  const docSnap = await getDoc(docRef);
-  return docSnap.exists() ? docSnap.data() : null;
+  try {
+    const docSnap = await getDoc(doc(firestore, 'settings', 'hero'));
+    return docSnap.exists() ? mapHeroSettings(docSnap.data()) : null;
+  } catch (error) {
+    console.warn('Failed to fetch hero settings:', error);
+    return null;
+  }
+}
+
+export async function saveHeroSettings(data: HeroSettings) {
+  requireFirebaseConfig();
+  await setDoc(doc(firestore, 'settings', 'hero'), data, { merge: true });
 }
 
 function mapLandingSettings(data: Record<string, unknown>): LandingSettings {
@@ -148,8 +170,19 @@ export async function saveBank(data: Omit<Bank, 'id'> & { id?: string }) {
   return bankRef.id;
 }
 
+function mapGalleryImage(id: string, data: Record<string, unknown>): GalleryImage {
+  return {
+    id,
+    imageUrl: String(data.imageUrl ?? ''),
+    category: String(data.category ?? ''),
+    caption: String(data.caption ?? ''),
+    order: Number(data.order ?? 0),
+    active: Boolean(data.active),
+  };
+}
+
 // Gallery
-export async function getGalleryImages(category?: string) {
+export async function getGalleryImages(category?: string): Promise<GalleryImage[]> {
   if (!isFirebaseConfigured) {
     return [];
   }
@@ -171,18 +204,59 @@ export async function getGalleryImages(category?: string) {
       );
     }
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      imageUrl: doc.data().imageUrl || '',
-      category: doc.data().category || '',
-      caption: doc.data().caption || '',
-      order: doc.data().order || 0,
-      active: doc.data().active || false,
-    }));
+    return querySnapshot.docs.map((galleryDoc) =>
+      mapGalleryImage(galleryDoc.id, galleryDoc.data())
+    );
   } catch (error) {
     console.warn('Failed to fetch gallery images from Firestore:', error);
     return [];
   }
+}
+
+export async function getAllGalleryImages(): Promise<GalleryImage[]> {
+  if (!isFirebaseConfigured) {
+    return [];
+  }
+
+  try {
+    const q = query(collection(firestore, 'gallery'), orderBy('order', 'asc'));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map((galleryDoc) =>
+      mapGalleryImage(galleryDoc.id, galleryDoc.data())
+    );
+  } catch (error) {
+    console.warn('Failed to fetch all gallery images from Firestore:', error);
+    return [];
+  }
+}
+
+export async function saveGalleryImage(
+  data: Omit<GalleryImage, 'id'> & { id?: string }
+) {
+  requireFirebaseConfig();
+  const galleryRef = data.id
+    ? doc(firestore, 'gallery', data.id)
+    : doc(collection(firestore, 'gallery'));
+  const { id, ...galleryData } = data;
+  void id;
+  await setDoc(galleryRef, galleryData, { merge: true });
+  return galleryRef.id;
+}
+
+export async function deleteGalleryImage(id: string) {
+  requireFirebaseConfig();
+  await deleteDoc(doc(firestore, 'gallery', id));
+}
+
+function mapAmenity(id: string, data: Record<string, unknown>): Amenity {
+  return {
+    id,
+    title: String(data.title ?? ''),
+    description: String(data.description ?? ''),
+    iconName: String(data.iconName ?? ''),
+    imageUrl: data.imageUrl ? String(data.imageUrl) : undefined,
+    order: Number(data.order ?? 0),
+  };
 }
 
 // Amenities
@@ -197,18 +271,36 @@ export async function getAmenities(): Promise<Amenity[]> {
       orderBy('order', 'asc')
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((amenityDoc) => ({
-      id: amenityDoc.id,
-      title: amenityDoc.data().title || '',
-      description: amenityDoc.data().description || '',
-      iconName: amenityDoc.data().iconName || '',
-      imageUrl: amenityDoc.data().imageUrl || '',
-      order: amenityDoc.data().order || 0,
-    }));
+    return querySnapshot.docs.map((amenityDoc) =>
+      mapAmenity(amenityDoc.id, amenityDoc.data())
+    );
   } catch (error) {
     console.warn('Failed to fetch amenities from Firestore:', error);
     return [];
   }
+}
+
+export async function saveAmenity(data: Omit<Amenity, 'id'> & { id?: string }) {
+  requireFirebaseConfig();
+  const amenityRef = data.id
+    ? doc(firestore, 'amenities', data.id)
+    : doc(collection(firestore, 'amenities'));
+  const { id, ...amenityData } = data;
+  void id;
+  await setDoc(amenityRef, amenityData, { merge: true });
+  return amenityRef.id;
+}
+
+function mapFloorPlan(id: string, data: Record<string, unknown>): FloorPlan {
+  return {
+    id,
+    type: (data.type === '3BHK' ? '3BHK' : '2BHK') as '2BHK' | '3BHK',
+    imageUrl: String(data.imageUrl ?? ''),
+    carpetArea: Number(data.carpetArea ?? 0),
+    superArea: Number(data.superArea ?? 0),
+    price: Number(data.price ?? 0),
+    active: Boolean(data.active),
+  };
 }
 
 // Floor Plans
@@ -232,19 +324,40 @@ export async function getFloorPlans(bhkType?: string): Promise<FloorPlan[]> {
       );
     }
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((planDoc) => ({
-      id: planDoc.id,
-      type: (planDoc.data().type || '2BHK') as '2BHK' | '3BHK',
-      imageUrl: planDoc.data().imageUrl || '',
-      carpetArea: Number(planDoc.data().carpetArea || 0),
-      superArea: Number(planDoc.data().superArea || 0),
-      price: Number(planDoc.data().price || 0),
-      active: Boolean(planDoc.data().active),
-    }));
+    return querySnapshot.docs.map((planDoc) =>
+      mapFloorPlan(planDoc.id, planDoc.data())
+    );
   } catch (error) {
     console.warn('Failed to fetch floor plans from Firestore:', error);
     return [];
   }
+}
+
+export async function getAllFloorPlans(): Promise<FloorPlan[]> {
+  if (!isFirebaseConfigured) {
+    return [];
+  }
+
+  try {
+    const querySnapshot = await getDocs(collection(firestore, 'floorplans'));
+    return querySnapshot.docs.map((planDoc) =>
+      mapFloorPlan(planDoc.id, planDoc.data())
+    );
+  } catch (error) {
+    console.warn('Failed to fetch all floor plans from Firestore:', error);
+    return [];
+  }
+}
+
+export async function saveFloorPlan(data: Omit<FloorPlan, 'id'> & { id?: string }) {
+  requireFirebaseConfig();
+  const planRef = data.id
+    ? doc(firestore, 'floorplans', data.id)
+    : doc(collection(firestore, 'floorplans'));
+  const { id, ...planData } = data;
+  void id;
+  await setDoc(planRef, planData, { merge: true });
+  return planRef.id;
 }
 
 // Blog
@@ -403,6 +516,15 @@ export async function saveTestimonial(data: Omit<Testimonial, 'id'> & { id?: str
   return testimonialRef.id;
 }
 
+function mapSpecification(id: string, data: Record<string, unknown>): Specification {
+  return {
+    id,
+    category: String(data.category ?? ''),
+    items: (data.items || []) as Specification['items'],
+    order: Number(data.order ?? 0),
+  };
+}
+
 // Specifications
 export async function getSpecifications(): Promise<Specification[]> {
   if (!isFirebaseConfigured) {
@@ -415,16 +537,26 @@ export async function getSpecifications(): Promise<Specification[]> {
       orderBy('order', 'asc')
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((specDoc) => ({
-      id: specDoc.id,
-      category: specDoc.data().category || '',
-      items: (specDoc.data().items || []) as Specification['items'],
-      order: Number(specDoc.data().order || 0),
-    }));
+    return querySnapshot.docs.map((specDoc) =>
+      mapSpecification(specDoc.id, specDoc.data())
+    );
   } catch (error) {
     console.warn('Failed to fetch specifications from Firestore:', error);
     return [];
   }
+}
+
+export async function saveSpecification(
+  data: Omit<Specification, 'id'> & { id?: string }
+) {
+  requireFirebaseConfig();
+  const specRef = data.id
+    ? doc(firestore, 'specifications', data.id)
+    : doc(collection(firestore, 'specifications'));
+  const { id, ...specData } = data;
+  void id;
+  await setDoc(specRef, specData, { merge: true });
+  return specRef.id;
 }
 
 // Enquiries
@@ -474,4 +606,9 @@ export async function getEnquiries(): Promise<Enquiry[]> {
     console.warn('Failed to fetch enquiries from Firestore:', error);
     return [];
   }
+}
+
+export async function updateEnquiryContacted(id: string, contacted: boolean) {
+  requireFirebaseConfig();
+  await updateDoc(doc(firestore, 'enquiries', id), { contacted });
 }
