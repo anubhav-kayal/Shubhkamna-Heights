@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import {
   BarChart3,
@@ -19,7 +18,7 @@ import {
   Users,
   Video,
 } from 'lucide-react';
-import { auth } from '@/lib/firebase';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import {
   getAllBlogPosts,
   getAllFloorPlans,
@@ -92,7 +91,10 @@ export default function AdminDashboard() {
   }, []);
 
   const handleLogout = async () => {
-    await signOut(auth);
+    const supabase = getSupabaseBrowserClient();
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
     router.push('/admin/login');
   };
 

@@ -1,14 +1,9 @@
 'use client';
 
 import { startTransition, useEffect, useState, type ReactNode } from 'react';
-import { onAuthStateChanged, type User } from 'firebase/auth';
 import { usePathname, useRouter } from 'next/navigation';
-import { auth } from '@/lib/firebase';
-
-async function hasAdminClaim(user: User): Promise<boolean> {
-  const token = await user.getIdTokenResult();
-  return token.claims.admin === true;
-}
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { isCurrentUserAdmin } from '@/lib/firestore';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -22,8 +17,20 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      startTransition(() => {
+        router.replace('/admin/login');
+      });
+      return;
+    }
+
+    const verifyAccess = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
         setAccessDenied(false);
         startTransition(() => {
           router.replace('/admin/login');
@@ -31,23 +38,28 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         return;
       }
 
-      try {
-        const isAdmin = await hasAdminClaim(user);
-        if (!isAdmin) {
-          setIsReady(false);
-          setAccessDenied(true);
-          return;
-        }
-
-        setAccessDenied(false);
-        setIsReady(true);
-      } catch {
+      const isAdmin = await isCurrentUserAdmin();
+      if (!isAdmin) {
         setIsReady(false);
         setAccessDenied(true);
+        return;
       }
+
+      setAccessDenied(false);
+      setIsReady(true);
+    };
+
+    void verifyAccess();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      void verifyAccess();
     });
 
-    return unsubscribe;
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [isLoginPage, router]);
 
   if (isLoginPage) {
@@ -62,9 +74,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             Access Denied
           </p>
           <p className="mt-2 text-sm text-[var(--text-secondary)]">
-            Your account is signed in but does not have the admin custom claim. Contact the
-            Firebase administrator to set <code className="text-[var(--gold)]">admin: true</code> on
-            your user.
+            Your account is signed in but is not listed in{' '}
+            <code className="text-[var(--gold)]">admin_users</code>. Ask the Supabase administrator
+            to grant CMS access.
           </p>
         </div>
       </div>
