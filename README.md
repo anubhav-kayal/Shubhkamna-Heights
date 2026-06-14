@@ -1,6 +1,6 @@
 # Shubh Kamna Heights — Premium Real Estate Website
 
-A cinematic, conversion-focused real estate showcase website for **Shubh Kamna Heights**, built with modern web technologies and Firebase backend integration.
+A cinematic, conversion-focused real estate showcase website for **Shubh Kamna Heights**, built with modern web technologies and Supabase backend integration.
 
 ---
 
@@ -9,10 +9,10 @@ A cinematic, conversion-focused real estate showcase website for **Shubh Kamna H
 - **Framework:** Next.js 14 (App Router, TypeScript)
 - **Styling:** Tailwind CSS v4 + custom CSS variables
 - **Animations:** Framer Motion
-- **Database:** Firebase Firestore
-- **Storage:** Firebase Storage (images, videos)
-- **Authentication:** Firebase Auth (admin CMS)
-- **Forms:** Firebase Firestore (enquiry writes)
+- **Database:** Supabase (PostgreSQL)
+- **Storage:** Supabase Storage (images, videos)
+- **Authentication:** Supabase Auth (admin CMS)
+- **Forms:** Supabase (enquiry writes)
 - **Hosting:** Vercel
 - **Icons:** Lucide React
 - **Fonts:** Cormorant Garamond (display) + Inter (body)
@@ -29,15 +29,21 @@ cd shubhkamna-heights
 npm install --legacy-peer-deps
 ```
 
-### 2. Firebase Setup
+### 2. Supabase Setup
 
-1. Create a Firebase project at [firebase.google.com](https://firebase.google.com)
-2. Enable these services:
-   - Firestore Database
-   - Firebase Storage
-   - Firebase Authentication (Email/Password)
+1. Create a project at [supabase.com](https://supabase.com)
+2. Run the SQL in `supabase/schema.sql` (Dashboard → SQL Editor)
+3. Create a public Storage bucket named `media`
+4. Apply the storage policies from the comments at the bottom of `supabase/schema.sql`
+5. Enable **Email** auth provider (Authentication → Providers)
+6. Create an admin user (Authentication → Users)
+7. Grant CMS access:
 
-3. Copy your Firebase credentials from **Project Settings**
+```sql
+INSERT INTO admin_users (user_id) VALUES ('YOUR-AUTH-USER-UUID');
+```
+
+8. Copy **Project URL** and **anon public key** from Project Settings → API
 
 ### 3. Environment Variables
 
@@ -47,32 +53,29 @@ Create a `.env.local` file (copy from `.env.local.example`):
 cp .env.local.example .env.local
 ```
 
-Then add your Firebase credentials:
+Then add your Supabase credentials:
 
 ```
-NEXT_PUBLIC_FIREBASE_API_KEY=...
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
-NEXT_PUBLIC_FIREBASE_APP_ID=...
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_SITE_URL=https://your-domain.com
 ```
 
-### 4. Firestore Setup
+### 4. Database Tables
 
-Initialize these collections in Firebase Console:
+Created by `supabase/schema.sql`:
 
 ```
-/settings/hero          → { videoUrl, posterUrl, headline, subheadline }
-/settings/pricing       → { bhk2_base_price, bhk3_base_price, per_sqft_rate, gst_percent, stamp_duty_percent }
-/settings/banks         → array of bank details
-/gallery                → { id, imageUrl, category, caption, order, active }
-/amenities              → { id, title, description, iconName, order }
-/floorplans             → { id, type, imageUrl, carpetArea, superArea, price, active }
-/blog                   → { id, title, slug, content, excerpt, coverImage, author, publishedAt, category, published }
-/testimonials           → { id, name, flatType, quote, rating, active }
-/enquiries              → { name, phone, email, bhkPreference, visitDate, message, source, createdAt, contacted }
-/specifications         → { id, category, items, order }
+site_settings           → hero, landing, pricing (JSON documents)
+banks                   → partner bank loan data
+gallery_images          → project gallery
+amenities               → amenity cards
+floor_plans             → 2BHK / 3BHK plans
+blog_posts              → blog CMS
+testimonials            → resident quotes
+specifications          → construction specs
+enquiries               → inbound leads
+admin_users             → CMS admin access list
 ```
 
 ### 5. Start Development Server
@@ -120,8 +123,10 @@ Visit [http://localhost:3000](http://localhost:3000)
     ExitIntentModal.tsx         ← Exit-intent enquiry form
 
 /lib
-  firebase.ts              ← Firebase initialization
-  firestore.ts             ← Firestore queries & writes
+  supabase/
+    schema.sql             ← Postgres schema + RLS policies
+  supabase/client.ts       ← Browser Supabase client (via lib/supabase/)
+  firestore.ts             ← CMS read/write helpers (Supabase-backed)
   calculator.ts            ← EMI calculation logic
   constants.ts             ← Project data & settings
 
@@ -210,7 +215,7 @@ The website uses a luxury real estate color palette:
 
 ## 🎬 Video Optimization
 
-The hero video should be compressed before uploading to Firebase Storage:
+The hero video should be compressed before uploading to Supabase Storage (`media` bucket):
 
 ```bash
 ffmpeg -i input.mp4 -vcodec libx264 -crf 28 -preset slow -acodec aac -b:a 128k -movflags +faststart output.mp4
@@ -220,31 +225,16 @@ Target: **≤ 8 MB** for optimal delivery
 
 ---
 
-## 🔐 Firebase Security Rules
+## 🔐 Supabase Security
 
-Set these rules in Firestore Console:
+Row Level Security policies are defined in `supabase/schema.sql`:
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Public read access
-    match /{document=**} {
-      allow read: if true;
-    }
-    
-    // Enquiry submissions
-    match /enquiries/{document=**} {
-      allow create: if request.auth != null || true;
-    }
-    
-    // Admin-only writes
-    match /{document=**} {
-      allow write: if request.auth != null && request.auth.token.admin == true;
-    }
-  }
-}
-```
+- **Public read** on all CMS content tables
+- **Public insert** on `enquiries` only
+- **Admin-only write** on CMS tables (via `admin_users` + `is_admin()`)
+- **Storage:** public read on `media` bucket; admin-only upload/update/delete
+
+Grant admin access by inserting the user's UUID into `admin_users` after they sign up in Supabase Auth.
 
 ---
 
@@ -279,49 +269,31 @@ Then connect your GitHub repo and let Vercel handle deployments.
 ### Environment Variables on Vercel
 
 Add your `.env.local` variables to Vercel Project Settings:
-- `NEXT_PUBLIC_FIREBASE_API_KEY`
-- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
-- etc.
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_SITE_URL`
 
 ---
 
 ## 📝 Content Management
 
-### Managing Content via Firestore Console
+### Managing Content
 
-1. **Hero Section**
-   - Go to `settings/hero`
-   - Upload video to Firebase Storage → get URL
-   - Update `videoUrl`, `posterUrl`
-
-2. **Amenities**
-   - Add documents to `/amenities` collection
-   - Include icon names from Lucide React
-
-3. **Gallery**
-   - Upload images to Firebase Storage `/gallery` folder
-   - Add Firestore docs with image URLs & category
-
-4. **Blog Posts**
-   - Create docs in `/blog` collection
-   - Set `published: true` to show on website
-   - Use readable slugs for URL structure
-
-5. **Banks & Pricing**
-   - Update `/settings/pricing` with current rates
-   - Manage bank partnerships in `/settings/banks`
+1. **Primary:** use the built-in admin panel at `/admin` (blog, gallery, pricing, hero, etc.)
+2. **Alternative:** Supabase Studio (Table Editor + Storage)
+3. **Media uploads:** admin UI uploads to the `media` Storage bucket, or upload manually in Supabase Storage and paste the public URL
 
 ---
 
 ## 🚀 Deployment Checklist
 
-- [ ] Firebase project created & configured
-- [ ] `.env.local` populated with Firebase credentials
-- [ ] All Firestore collections initialized
-- [ ] Hero video uploaded to Firebase Storage
-- [ ] Bank logos uploaded to `/banks` folder
-- [ ] Gallery images uploaded & linked in Firestore
-- [ ] Blog posts created with `published: true`
+- [ ] Supabase project created & schema applied
+- [ ] `.env.local` populated with Supabase credentials
+- [ ] `media` Storage bucket created with policies
+- [ ] Admin user created and added to `admin_users`
+- [ ] Hero video uploaded to Supabase Storage
+- [ ] Gallery images uploaded & linked in `gallery_images`
+- [ ] Blog posts created with `published = true`
 - [ ] Build passes with `npm run build`
 - [ ] Lighthouse score ≥ 85 (Performance)
 - [ ] All internal links tested
@@ -335,18 +307,15 @@ Add your `.env.local` variables to Vercel Project Settings:
 
 ## 📱 API Endpoints (if needed)
 
-Currently, the app uses Firestore directly via client SDK. To add server-side API routes:
+Currently, the app uses Supabase directly via the client SDK. To add server-side API routes:
 
 ```typescript
 // app/api/[endpoint]/route.ts
-import { firestore } from '@/lib/firebase';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 
 export async function GET() {
-  // Fetch from Firestore
-}
-
-export async function POST(request: Request) {
-  // Write to Firestore
+  const supabase = getSupabaseServerClient();
+  // Fetch from Supabase
 }
 ```
 
@@ -354,14 +323,14 @@ export async function POST(request: Request) {
 
 ## 🆘 Troubleshooting
 
-### Firebase not connecting?
+### Supabase not connecting?
 - Check `.env.local` variables are correct
-- Ensure Firebase project is active
-- Check Firestore rules aren't blocking reads
+- Ensure the Supabase project is active
+- Verify RLS policies allow public reads
 
 ### Images not loading?
-- Verify image URLs in Firestore are accessible
-- Check Firebase Storage CORS settings
+- Verify image URLs in Supabase are accessible
+- Check the `media` bucket is public
 - Use absolute URLs, not relative paths
 
 ### Mobile menu not working?
@@ -369,8 +338,8 @@ export async function POST(request: Request) {
 - Ensure `setMobileMenuOpen(false)` is called on link click
 
 ### EMI Calculator not calculating?
-- Verify pricing settings in `/settings/pricing`
-- Check interest rate inputs on Firestore `/settings/banks`
+- Verify pricing in `site_settings` key `pricing`
+- Check interest rates in the `banks` table
 
 ---
 
