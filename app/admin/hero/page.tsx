@@ -59,8 +59,8 @@ export default function AdminHeroPage() {
           <div>
             <h1 className="font-cormorant text-3xl font-bold text-[var(--gold)]">Project hero</h1>
             <p className="text-[var(--text-secondary)]">
-              Manage the project page video hero in Firestore (
-              <code className="text-[var(--gold)]">settings/hero</code>).
+              Manage the project page video hero in Supabase (
+              <code className="text-[var(--gold)]">site_settings.hero</code>).
             </p>
           </div>
         </div>

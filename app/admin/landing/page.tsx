@@ -91,7 +91,7 @@ export default function AdminLandingPage() {
           <div>
             <h1 className="font-cormorant text-3xl font-bold text-[var(--gold)]">Landing page</h1>
             <p className="text-[var(--text-secondary)]">
-              Manage homepage media in Firestore (<code className="text-[var(--gold)]">settings/landing</code>
+              Manage homepage media in Supabase (<code className="text-[var(--gold)]">site_settings.landing</code>
               ). Copy stays in i18n files; placeholders apply when a URL is empty.
             </p>
           </div>

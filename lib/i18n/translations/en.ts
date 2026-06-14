@@ -310,10 +310,10 @@ export const en = {
       playFull: 'Play full project video',
       playAria: 'Play project video',
       footerNote:
-        'Use fullscreen on the player for the best view. Video may also be updated from site settings when Firebase is connected.',
+        'Use fullscreen on the player for the best view. Video may also be updated from site settings when Supabase is connected.',
       errorTitle: 'Project video',
       errorLead:
-        'Add your MP4 to public/videos/shubh-kamna-heights.mp4 or configure the hero video URL in Firebase settings.',
+        'Add your MP4 to public/videos/shubh-kamna-heights.mp4 or configure the hero video URL in Supabase settings.',
     },
     blogPage: {
       kicker: 'Blog & guides',
@@ -347,7 +347,7 @@ export const en = {
       timelineTitle: 'Milestones',
       timelineLead: 'Key phases in the development journey of Shubh Kamna Heights.',
       timelineNote:
-        'Representative milestones while final corporate history is prepared. Firebase-backed content can replace these entries later.',
+        'Representative milestones while final corporate history is prepared. Supabase-backed content can replace these entries later.',
       m2023Title: 'Vision on NH-2',
       m2023Detail: 'Land aggregation and master planning with a focus on regulated approvals and open space.',
       m2024Title: 'Approvals & partnerships',

@@ -200,7 +200,7 @@ export default function AdminBlogPage() {
             {form.id ? 'Edit Post' : 'Create Post'}
           </h2>
           <p className="mt-2 text-sm text-[var(--text-secondary)]">
-            Save changes directly to Firestore. Slugs must stay unique.
+            Save changes directly to Supabase. Slugs must stay unique.
           </p>
 
           {message && (
