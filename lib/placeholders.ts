@@ -1,6 +1,6 @@
-import { isFirebaseConfigured } from '@/lib/firebase';
+import { isSupabaseConfigured } from '@/lib/supabase/config';
 
-/** Picsum seeds — reliable placeholders when Firebase is not configured */
+/** Picsum seeds — reliable placeholders when Supabase is not configured */
 function picsum(seed: string, width: number, height: number): string {
   return `https://picsum.photos/seed/${encodeURIComponent(seed)}/${width}/${height}`;
 }
@@ -82,19 +82,19 @@ export function getPlaceholderUrl(
   }
 }
 
-/** Use live URL only when Firebase is configured and URL exists; otherwise placeholder */
+/** Use live URL only when Supabase is configured and URL exists; otherwise placeholder */
 export function resolveImageUrl(
   url: string | undefined | null,
   kind: PlaceholderKind,
   seed: string | number = 0
 ): string {
   const trimmed = url?.trim() ?? '';
-  if (isFirebaseConfigured && trimmed) {
+  if (isSupabaseConfigured && trimmed) {
     return trimmed;
   }
   return getPlaceholderUrl(kind, seed);
 }
 
-export function getHeroPosterUrl(firestorePoster?: string): string {
-  return resolveImageUrl(firestorePoster, 'hero');
+export function getHeroPosterUrl(poster?: string): string {
+  return resolveImageUrl(poster, 'hero');
 }
