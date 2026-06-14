@@ -1,12 +1,7 @@
-import { Timestamp } from 'firebase/firestore';
+export type CmsDateLike = Date | string | { toDate: () => Date };
 
-export type FirestoreDateLike =
-  | Timestamp
-  | Date
-  | string
-  | {
-      toDate: () => Date;
-    };
+/** @deprecated Use CmsDateLike */
+export type FirestoreDateLike = CmsDateLike;
 
 export interface ProjectData {
   name: string;
@@ -32,7 +27,7 @@ export interface HeroSettings {
   subheadline: string;
 }
 
-/** Firestore `settings/landing` — media URLs for homepage (copy stays in i18n) */
+/** Supabase `site_settings.landing` — media URLs for homepage (copy stays in i18n) */
 export interface LandingSettings {
   heroVideoUrl?: string;
   heroPosterUrl?: string;
@@ -96,7 +91,7 @@ export interface BlogPost {
   excerpt: string;
   coverImage: string;
   author: string;
-  publishedAt: FirestoreDateLike;
+  publishedAt: CmsDateLike;
   category: string;
   published: boolean;
   tags?: string[];
@@ -129,6 +124,6 @@ export interface Enquiry {
   visitDate: string;
   message?: string;
   source: string;
-  createdAt: FirestoreDateLike;
+  createdAt: CmsDateLike;
   contacted: boolean;
 }

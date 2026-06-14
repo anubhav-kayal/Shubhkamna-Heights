@@ -1,18 +1,7 @@
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-  orderBy,
-  serverTimestamp,
-  setDoc,
-} from 'firebase/firestore';
-import { firestore, isFirebaseConfigured } from './firebase';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { getSupabaseBrowserClient } from './supabase/client';
+import { getSupabaseServerClient } from './supabase/server';
+import { isSupabaseConfigured } from './supabase/config';
 import type {
   Amenity,
   Bank,
@@ -27,13 +16,62 @@ import type {
   Testimonial,
 } from '@/types';
 
-function requireFirebaseConfig() {
-  if (!isFirebaseConfigured) {
-    throw new Error('Firebase is not configured. Set the NEXT_PUBLIC_FIREBASE_* environment variables.');
+function getClient(): SupabaseClient | null {
+  if (typeof window === 'undefined') {
+    return getSupabaseServerClient();
+  }
+  return getSupabaseBrowserClient();
+}
+
+function requireSupabaseConfig() {
+  if (!isSupabaseConfigured) {
+    throw new Error(
+      'Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.'
+    );
   }
 }
 
-// Settings
+function logQueryError(label: string, error: { message: string }) {
+  console.warn(`Failed to ${label}:`, error.message);
+}
+
+async function getSettingValue(key: string): Promise<Record<string, unknown> | null> {
+  const client = getClient();
+  if (!client) {
+    return null;
+  }
+
+  const { data, error } = await client
+    .from('site_settings')
+    .select('value')
+    .eq('key', key)
+    .maybeSingle();
+
+  if (error) {
+    logQueryError(`fetch site_settings/${key}`, error);
+    return null;
+  }
+
+  return (data?.value as Record<string, unknown> | undefined) ?? null;
+}
+
+async function upsertSettingValue(key: string, value: object) {
+  const client = getClient();
+  if (!client) {
+    throw new Error('Supabase client unavailable');
+  }
+
+  const { error } = await client.from('site_settings').upsert({
+    key,
+    value,
+    updated_at: new Date().toISOString(),
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
 function mapHeroSettings(data: Record<string, unknown>): HeroSettings {
   return {
     videoUrl: String(data.videoUrl ?? ''),
@@ -44,22 +82,17 @@ function mapHeroSettings(data: Record<string, unknown>): HeroSettings {
 }
 
 export async function getHeroSettings(): Promise<HeroSettings | null> {
-  if (!isFirebaseConfigured) {
+  if (!isSupabaseConfigured) {
     return null;
   }
 
-  try {
-    const docSnap = await getDoc(doc(firestore, 'settings', 'hero'));
-    return docSnap.exists() ? mapHeroSettings(docSnap.data()) : null;
-  } catch (error) {
-    console.warn('Failed to fetch hero settings:', error);
-    return null;
-  }
+  const value = await getSettingValue('hero');
+  return value ? mapHeroSettings(value) : null;
 }
 
 export async function saveHeroSettings(data: HeroSettings) {
-  requireFirebaseConfig();
-  await setDoc(doc(firestore, 'settings', 'hero'), data, { merge: true });
+  requireSupabaseConfig();
+  await upsertSettingValue('hero', data);
 }
 
 function mapLandingSettings(data: Record<string, unknown>): LandingSettings {
@@ -77,489 +110,684 @@ function mapLandingSettings(data: Record<string, unknown>): LandingSettings {
 }
 
 export async function getLandingSettings(): Promise<LandingSettings | null> {
-  if (!isFirebaseConfigured) {
+  if (!isSupabaseConfigured) {
     return null;
   }
 
-  try {
-    const docSnap = await getDoc(doc(firestore, 'settings', 'landing'));
-    return docSnap.exists() ? mapLandingSettings(docSnap.data()) : null;
-  } catch (error) {
-    console.warn('Failed to fetch landing settings:', error);
-    return null;
-  }
+  const value = await getSettingValue('landing');
+  return value ? mapLandingSettings(value) : null;
 }
 
 export async function saveLandingSettings(data: LandingSettings) {
-  requireFirebaseConfig();
-  await setDoc(doc(firestore, 'settings', 'landing'), data, { merge: true });
+  requireSupabaseConfig();
+  await upsertSettingValue('landing', data);
 }
 
 export async function getPricingSettings(): Promise<PricingSettings | null> {
-  if (!isFirebaseConfigured) {
+  if (!isSupabaseConfigured) {
     return null;
   }
 
-  const docRef = doc(firestore, 'settings', 'pricing');
-  const docSnap = await getDoc(docRef);
-  if (!docSnap.exists()) {
+  const value = await getSettingValue('pricing');
+  if (!value) {
     return null;
   }
-
-  const data = docSnap.data();
 
   return {
-    bhk2BasePrice: Number(data.bhk2BasePrice ?? data.bhk2_base_price ?? 3500),
-    bhk3BasePrice: Number(data.bhk3BasePrice ?? data.bhk3_base_price ?? 4200),
-    perSqftRate: Number(data.perSqftRate ?? data.per_sqft_rate ?? 3500),
-    gstPercent: Number(data.gstPercent ?? data.gst_percent ?? 5),
-    stampDutyPercent: Number(data.stampDutyPercent ?? data.stamp_duty_percent ?? 5),
+    bhk2BasePrice: Number(value.bhk2BasePrice ?? value.bhk2_base_price ?? 3500000),
+    bhk3BasePrice: Number(value.bhk3BasePrice ?? value.bhk3_base_price ?? 5200000),
+    perSqftRate: Number(value.perSqftRate ?? value.per_sqft_rate ?? 3500),
+    gstPercent: Number(value.gstPercent ?? value.gst_percent ?? 5),
+    stampDutyPercent: Number(value.stampDutyPercent ?? value.stamp_duty_percent ?? 5),
   };
 }
 
 export async function savePricingSettings(data: PricingSettings) {
-  requireFirebaseConfig();
-  await setDoc(doc(firestore, 'settings', 'pricing'), data, { merge: true });
+  requireSupabaseConfig();
+  await upsertSettingValue('pricing', data);
 }
 
-function mapBankData(id: string, data: Record<string, unknown>): Bank {
+function mapBankRow(row: Record<string, unknown>): Bank {
   return {
-    id,
-    name: String(data.name ?? ''),
-    logoUrl: String(data.logoUrl ?? ''),
-    interestRate: Number(data.interestRate ?? 8.5),
-    maxLoanAmount: Number(data.maxLoanAmount ?? data.maxLoan ?? 0),
-    processingFee: Number(data.processingFee ?? 0),
+    id: String(row.id ?? ''),
+    name: String(row.name ?? ''),
+    logoUrl: String(row.logo_url ?? row.logoUrl ?? ''),
+    interestRate: Number(row.interest_rate ?? row.interestRate ?? 8.5),
+    maxLoanAmount: Number(row.max_loan_amount ?? row.maxLoanAmount ?? row.maxLoan ?? 0),
+    processingFee: Number(row.processing_fee ?? row.processingFee ?? 0),
   };
 }
 
 export async function getBanks(): Promise<Bank[]> {
-  if (!isFirebaseConfigured) {
+  if (!isSupabaseConfigured) {
     return [];
   }
 
-  try {
-    const settingsDoc = await getDoc(doc(firestore, 'settings', 'banks'));
-    if (settingsDoc.exists()) {
-      const data = settingsDoc.data().items;
-      if (Array.isArray(data)) {
-        return data.map((item, index) =>
-          mapBankData(
-            typeof item === 'object' && item && 'id' in item ? String(item.id) : `bank-${index}`,
-            (item as Record<string, unknown>) ?? {}
-          )
-        );
-      }
-    }
-
-    const q = query(collection(firestore, 'banks'));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((bankDoc) => mapBankData(bankDoc.id, bankDoc.data()));
-  } catch (error) {
-    console.warn('Failed to fetch banks from Firestore:', error);
+  const client = getClient();
+  if (!client) {
     return [];
   }
+
+  const { data, error } = await client.from('banks').select('*').order('name');
+
+  if (error) {
+    logQueryError('fetch banks', error);
+    return [];
+  }
+
+  return (data ?? []).map((row) => mapBankRow(row as Record<string, unknown>));
 }
 
 export async function saveBank(data: Omit<Bank, 'id'> & { id?: string }) {
-  requireFirebaseConfig();
-  const bankRef = data.id ? doc(firestore, 'banks', data.id) : doc(collection(firestore, 'banks'));
-  const { id, ...bankData } = data;
-  void id;
-  await setDoc(bankRef, bankData, { merge: true });
-  return bankRef.id;
+  requireSupabaseConfig();
+  const client = getClient();
+  if (!client) {
+    throw new Error('Supabase client unavailable');
+  }
+
+  const id =
+    data.id?.trim() ||
+    data.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') ||
+    `bank-${Date.now()}`;
+
+  const { error } = await client.from('banks').upsert({
+    id,
+    name: data.name,
+    logo_url: data.logoUrl,
+    interest_rate: data.interestRate,
+    max_loan_amount: data.maxLoanAmount,
+    processing_fee: data.processingFee,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return id;
 }
 
-function mapGalleryImage(id: string, data: Record<string, unknown>): GalleryImage {
+function mapGalleryRow(row: Record<string, unknown>): GalleryImage {
   return {
-    id,
-    imageUrl: String(data.imageUrl ?? ''),
-    category: String(data.category ?? ''),
-    caption: String(data.caption ?? ''),
-    order: Number(data.order ?? 0),
-    active: Boolean(data.active),
+    id: String(row.id ?? ''),
+    imageUrl: String(row.image_url ?? row.imageUrl ?? ''),
+    category: String(row.category ?? ''),
+    caption: String(row.caption ?? ''),
+    order: Number(row.sort_order ?? row.order ?? 0),
+    active: Boolean(row.active),
   };
 }
 
-// Gallery
 export async function getGalleryImages(category?: string): Promise<GalleryImage[]> {
-  if (!isFirebaseConfigured) {
+  if (!isSupabaseConfigured) {
     return [];
   }
 
-  try {
-    let q;
-    if (category) {
-      q = query(
-        collection(firestore, 'gallery'),
-        where('active', '==', true),
-        where('category', '==', category),
-        orderBy('order', 'asc')
-      );
-    } else {
-      q = query(
-        collection(firestore, 'gallery'),
-        where('active', '==', true),
-        orderBy('order', 'asc')
-      );
-    }
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((galleryDoc) =>
-      mapGalleryImage(galleryDoc.id, galleryDoc.data())
-    );
-  } catch (error) {
-    console.warn('Failed to fetch gallery images from Firestore:', error);
+  const client = getClient();
+  if (!client) {
     return [];
   }
+
+  let query = client
+    .from('gallery_images')
+    .select('*')
+    .eq('active', true)
+    .order('sort_order', { ascending: true });
+
+  if (category) {
+    query = query.eq('category', category);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    logQueryError('fetch gallery images', error);
+    return [];
+  }
+
+  return (data ?? []).map((row) => mapGalleryRow(row as Record<string, unknown>));
 }
 
 export async function getAllGalleryImages(): Promise<GalleryImage[]> {
-  if (!isFirebaseConfigured) {
+  if (!isSupabaseConfigured) {
     return [];
   }
 
-  try {
-    const q = query(collection(firestore, 'gallery'), orderBy('order', 'asc'));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((galleryDoc) =>
-      mapGalleryImage(galleryDoc.id, galleryDoc.data())
-    );
-  } catch (error) {
-    console.warn('Failed to fetch all gallery images from Firestore:', error);
+  const client = getClient();
+  if (!client) {
     return [];
   }
+
+  const { data, error } = await client
+    .from('gallery_images')
+    .select('*')
+    .order('sort_order', { ascending: true });
+
+  if (error) {
+    logQueryError('fetch all gallery images', error);
+    return [];
+  }
+
+  return (data ?? []).map((row) => mapGalleryRow(row as Record<string, unknown>));
 }
 
-export async function saveGalleryImage(
-  data: Omit<GalleryImage, 'id'> & { id?: string }
-) {
-  requireFirebaseConfig();
-  const galleryRef = data.id
-    ? doc(firestore, 'gallery', data.id)
-    : doc(collection(firestore, 'gallery'));
-  const { id, ...galleryData } = data;
-  void id;
-  await setDoc(galleryRef, galleryData, { merge: true });
-  return galleryRef.id;
+export async function saveGalleryImage(data: Omit<GalleryImage, 'id'> & { id?: string }) {
+  requireSupabaseConfig();
+  const client = getClient();
+  if (!client) {
+    throw new Error('Supabase client unavailable');
+  }
+
+  const payload = {
+    image_url: data.imageUrl,
+    category: data.category,
+    caption: data.caption,
+    sort_order: data.order,
+    active: data.active,
+  };
+
+  if (data.id) {
+    const { error } = await client.from('gallery_images').update(payload).eq('id', data.id);
+    if (error) {
+      throw new Error(error.message);
+    }
+    return data.id;
+  }
+
+  const { data: inserted, error } = await client
+    .from('gallery_images')
+    .insert(payload)
+    .select('id')
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return String(inserted.id);
 }
 
 export async function deleteGalleryImage(id: string) {
-  requireFirebaseConfig();
-  await deleteDoc(doc(firestore, 'gallery', id));
+  requireSupabaseConfig();
+  const client = getClient();
+  if (!client) {
+    throw new Error('Supabase client unavailable');
+  }
+
+  const { error } = await client.from('gallery_images').delete().eq('id', id);
+  if (error) {
+    throw new Error(error.message);
+  }
 }
 
-function mapAmenity(id: string, data: Record<string, unknown>): Amenity {
+function mapAmenityRow(row: Record<string, unknown>): Amenity {
   return {
-    id,
-    title: String(data.title ?? ''),
-    description: String(data.description ?? ''),
-    iconName: String(data.iconName ?? ''),
-    imageUrl: data.imageUrl ? String(data.imageUrl) : undefined,
-    order: Number(data.order ?? 0),
+    id: String(row.id ?? ''),
+    title: String(row.title ?? ''),
+    description: String(row.description ?? ''),
+    iconName: String(row.icon_name ?? row.iconName ?? ''),
+    imageUrl: row.image_url || row.imageUrl ? String(row.image_url ?? row.imageUrl) : undefined,
+    order: Number(row.sort_order ?? row.order ?? 0),
   };
 }
 
-// Amenities
 export async function getAmenities(): Promise<Amenity[]> {
-  if (!isFirebaseConfigured) {
+  if (!isSupabaseConfigured) {
     return [];
   }
 
-  try {
-    const q = query(
-      collection(firestore, 'amenities'),
-      orderBy('order', 'asc')
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((amenityDoc) =>
-      mapAmenity(amenityDoc.id, amenityDoc.data())
-    );
-  } catch (error) {
-    console.warn('Failed to fetch amenities from Firestore:', error);
+  const client = getClient();
+  if (!client) {
     return [];
   }
+
+  const { data, error } = await client
+    .from('amenities')
+    .select('*')
+    .order('sort_order', { ascending: true });
+
+  if (error) {
+    logQueryError('fetch amenities', error);
+    return [];
+  }
+
+  return (data ?? []).map((row) => mapAmenityRow(row as Record<string, unknown>));
 }
 
 export async function saveAmenity(data: Omit<Amenity, 'id'> & { id?: string }) {
-  requireFirebaseConfig();
-  const amenityRef = data.id
-    ? doc(firestore, 'amenities', data.id)
-    : doc(collection(firestore, 'amenities'));
-  const { id, ...amenityData } = data;
-  void id;
-  await setDoc(amenityRef, amenityData, { merge: true });
-  return amenityRef.id;
+  requireSupabaseConfig();
+  const client = getClient();
+  if (!client) {
+    throw new Error('Supabase client unavailable');
+  }
+
+  const payload = {
+    title: data.title,
+    description: data.description,
+    icon_name: data.iconName,
+    image_url: data.imageUrl ?? null,
+    sort_order: data.order,
+  };
+
+  if (data.id) {
+    const { error } = await client.from('amenities').update(payload).eq('id', data.id);
+    if (error) {
+      throw new Error(error.message);
+    }
+    return data.id;
+  }
+
+  const { data: inserted, error } = await client
+    .from('amenities')
+    .insert(payload)
+    .select('id')
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return String(inserted.id);
 }
 
-function mapFloorPlan(id: string, data: Record<string, unknown>): FloorPlan {
+function mapFloorPlanRow(row: Record<string, unknown>): FloorPlan {
   return {
-    id,
-    type: (data.type === '3BHK' ? '3BHK' : '2BHK') as '2BHK' | '3BHK',
-    imageUrl: String(data.imageUrl ?? ''),
-    carpetArea: Number(data.carpetArea ?? 0),
-    superArea: Number(data.superArea ?? 0),
-    price: Number(data.price ?? 0),
-    active: Boolean(data.active),
+    id: String(row.id ?? ''),
+    type: (row.type === '3BHK' ? '3BHK' : '2BHK') as '2BHK' | '3BHK',
+    imageUrl: String(row.image_url ?? row.imageUrl ?? ''),
+    carpetArea: Number(row.carpet_area ?? row.carpetArea ?? 0),
+    superArea: Number(row.super_area ?? row.superArea ?? 0),
+    price: Number(row.price ?? 0),
+    active: Boolean(row.active),
   };
 }
 
-// Floor Plans
 export async function getFloorPlans(bhkType?: string): Promise<FloorPlan[]> {
-  if (!isFirebaseConfigured) {
+  if (!isSupabaseConfigured) {
     return [];
   }
 
-  try {
-    let q;
-    if (bhkType) {
-      q = query(
-        collection(firestore, 'floorplans'),
-        where('active', '==', true),
-        where('type', '==', bhkType)
-      );
-    } else {
-      q = query(
-        collection(firestore, 'floorplans'),
-        where('active', '==', true)
-      );
-    }
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((planDoc) =>
-      mapFloorPlan(planDoc.id, planDoc.data())
-    );
-  } catch (error) {
-    console.warn('Failed to fetch floor plans from Firestore:', error);
+  const client = getClient();
+  if (!client) {
     return [];
   }
+
+  let query = client.from('floor_plans').select('*').eq('active', true);
+
+  if (bhkType) {
+    query = query.eq('type', bhkType);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    logQueryError('fetch floor plans', error);
+    return [];
+  }
+
+  return (data ?? []).map((row) => mapFloorPlanRow(row as Record<string, unknown>));
 }
 
 export async function getAllFloorPlans(): Promise<FloorPlan[]> {
-  if (!isFirebaseConfigured) {
+  if (!isSupabaseConfigured) {
     return [];
   }
 
-  try {
-    const querySnapshot = await getDocs(collection(firestore, 'floorplans'));
-    return querySnapshot.docs.map((planDoc) =>
-      mapFloorPlan(planDoc.id, planDoc.data())
-    );
-  } catch (error) {
-    console.warn('Failed to fetch all floor plans from Firestore:', error);
+  const client = getClient();
+  if (!client) {
     return [];
   }
+
+  const { data, error } = await client.from('floor_plans').select('*');
+
+  if (error) {
+    logQueryError('fetch all floor plans', error);
+    return [];
+  }
+
+  return (data ?? []).map((row) => mapFloorPlanRow(row as Record<string, unknown>));
 }
 
 export async function saveFloorPlan(data: Omit<FloorPlan, 'id'> & { id?: string }) {
-  requireFirebaseConfig();
-  const planRef = data.id
-    ? doc(firestore, 'floorplans', data.id)
-    : doc(collection(firestore, 'floorplans'));
-  const { id, ...planData } = data;
-  void id;
-  await setDoc(planRef, planData, { merge: true });
-  return planRef.id;
+  requireSupabaseConfig();
+  const client = getClient();
+  if (!client) {
+    throw new Error('Supabase client unavailable');
+  }
+
+  const payload = {
+    type: data.type,
+    image_url: data.imageUrl,
+    carpet_area: data.carpetArea,
+    super_area: data.superArea,
+    price: data.price,
+    active: data.active,
+  };
+
+  if (data.id) {
+    const { error } = await client.from('floor_plans').update(payload).eq('id', data.id);
+    if (error) {
+      throw new Error(error.message);
+    }
+    return data.id;
+  }
+
+  const { data: inserted, error } = await client
+    .from('floor_plans')
+    .insert(payload)
+    .select('id')
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return String(inserted.id);
 }
 
-// Blog
-function mapBlogPostData(id: string, data: Record<string, unknown>): BlogPost {
-  const tags = data.tags;
+function mapBlogPostRow(row: Record<string, unknown>): BlogPost {
+  const tags = row.tags;
   return {
-    id,
-    title: String(data.title ?? ''),
-    slug: String(data.slug ?? ''),
-    content: String(data.content ?? ''),
-    excerpt: String(data.excerpt ?? ''),
-    coverImage: String(data.coverImage ?? ''),
-    author: String(data.author ?? ''),
-    publishedAt: (data.publishedAt as BlogPost['publishedAt']) ?? new Date(),
-    category: String(data.category ?? ''),
-    published: Boolean(data.published),
+    id: String(row.id ?? ''),
+    title: String(row.title ?? ''),
+    slug: String(row.slug ?? ''),
+    content: String(row.content ?? ''),
+    excerpt: String(row.excerpt ?? ''),
+    coverImage: String(row.cover_image ?? row.coverImage ?? ''),
+    author: String(row.author ?? ''),
+    publishedAt: String(row.published_at ?? row.publishedAt ?? new Date().toISOString()),
+    category: String(row.category ?? ''),
+    published: Boolean(row.published),
     tags: Array.isArray(tags) ? tags.map(String) : undefined,
-    metaDescription: data.metaDescription ? String(data.metaDescription) : undefined,
-    readTimeMinutes: data.readTimeMinutes ? Number(data.readTimeMinutes) : undefined,
+    metaDescription:
+      row.meta_description || row.metaDescription
+        ? String(row.meta_description ?? row.metaDescription)
+        : undefined,
+    readTimeMinutes:
+      row.read_time_minutes || row.readTimeMinutes
+        ? Number(row.read_time_minutes ?? row.readTimeMinutes)
+        : undefined,
   };
 }
 
 export async function getBlogPosts(limit?: number): Promise<BlogPost[]> {
-  if (!isFirebaseConfigured) {
+  if (!isSupabaseConfigured) {
     return [];
   }
 
-  try {
-    const q = query(
-      collection(firestore, 'blog'),
-      where('published', '==', true),
-      orderBy('publishedAt', 'desc')
-    );
-    const querySnapshot = await getDocs(q);
-    let posts = querySnapshot.docs.map((blogDoc) => mapBlogPostData(blogDoc.id, blogDoc.data()));
-    if (limit) {
-      posts = posts.slice(0, limit);
-    }
-    return posts;
-  } catch (error) {
-    console.warn('Failed to fetch blog posts from Firestore:', error);
+  const client = getClient();
+  if (!client) {
     return [];
   }
+
+  let query = client
+    .from('blog_posts')
+    .select('*')
+    .eq('published', true)
+    .order('published_at', { ascending: false });
+
+  if (limit) {
+    query = query.limit(limit);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    logQueryError('fetch blog posts', error);
+    return [];
+  }
+
+  return (data ?? []).map((row) => mapBlogPostRow(row as Record<string, unknown>));
 }
 
 export async function getAllBlogPosts(): Promise<BlogPost[]> {
-  if (!isFirebaseConfigured) {
+  if (!isSupabaseConfigured) {
     return [];
   }
 
-  try {
-    const q = query(collection(firestore, 'blog'), orderBy('publishedAt', 'desc'));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((blogDoc) => mapBlogPostData(blogDoc.id, blogDoc.data()));
-  } catch (error) {
-    console.warn('Failed to fetch all blog posts from Firestore:', error);
+  const client = getClient();
+  if (!client) {
     return [];
   }
+
+  const { data, error } = await client
+    .from('blog_posts')
+    .select('*')
+    .order('published_at', { ascending: false });
+
+  if (error) {
+    logQueryError('fetch all blog posts', error);
+    return [];
+  }
+
+  return (data ?? []).map((row) => mapBlogPostRow(row as Record<string, unknown>));
 }
 
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
-  if (!isFirebaseConfigured) {
+  if (!isSupabaseConfigured) {
     return null;
   }
 
-  try {
-    const q = query(
-      collection(firestore, 'blog'),
-      where('slug', '==', slug),
-      where('published', '==', true)
-    );
-    const querySnapshot = await getDocs(q);
-    if (querySnapshot.docs.length > 0) {
-      const blogDoc = querySnapshot.docs[0];
-      return mapBlogPostData(blogDoc.id, blogDoc.data());
+  const client = getClient();
+  if (!client) {
+    return null;
+  }
+
+  const { data, error } = await client
+    .from('blog_posts')
+    .select('*')
+    .eq('slug', slug)
+    .eq('published', true)
+    .maybeSingle();
+
+  if (error) {
+    logQueryError('fetch blog post by slug', error);
+    return null;
+  }
+
+  return data ? mapBlogPostRow(data as Record<string, unknown>) : null;
+}
+
+export async function saveBlogPost(
+  data: Omit<BlogPost, 'id' | 'publishedAt'> & { id?: string; publishedAt?: Date }
+) {
+  requireSupabaseConfig();
+  const client = getClient();
+  if (!client) {
+    throw new Error('Supabase client unavailable');
+  }
+
+  const payload = {
+    title: data.title,
+    slug: data.slug,
+    content: data.content,
+    excerpt: data.excerpt,
+    cover_image: data.coverImage,
+    author: data.author,
+    published_at: (data.publishedAt ?? new Date()).toISOString(),
+    category: data.category,
+    published: data.published,
+    tags: data.tags ?? [],
+    meta_description: data.metaDescription ?? null,
+    read_time_minutes: data.readTimeMinutes ?? null,
+  };
+
+  if (data.id) {
+    const { error } = await client.from('blog_posts').update(payload).eq('id', data.id);
+    if (error) {
+      throw new Error(error.message);
     }
-    return null;
-  } catch (error) {
-    console.warn('Failed to fetch blog post from Firestore:', error);
-    return null;
-  }
-}
-
-export async function saveBlogPost(data: Omit<BlogPost, 'id' | 'publishedAt'> & { id?: string; publishedAt?: Date }) {
-  requireFirebaseConfig();
-  const blogRef = data.id ? doc(firestore, 'blog', data.id) : doc(collection(firestore, 'blog'));
-  const { id, ...blogData } = data;
-  void id;
-  await setDoc(
-    blogRef,
-    {
-      ...blogData,
-      publishedAt: data.publishedAt ?? serverTimestamp(),
-    },
-    { merge: true }
-  );
-  return blogRef.id;
-}
-
-// Testimonials
-export async function getTestimonials(): Promise<Testimonial[]> {
-  if (!isFirebaseConfigured) {
-    return [];
+    return data.id;
   }
 
-  try {
-    const q = query(
-      collection(firestore, 'testimonials'),
-      where('active', '==', true)
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((testimonialDoc) => ({
-      id: testimonialDoc.id,
-      name: testimonialDoc.data().name || '',
-      flatType: testimonialDoc.data().flatType || '',
-      quote: testimonialDoc.data().quote || '',
-      rating: Number(testimonialDoc.data().rating || 5),
-      active: Boolean(testimonialDoc.data().active),
-    }));
-  } catch (error) {
-    console.warn('Failed to fetch testimonials from Firestore:', error);
-    return [];
-  }
-}
+  const { data: inserted, error } = await client
+    .from('blog_posts')
+    .insert(payload)
+    .select('id')
+    .single();
 
-export async function getAllTestimonials(): Promise<Testimonial[]> {
-  if (!isFirebaseConfigured) {
-    return [];
+  if (error) {
+    throw new Error(error.message);
   }
 
-  try {
-    const q = query(collection(firestore, 'testimonials'));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((testimonialDoc) => ({
-      id: testimonialDoc.id,
-      name: testimonialDoc.data().name || '',
-      flatType: testimonialDoc.data().flatType || '',
-      quote: testimonialDoc.data().quote || '',
-      rating: Number(testimonialDoc.data().rating || 5),
-      active: Boolean(testimonialDoc.data().active),
-    }));
-  } catch (error) {
-    console.warn('Failed to fetch all testimonials from Firestore:', error);
-    return [];
-  }
+  return String(inserted.id);
 }
 
-export async function saveTestimonial(data: Omit<Testimonial, 'id'> & { id?: string }) {
-  requireFirebaseConfig();
-  const testimonialRef = data.id
-    ? doc(firestore, 'testimonials', data.id)
-    : doc(collection(firestore, 'testimonials'));
-  const { id, ...testimonialData } = data;
-  void id;
-  await setDoc(testimonialRef, testimonialData, { merge: true });
-  return testimonialRef.id;
-}
-
-function mapSpecification(id: string, data: Record<string, unknown>): Specification {
+function mapTestimonialRow(row: Record<string, unknown>): Testimonial {
   return {
-    id,
-    category: String(data.category ?? ''),
-    items: (data.items || []) as Specification['items'],
-    order: Number(data.order ?? 0),
+    id: String(row.id ?? ''),
+    name: String(row.name ?? ''),
+    flatType: String(row.flat_type ?? row.flatType ?? ''),
+    quote: String(row.quote ?? ''),
+    rating: Number(row.rating ?? 5),
+    active: Boolean(row.active),
   };
 }
 
-// Specifications
+export async function getTestimonials(): Promise<Testimonial[]> {
+  if (!isSupabaseConfigured) {
+    return [];
+  }
+
+  const client = getClient();
+  if (!client) {
+    return [];
+  }
+
+  const { data, error } = await client.from('testimonials').select('*').eq('active', true);
+
+  if (error) {
+    logQueryError('fetch testimonials', error);
+    return [];
+  }
+
+  return (data ?? []).map((row) => mapTestimonialRow(row as Record<string, unknown>));
+}
+
+export async function getAllTestimonials(): Promise<Testimonial[]> {
+  if (!isSupabaseConfigured) {
+    return [];
+  }
+
+  const client = getClient();
+  if (!client) {
+    return [];
+  }
+
+  const { data, error } = await client.from('testimonials').select('*');
+
+  if (error) {
+    logQueryError('fetch all testimonials', error);
+    return [];
+  }
+
+  return (data ?? []).map((row) => mapTestimonialRow(row as Record<string, unknown>));
+}
+
+export async function saveTestimonial(data: Omit<Testimonial, 'id'> & { id?: string }) {
+  requireSupabaseConfig();
+  const client = getClient();
+  if (!client) {
+    throw new Error('Supabase client unavailable');
+  }
+
+  const payload = {
+    name: data.name,
+    flat_type: data.flatType,
+    quote: data.quote,
+    rating: data.rating,
+    active: data.active,
+  };
+
+  if (data.id) {
+    const { error } = await client.from('testimonials').update(payload).eq('id', data.id);
+    if (error) {
+      throw new Error(error.message);
+    }
+    return data.id;
+  }
+
+  const { data: inserted, error } = await client
+    .from('testimonials')
+    .insert(payload)
+    .select('id')
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return String(inserted.id);
+}
+
+function mapSpecificationRow(row: Record<string, unknown>): Specification {
+  return {
+    id: String(row.id ?? ''),
+    category: String(row.category ?? ''),
+    items: (row.items || []) as Specification['items'],
+    order: Number(row.sort_order ?? row.order ?? 0),
+  };
+}
+
 export async function getSpecifications(): Promise<Specification[]> {
-  if (!isFirebaseConfigured) {
+  if (!isSupabaseConfigured) {
     return [];
   }
 
-  try {
-    const q = query(
-      collection(firestore, 'specifications'),
-      orderBy('order', 'asc')
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((specDoc) =>
-      mapSpecification(specDoc.id, specDoc.data())
-    );
-  } catch (error) {
-    console.warn('Failed to fetch specifications from Firestore:', error);
+  const client = getClient();
+  if (!client) {
     return [];
   }
+
+  const { data, error } = await client
+    .from('specifications')
+    .select('*')
+    .order('sort_order', { ascending: true });
+
+  if (error) {
+    logQueryError('fetch specifications', error);
+    return [];
+  }
+
+  return (data ?? []).map((row) => mapSpecificationRow(row as Record<string, unknown>));
 }
 
-export async function saveSpecification(
-  data: Omit<Specification, 'id'> & { id?: string }
-) {
-  requireFirebaseConfig();
-  const specRef = data.id
-    ? doc(firestore, 'specifications', data.id)
-    : doc(collection(firestore, 'specifications'));
-  const { id, ...specData } = data;
-  void id;
-  await setDoc(specRef, specData, { merge: true });
-  return specRef.id;
+export async function saveSpecification(data: Omit<Specification, 'id'> & { id?: string }) {
+  requireSupabaseConfig();
+  const client = getClient();
+  if (!client) {
+    throw new Error('Supabase client unavailable');
+  }
+
+  const payload = {
+    category: data.category,
+    items: data.items,
+    sort_order: data.order,
+  };
+
+  if (data.id) {
+    const { error } = await client.from('specifications').update(payload).eq('id', data.id);
+    if (error) {
+      throw new Error(error.message);
+    }
+    return data.id;
+  }
+
+  const { data: inserted, error } = await client
+    .from('specifications')
+    .insert(payload)
+    .select('id')
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return String(inserted.id);
 }
 
-// Enquiries
 export async function submitEnquiry(data: {
   name: string;
   phone: string;
@@ -569,46 +797,104 @@ export async function submitEnquiry(data: {
   message?: string;
   source: string;
 }) {
-  requireFirebaseConfig();
-  const docRef = await addDoc(collection(firestore, 'enquiries'), {
-    ...data,
-    createdAt: serverTimestamp(),
+  requireSupabaseConfig();
+  const client = getClient();
+  if (!client) {
+    throw new Error('Supabase client unavailable');
+  }
+
+  const { error } = await client.from('enquiries').insert({
+    name: data.name,
+    phone: data.phone,
+    email: data.email,
+    bhk_preference: data.bhkPreference,
+    visit_date: data.visitDate,
+    message: data.message ?? null,
+    source: data.source,
     contacted: false,
   });
-  return docRef.id;
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
 
-// Get enquiries (for admin)
+function mapEnquiryRow(row: Record<string, unknown>): Enquiry {
+  return {
+    id: String(row.id ?? ''),
+    name: String(row.name ?? ''),
+    phone: String(row.phone ?? ''),
+    email: String(row.email ?? ''),
+    bhkPreference: String(row.bhk_preference ?? row.bhkPreference ?? ''),
+    visitDate: String(row.visit_date ?? row.visitDate ?? ''),
+    message: String(row.message ?? ''),
+    source: String(row.source ?? ''),
+    createdAt: String(row.created_at ?? row.createdAt ?? new Date().toISOString()),
+    contacted: Boolean(row.contacted),
+  };
+}
+
 export async function getEnquiries(): Promise<Enquiry[]> {
-  if (!isFirebaseConfigured) {
+  if (!isSupabaseConfigured) {
     return [];
   }
 
-  try {
-    const q = query(
-      collection(firestore, 'enquiries'),
-      orderBy('createdAt', 'desc')
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((enquiryDoc) => ({
-      id: enquiryDoc.id,
-      name: String(enquiryDoc.data().name || ''),
-      phone: String(enquiryDoc.data().phone || ''),
-      email: String(enquiryDoc.data().email || ''),
-      bhkPreference: String(enquiryDoc.data().bhkPreference || ''),
-      visitDate: String(enquiryDoc.data().visitDate || ''),
-      message: String(enquiryDoc.data().message || ''),
-      source: String(enquiryDoc.data().source || ''),
-      createdAt: enquiryDoc.data().createdAt as Enquiry['createdAt'],
-      contacted: Boolean(enquiryDoc.data().contacted),
-    }));
-  } catch (error) {
-    console.warn('Failed to fetch enquiries from Firestore:', error);
+  const client = getClient();
+  if (!client) {
     return [];
   }
+
+  const { data, error } = await client
+    .from('enquiries')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    logQueryError('fetch enquiries', error);
+    return [];
+  }
+
+  return (data ?? []).map((row) => mapEnquiryRow(row as Record<string, unknown>));
 }
 
 export async function updateEnquiryContacted(id: string, contacted: boolean) {
-  requireFirebaseConfig();
-  await updateDoc(doc(firestore, 'enquiries', id), { contacted });
+  requireSupabaseConfig();
+  const client = getClient();
+  if (!client) {
+    throw new Error('Supabase client unavailable');
+  }
+
+  const { error } = await client.from('enquiries').update({ contacted }).eq('id', id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function isCurrentUserAdmin(): Promise<boolean> {
+  const client = getSupabaseBrowserClient();
+  if (!client) {
+    return false;
+  }
+
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+
+  if (!user) {
+    return false;
+  }
+
+  const { data, error } = await client
+    .from('admin_users')
+    .select('user_id')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.warn('Failed to verify admin access:', error.message);
+    return false;
+  }
+
+  return Boolean(data);
 }
