@@ -9,6 +9,7 @@ import TieUpBanksSection from '@/components/sections/TieUpBanksSection';
 import LocationSection from '@/components/sections/LocationSection';
 import AboutSection from '@/components/sections/AboutSection';
 import TestimonialsSection from '@/components/sections/TestimonialsSection';
+import VideoTestimonialsSection from '@/components/sections/VideoTestimonialsSection';
 import Footer from '@/components/sections/Footer';
 import { getAbsoluteUrl } from '@/lib/site';
 
@@ -38,6 +39,7 @@ export default function ProjectPage() {
       <LocationSection />
       <AboutSection />
       <TestimonialsSection />
+      <VideoTestimonialsSection />
       <Footer />
     </>
   );
