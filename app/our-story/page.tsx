@@ -6,12 +6,12 @@ import { getAbsoluteUrl } from '@/lib/site';
 export const metadata: Metadata = {
   title: 'Our Story',
   description:
-    'Discover the vision, values, and team behind Shubh Kamna Heights, a regulated residential community on NH-2, Chandauli.',
+    'Discover the vision behind Shubhkamna Heights — a thoughtfully planned residential community on the National Highway, Chandauli, built for every generation.',
   alternates: { canonical: '/our-story' },
   openGraph: {
     title: 'Our Story | Shubh Kamna Heights',
     description:
-      'Built on trust at the NH-2 corridor. Learn how Shubh Kamna Heights is shaping comfortable, connected living in Chandauli.',
+      'From our roots in Chandauli to modern homes on the NH corridor — learn how Shubhkamna Heights is shaping quality living in Eastern Uttar Pradesh.',
     url: getAbsoluteUrl('/our-story'),
     type: 'website',
   },
