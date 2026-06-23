@@ -108,6 +108,17 @@ export interface Testimonial {
   active: boolean;
 }
 
+export interface VideoTestimonial {
+  id: string;
+  name: string;
+  flatType: string;
+  profession: string;
+  quote: string;
+  videoUrl: string;
+  posterUrl?: string;
+  active: boolean;
+}
+
 export interface Specification {
   id: string;
   category: string;

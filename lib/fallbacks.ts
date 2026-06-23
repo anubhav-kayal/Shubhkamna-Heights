@@ -1,8 +1,8 @@
 import { toFallbackBanks } from '@/lib/bank-partners';
-import { AMENITIES_LIST } from '@/lib/constants';
+import { AMENITIES_LIST, VIDEO_TESTIMONIAL_MEDIA } from '@/lib/constants';
 import { getPlaceholderUrl, resolveImageUrl } from '@/lib/placeholders';
 import { FALLBACK_BLOG_POSTS } from '@/lib/site';
-import type { Amenity, Bank, BlogPost, FloorPlan, GalleryImage, Testimonial } from '@/types';
+import type { Amenity, Bank, BlogPost, FloorPlan, GalleryImage, Testimonial, VideoTestimonial } from '@/types';
 import type { Specification } from '@/types';
 
 export const FALLBACK_FLOOR_PLANS: Record<'2BHK' | '3BHK', FloorPlan[]> = {
@@ -79,6 +79,39 @@ export const FALLBACK_TESTIMONIALS: Testimonial[] = [
     quote:
       'Amenities and green cover stand out. It feels like a community address, not just another apartment block.',
     rating: 4,
+    active: true,
+  },
+];
+
+export const FALLBACK_VIDEO_TESTIMONIALS: VideoTestimonial[] = [
+  {
+    id: 'vt1',
+    name: 'Rajesh Kumar',
+    flatType: '3BHK',
+    profession: 'Business Owner',
+    quote:
+      'The open space and NH connectivity made this an easy choice for our family. We feel at home here.',
+    videoUrl: VIDEO_TESTIMONIAL_MEDIA.rajesh,
+    active: true,
+  },
+  {
+    id: 'vt2',
+    name: 'Priya Singh',
+    flatType: '2BHK',
+    profession: 'School Teacher',
+    quote:
+      'From booking to possession updates, the team was transparent. The community feels safe and well planned.',
+    videoUrl: VIDEO_TESTIMONIAL_MEDIA.priya,
+    active: true,
+  },
+  {
+    id: 'vt3',
+    name: 'Amit Patel',
+    flatType: '3BHK',
+    profession: 'Software Engineer',
+    quote:
+      'Schools, markets, and the highway are all close by. It is the kind of address we wanted for the long term.',
+    videoUrl: VIDEO_TESTIMONIAL_MEDIA.amit,
     active: true,
   },
 ];
@@ -191,6 +224,10 @@ export function resolveBanks(data: Bank[]): Bank[] {
 
 export function resolveTestimonials(data: Testimonial[]): Testimonial[] {
   return data.length > 0 ? data : FALLBACK_TESTIMONIALS;
+}
+
+export function resolveVideoTestimonials(data: VideoTestimonial[]): VideoTestimonial[] {
+  return data.length > 0 ? data : FALLBACK_VIDEO_TESTIMONIALS;
 }
 
 export function resolveSpecifications(data: Specification[]): Specification[] {

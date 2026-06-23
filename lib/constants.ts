@@ -22,6 +22,22 @@ export const PROJECT_DATA = {
   },
 };
 
+/** Replace imageUrl when photos are added under public/images/promoters/ */
+export const PROMOTERS = [
+  {
+    id: 'subhash-chandra-tulsian',
+    name: 'Mr Subhash Chandra Tulsian',
+    imageUrl: '',
+    roleKey: 'sections.story.promoter1Role',
+  },
+  {
+    id: 'abhishek-tulsian',
+    name: 'Mr Abhishek Tulsian',
+    imageUrl: '',
+    roleKey: 'sections.story.promoter2Role',
+  },
+] as const;
+
 export const LANDMARKS = [
   { distance: 0.0, name: 'NH-2 (Delhi to Kolkata)', category: 'Highway' },
   { distance: 3.0, name: 'P.W. Gurukulam', category: 'Educational' },
@@ -82,6 +98,13 @@ export const AMENITIES_LIST = [
   'Activity Park',
   '24/7 Security',
 ];
+
+/** Place testimonial MP4s in public/videos/ or set per-entry videoUrl */
+export const VIDEO_TESTIMONIAL_MEDIA = {
+  rajesh: process.env.NEXT_PUBLIC_VIDEO_TESTIMONIAL_1 ?? '/videos/testimonial-rajesh.mp4',
+  priya: process.env.NEXT_PUBLIC_VIDEO_TESTIMONIAL_2 ?? '/videos/testimonial-priya.mp4',
+  amit: process.env.NEXT_PUBLIC_VIDEO_TESTIMONIAL_3 ?? '/videos/testimonial-amit.mp4',
+} as const;
 
 /** Place project film at public/videos/shubh-kamna-heights.mp4 or set NEXT_PUBLIC_PROJECT_VIDEO_URL */
 export const PROJECT_MEDIA = {

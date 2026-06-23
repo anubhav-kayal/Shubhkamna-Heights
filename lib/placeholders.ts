@@ -34,6 +34,7 @@ const SEEDS = {
   },
   blog: ['sk-blog-1', 'sk-blog-2', 'sk-blog-3'],
   bank: ['sk-bank-1', 'sk-bank-2', 'sk-bank-3', 'sk-bank-4'],
+  promoter: ['sk-promoter-subhash', 'sk-promoter-abhishek'],
 } as const;
 
 export type PlaceholderKind =
@@ -42,7 +43,8 @@ export type PlaceholderKind =
   | 'gallery'
   | 'amenity'
   | 'blog'
-  | 'bank';
+  | 'bank'
+  | 'promoter';
 
 export function getPlaceholderUrl(
   kind: PlaceholderKind,
@@ -77,6 +79,13 @@ export function getPlaceholderUrl(
           : Math.abs(String(seed).split('').reduce((a, c) => a + c.charCodeAt(0), 0));
       return picsum(SEEDS.bank[index % SEEDS.bank.length], 400, 240);
     }
+    case 'promoter': {
+      const index =
+        typeof seed === 'number'
+          ? seed
+          : Math.abs(String(seed).split('').reduce((a, c) => a + c.charCodeAt(0), 0));
+      return picsum(SEEDS.promoter[index % SEEDS.promoter.length], 600, 750);
+    }
     default:
       return picsum('sk-gallery-default', 900, 700);
   }
@@ -97,4 +106,10 @@ export function resolveImageUrl(
 
 export function getHeroPosterUrl(poster?: string): string {
   return resolveImageUrl(poster, 'hero');
+}
+
+export function resolvePromoterPhotoUrl(imageUrl: string | undefined, seed: string | number): string {
+  const trimmed = imageUrl?.trim() ?? '';
+  if (trimmed) return trimmed;
+  return getPlaceholderUrl('promoter', seed);
 }
