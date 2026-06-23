@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Plus } from 'lucide-react';
-import { getAllTestimonials, saveTestimonial } from '@/lib/firestore';
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { deleteTestimonial, getAllTestimonials, saveTestimonial } from '@/lib/firestore';
 import type { Testimonial } from '@/types';
 
 type TestimonialForm = {
@@ -29,6 +29,7 @@ export default function TestimonialsAdminPage() {
   const [form, setForm] = useState<TestimonialForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState('');
 
   const loadTestimonials = async () => {
@@ -72,6 +73,23 @@ export default function TestimonialsAdminPage() {
       setMessage('Testimonial saved.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!form.id) return;
+    if (!window.confirm('Delete this testimonial? This cannot be undone.')) return;
+
+    setDeleting(true);
+    setMessage('');
+
+    try {
+      await deleteTestimonial(form.id);
+      await loadTestimonials();
+      resetForm();
+      setMessage('Testimonial deleted.');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -202,6 +220,17 @@ export default function TestimonialsAdminPage() {
             >
               {saving ? 'Saving...' : form.id ? 'Update Testimonial' : 'Create Testimonial'}
             </button>
+
+            {form.id && (
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 py-3 font-semibold text-red-400 disabled:opacity-60"
+              >
+                <Trash2 size={16} />
+                {deleting ? 'Deleting...' : 'Delete Testimonial'}
+              </button>
+            )}
           </div>
         </div>
       </div>

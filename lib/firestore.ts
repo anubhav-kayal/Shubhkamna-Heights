@@ -722,6 +722,19 @@ export async function saveTestimonial(data: Omit<Testimonial, 'id'> & { id?: str
   return String(inserted.id);
 }
 
+export async function deleteTestimonial(id: string) {
+  requireSupabaseConfig();
+  const client = getClient();
+  if (!client) {
+    throw new Error('Supabase client unavailable');
+  }
+
+  const { error } = await client.from('testimonials').delete().eq('id', id);
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
 function mapSpecificationRow(row: Record<string, unknown>): Specification {
   return {
     id: String(row.id ?? ''),
