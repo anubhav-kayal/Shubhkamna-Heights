@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -21,12 +21,18 @@ import {
   Button,
 } from '@/components/ui/design';
 
-export default function BlogSection() {
+export default function BlogSection({ initialData }: { initialData?: BlogPost[] }) {
   const { t } = useTranslation();
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [posts, setPosts] = useState<BlogPost[]>(initialData ?? []);
+  const [loading, setLoading] = useState(!initialData);
+  const hasInitial = useRef(!!initialData);
 
   useEffect(() => {
+    if (hasInitial.current) {
+      hasInitial.current = false;
+      return;
+    }
+
     const loadPosts = async () => {
       try {
         const data = await getBlogPosts(3);

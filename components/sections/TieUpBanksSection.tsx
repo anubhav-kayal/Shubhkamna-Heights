@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { getBanks } from '@/lib/firestore';
@@ -19,12 +19,18 @@ import {
   Button,
 } from '@/components/ui/design';
 
-export default function TieUpBanksSection() {
+export default function TieUpBanksSection({ initialData }: { initialData?: Bank[] }) {
   const { t } = useTranslation();
-  const [banks, setBanks] = useState<Bank[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [banks, setBanks] = useState<Bank[]>(initialData ?? []);
+  const [loading, setLoading] = useState(!initialData);
+  const hasInitial = useRef(!!initialData);
 
   useEffect(() => {
+    if (hasInitial.current) {
+      hasInitial.current = false;
+      return;
+    }
+
     const loadBanks = async () => {
       try {
         const data = await getBanks();

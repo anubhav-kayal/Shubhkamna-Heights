@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
@@ -148,14 +148,20 @@ function AmenityTile({ amenity }: { amenity: Amenity }) {
 
 const SPOTLIGHT_INTERVAL_MS = 2000;
 
-export default function AmenitiesSection() {
+export default function AmenitiesSection({ initialData }: { initialData?: Amenity[] }) {
   const { t } = useTranslation();
   const { openEnquiry } = useEnquiryModal();
-  const [amenities, setAmenities] = useState<Amenity[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [amenities, setAmenities] = useState<Amenity[]>(initialData ?? []);
+  const [loading, setLoading] = useState(!initialData);
   const [spotlightIndex, setSpotlightIndex] = useState(0);
+  const hasInitial = useRef(!!initialData);
 
   useEffect(() => {
+    if (hasInitial.current) {
+      hasInitial.current = false;
+      return;
+    }
+
     const loadAmenities = async () => {
       try {
         const data = await getAmenities();

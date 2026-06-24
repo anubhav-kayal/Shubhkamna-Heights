@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Building2, Expand, Landmark } from 'lucide-react';
 import { getFloorPlans } from '@/lib/firestore';
@@ -33,14 +33,30 @@ import {
 const primaryLinkClassName =
   'inline-flex w-full items-center justify-center gap-2 border border-gold/50 bg-gradient-to-br from-gold to-gold-light px-5 py-3 font-inter text-sm font-semibold text-text-dark shadow-[0_8px_24px_rgba(201,168,76,0.25)] transition-all duration-200 hover:shadow-[0_12px_32px_rgba(201,168,76,0.35)] sm:w-auto';
 
-export default function FloorPlansSection() {
+export default function FloorPlansSection({
+  initialData2BHK,
+  initialData3BHK,
+}: {
+  initialData2BHK?: FloorPlan[];
+  initialData3BHK?: FloorPlan[];
+}) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'2BHK' | '3BHK'>('3BHK');
-  const [floorPlans, setFloorPlans] = useState<FloorPlan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [floorPlans, setFloorPlans] = useState<FloorPlan[]>(initialData3BHK ?? []);
+  const [loading, setLoading] = useState(false);
   const [costSheetOpen, setCostSheetOpen] = useState(false);
+  const hasInitial = useRef<Record<string, boolean>>({
+    '2BHK': !!initialData2BHK,
+    '3BHK': !!initialData3BHK,
+  });
 
   useEffect(() => {
+    if (hasInitial.current[activeTab]) {
+      hasInitial.current[activeTab] = false;
+      setFloorPlans(activeTab === '2BHK' ? (initialData2BHK ?? []) : (initialData3BHK ?? []));
+      return;
+    }
+
     const loadFloorPlans = async () => {
       setLoading(true);
       try {

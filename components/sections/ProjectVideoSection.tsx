@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import type { HeroSettings } from '@/types';
 import { Play } from 'lucide-react';
 import { getHeroSettings } from '@/lib/firestore';
 import { PROJECT_MEDIA, PROJECT_OVERVIEW_VIDEO_URL } from '@/lib/constants';
@@ -48,17 +49,31 @@ function getYouTubeEmbedUrl(url: string): string | null {
   return null;
 }
 
-export default function ProjectVideoSection({ className }: { className?: string }) {
+export default function ProjectVideoSection({
+  className,
+  initialSettings,
+}: {
+  className?: string;
+  initialSettings?: HeroSettings | null;
+}) {
   const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoUrl, setVideoUrl] = useState(PROJECT_OVERVIEW_VIDEO_URL);
+  const [videoUrl, setVideoUrl] = useState(
+    initialSettings?.videoUrl || PROJECT_OVERVIEW_VIDEO_URL,
+  );
   const [posterUrl, setPosterUrl] = useState(() =>
-    getHeroPosterUrl(PROJECT_MEDIA.posterUrl || undefined),
+    getHeroPosterUrl(initialSettings?.posterUrl || PROJECT_MEDIA.posterUrl || undefined),
   );
   const [hasError, setHasError] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+  const hasInitial = useRef(!!initialSettings);
 
   useEffect(() => {
+    if (hasInitial.current) {
+      hasInitial.current = false;
+      return;
+    }
+
     const load = async () => {
       try {
         const settings = await getHeroSettings();

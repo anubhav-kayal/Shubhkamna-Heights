@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { getGalleryImages } from '@/lib/firestore';
@@ -8,6 +8,10 @@ import { FALLBACK_GALLERY, resolveGallery } from '@/lib/fallbacks';
 import { useTranslation } from '@/context/LocaleContext';
 import MediaCover from '@/components/ui/MediaCover';
 import type { GalleryImage } from '@/types';
+
+type Props = {
+  initialData?: GalleryImage[];
+};
 import {
   Section,
   PageContainer,
@@ -40,13 +44,19 @@ function categoryLabel(category: string, t: (key: string) => string) {
   return key ? t(key) : category;
 }
 
-export default function GallerySection() {
+export default function GallerySection({ initialData }: Props) {
   const { t } = useTranslation();
-  const [images, setImages] = useState<GalleryImage[]>([]);
+  const [images, setImages] = useState<GalleryImage[]>(initialData ?? []);
   const [selectedCategory, setSelectedCategory] = useState<(typeof CATEGORIES)[number]>('All');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialData);
+  const hasInitial = useRef(!!initialData);
 
   useEffect(() => {
+    if (hasInitial.current && selectedCategory === 'All') {
+      hasInitial.current = false;
+      return;
+    }
+
     const loadGallery = async () => {
       setLoading(true);
       try {
