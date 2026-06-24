@@ -23,7 +23,7 @@ export async function uploadFile(file: File, folder: string): Promise<string> {
   const path = `${folder}/${Date.now()}-${safeName}`;
 
   const { error } = await client.storage.from(MEDIA_BUCKET).upload(path, file, {
-    cacheControl: '3600',
+    cacheControl: '31536000',
     upsert: false,
   });
 
