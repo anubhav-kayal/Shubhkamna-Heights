@@ -12,6 +12,8 @@ import TestimonialsSection from '@/components/sections/TestimonialsSection';
 import VideoTestimonialsSection from '@/components/sections/VideoTestimonialsSection';
 import Footer from '@/components/sections/Footer';
 import { getAbsoluteUrl } from '@/lib/site';
+import { getGalleryImages, getAmenities, getFloorPlans, getBanks, getHeroSettings } from '@/lib/firestore';
+import { resolveGallery, resolveAmenities, resolveFloorPlans, resolveBanks } from '@/lib/fallbacks';
 
 export const metadata: Metadata = {
   title: 'The Project',
@@ -26,16 +28,38 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ProjectPage() {
+export default async function ProjectPage() {
+  const [galleryRaw, amenitiesRaw, floorPlans2BHK, floorPlans3BHK, banksRaw, heroSettings] =
+    await Promise.all([
+      getGalleryImages(),
+      getAmenities(),
+      getFloorPlans('2BHK'),
+      getFloorPlans('3BHK'),
+      getBanks(),
+      getHeroSettings(),
+    ]);
+
+  const initialGallery = resolveGallery(galleryRaw);
+  const initialAmenities = resolveAmenities(amenitiesRaw);
+  const initialFloorPlans2BHK = resolveFloorPlans(floorPlans2BHK, '2BHK');
+  const initialFloorPlans3BHK = resolveFloorPlans(floorPlans3BHK, '3BHK');
+  const initialBanks = resolveBanks(banksRaw);
+
   return (
     <>
-      <ProjectVideoSection className="pt-[calc(var(--site-header-height)+2rem)] sm:pt-[calc(var(--site-header-height)+2.75rem)]" />
+      <ProjectVideoSection
+        className="pt-[calc(var(--site-header-height)+2rem)] sm:pt-[calc(var(--site-header-height)+2.75rem)]"
+        initialSettings={heroSettings}
+      />
       <ProjectOverviewSection />
-      <AmenitiesSection />
-      <FloorPlansSection />
-      <GallerySection />
+      <AmenitiesSection initialData={initialAmenities} />
+      <FloorPlansSection
+        initialData2BHK={initialFloorPlans2BHK}
+        initialData3BHK={initialFloorPlans3BHK}
+      />
+      <GallerySection initialData={initialGallery} />
       <SpecificationsSection />
-      <TieUpBanksSection />
+      <TieUpBanksSection initialData={initialBanks} />
       <LocationSection />
       <AboutSection />
       <TestimonialsSection />
