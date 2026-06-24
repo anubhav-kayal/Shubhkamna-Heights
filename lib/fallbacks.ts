@@ -1,46 +1,26 @@
 import { toFallbackBanks } from '@/lib/bank-partners';
 import { AMENITIES_LIST, VIDEO_TESTIMONIAL_MEDIA } from '@/lib/constants';
+import { buildOfficialFloorPlans } from '@/lib/flat-pricing';
+import { GALLERY_FALLBACK_ITEMS } from '@/lib/project-images';
 import { getPlaceholderUrl, resolveImageUrl } from '@/lib/placeholders';
 import { FALLBACK_BLOG_POSTS } from '@/lib/site';
 import type { Amenity, Bank, BlogPost, FloorPlan, GalleryImage, Testimonial, VideoTestimonial } from '@/types';
 import type { Specification } from '@/types';
 
-export const FALLBACK_FLOOR_PLANS: Record<'2BHK' | '3BHK', FloorPlan[]> = {
-  '2BHK': [
-    {
-      id: 'fallback-2bhk',
-      type: '2BHK',
-      imageUrl: getPlaceholderUrl('floorPlan', '2BHK'),
-      carpetArea: 800,
-      superArea: 980,
-      price: 3200000,
-      active: true,
-    },
-  ],
-  '3BHK': [
-    {
-      id: 'fallback-3bhk',
-      type: '3BHK',
-      imageUrl: getPlaceholderUrl('floorPlan', '3BHK'),
-      carpetArea: 1200,
-      superArea: 1480,
-      price: 5200000,
-      active: true,
-    },
-  ],
-};
+export const OFFICIAL_FLOOR_PLANS = buildOfficialFloorPlans((unitId) =>
+  getPlaceholderUrl('floorPlan', unitId),
+);
 
-export const FALLBACK_GALLERY: GalleryImage[] = Array.from({ length: 6 }, (_, i) => {
-  const category = ['Exterior', 'Interior', 'Amenities', 'Views'][i % 4];
-  return {
-    id: `gallery-fallback-${i}`,
-    imageUrl: resolveImageUrl('', 'gallery', `${category}-${i}`),
-    category,
-    caption: `Project view ${i + 1}`,
-    order: i,
-    active: true,
-  };
-});
+export const FALLBACK_FLOOR_PLANS = OFFICIAL_FLOOR_PLANS;
+
+export const FALLBACK_GALLERY: GalleryImage[] = GALLERY_FALLBACK_ITEMS.map((item, i) => ({
+  id: `gallery-fallback-${i}`,
+  imageUrl: item.imageUrl,
+  category: item.category,
+  caption: item.caption,
+  order: i,
+  active: true,
+}));
 
 export const FALLBACK_AMENITIES: Amenity[] = AMENITIES_LIST.map((name, idx) => ({
   id: `amenity-fallback-${idx}`,
@@ -163,7 +143,7 @@ export const FALLBACK_SPECIFICATIONS: Specification[] = [
 function mapFloorPlanImages(plans: FloorPlan[]): FloorPlan[] {
   return plans.map((plan) => ({
     ...plan,
-    imageUrl: resolveImageUrl(plan.imageUrl, 'floorPlan', plan.type),
+    imageUrl: resolveImageUrl(plan.imageUrl, 'floorPlan', plan.id),
   }));
 }
 
@@ -202,8 +182,21 @@ export function resolveFloorPlans(
   data: FloorPlan[],
   bhkType: '2BHK' | '3BHK'
 ): FloorPlan[] {
-  const matching = data.filter((plan) => plan.type === bhkType);
-  const plans = matching.length > 0 ? matching : FALLBACK_FLOOR_PLANS[bhkType];
+  const official = OFFICIAL_FLOOR_PLANS[bhkType];
+  const cmsById = new Map(
+    data.filter((plan) => plan.type === bhkType).map((plan) => [plan.id, plan]),
+  );
+
+  const plans = official.map((plan) => {
+    const cmsPlan = cmsById.get(plan.id);
+    if (!cmsPlan) return plan;
+
+    return {
+      ...plan,
+      imageUrl: cmsPlan.imageUrl || plan.imageUrl,
+    };
+  });
+
   return mapFloorPlanImages(plans);
 }
 

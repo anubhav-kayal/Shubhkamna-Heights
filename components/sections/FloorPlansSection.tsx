@@ -5,9 +5,13 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Building2, Expand, Landmark } from 'lucide-react';
 import { getFloorPlans } from '@/lib/firestore';
 import { resolveFloorPlans } from '@/lib/fallbacks';
+import { PROJECT_DATA } from '@/lib/constants';
+import { DISCOUNTED_PRICE_PER_SQFT } from '@/lib/flat-pricing';
 import MediaCover from '@/components/ui/MediaCover';
+import CostSheetModal from '@/components/ui/CostSheetModal';
 import type { FloorPlan } from '@/types';
 import { useTranslation } from '@/context/LocaleContext';
+import { cn } from '@/lib/cn';
 import {
   Section,
   PageContainer,
@@ -26,11 +30,15 @@ import {
   BtnRow,
 } from '@/components/ui/design';
 
+const primaryLinkClassName =
+  'inline-flex w-full items-center justify-center gap-2 border border-gold/50 bg-gradient-to-br from-gold to-gold-light px-5 py-3 font-inter text-sm font-semibold text-text-dark shadow-[0_8px_24px_rgba(201,168,76,0.25)] transition-all duration-200 hover:shadow-[0_12px_32px_rgba(201,168,76,0.35)] sm:w-auto';
+
 export default function FloorPlansSection() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'2BHK' | '3BHK'>('3BHK');
   const [floorPlans, setFloorPlans] = useState<FloorPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [costSheetOpen, setCostSheetOpen] = useState(false);
 
   useEffect(() => {
     const loadFloorPlans = async () => {
@@ -101,18 +109,18 @@ export default function FloorPlansSection() {
                     <div className="relative min-h-[240px] lg:min-h-[320px]">
                       <MediaCover
                         src={plan.imageUrl}
-                        alt={`${plan.type} floor plan`}
+                        alt={plan.unitLabel ?? `${plan.type} floor plan`}
                         sizes="(max-width: 1024px) 100vw, 50vw"
                         overlay="none"
                         fallbackKind="floorPlan"
-                        fallbackSeed={plan.type}
+                        fallbackSeed={plan.id}
                       />
                     </div>
 
                     <div className="flex min-w-0 flex-col gap-6 p-6 sm:p-8">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <BadgePill className="border border-gold/35 bg-gold/15 text-gold-dark">
-                          {plan.type}
+                          {plan.unitLabel ?? plan.type}
                         </BadgePill>
                         <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-on-light">
                           {t('sections.floorPlans.limited')}
@@ -123,10 +131,10 @@ export default function FloorPlansSection() {
                         <div className=" border border-border-on-light bg-bg-light p-4">
                           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-on-light">
                             <Expand size={16} aria-hidden className="text-gold-dark" />
-                            <span>{t('sections.floorPlans.carpet')}</span>
+                            <span>{t('sections.floorPlans.saleable')}</span>
                           </div>
                           <p className="mt-2 font-cormorant text-2xl font-semibold text-text-dark">
-                            {plan.carpetArea}
+                            {plan.superArea.toLocaleString('en-IN')}
                             <span className="ml-1 font-inter text-sm font-medium text-muted-on-light">
                               {t('sections.floorPlans.sqFt')}
                             </span>
@@ -135,12 +143,12 @@ export default function FloorPlansSection() {
                         <div className=" border border-border-on-light bg-bg-light p-4">
                           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-on-light">
                             <Landmark size={16} aria-hidden className="text-gold-dark" />
-                            <span>{t('sections.floorPlans.super')}</span>
+                            <span>{t('sections.floorPlans.offerRate')}</span>
                           </div>
                           <p className="mt-2 font-cormorant text-2xl font-semibold text-text-dark">
-                            {plan.superArea}
+                            ₹{DISCOUNTED_PRICE_PER_SQFT.toLocaleString('en-IN')}
                             <span className="ml-1 font-inter text-sm font-medium text-muted-on-light">
-                              {t('sections.floorPlans.sqFt')}
+                              {t('sections.floorPlans.perSqFt')}
                             </span>
                           </p>
                         </div>
@@ -159,11 +167,21 @@ export default function FloorPlansSection() {
                       </div>
 
                       <BtnRow className="flex-col sm:flex-row">
-                        <Button variant="primary" className="w-full sm:w-auto">
+                        <a
+                          href={PROJECT_DATA.sitePlanPdfUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={primaryLinkClassName}
+                        >
                           {t('sections.floorPlans.getDetails')}
                           <ArrowRight size={16} />
-                        </Button>
-                        <Button variant="secondary" className="w-full sm:w-auto">
+                        </a>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full sm:w-auto"
+                          onClick={() => setCostSheetOpen(true)}
+                        >
                           {t('sections.floorPlans.costSheet')}
                         </Button>
                       </BtnRow>
@@ -192,15 +210,26 @@ export default function FloorPlansSection() {
                   Comprehensive site layout with residential blocks, driveways, open greens, and
                   amenity zones.
                 </p>
-                <Button variant="primary" className="mt-6">
+                <a
+                  href={PROJECT_DATA.sitePlanPdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(primaryLinkClassName, 'mt-6')}
+                >
                   {t('sections.floorPlans.viewSitePlan')}
                   <ArrowRight size={16} />
-                </Button>
+                </a>
               </div>
             </div>
           </LightCard>
         </motion.div>
       </PageContainer>
+
+      <CostSheetModal
+        isOpen={costSheetOpen}
+        bhkType={activeTab}
+        onClose={() => setCostSheetOpen(false)}
+      />
     </Section>
   );
 }

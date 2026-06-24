@@ -77,6 +77,7 @@ export interface FloorPlan {
   id: string;
   type: '2BHK' | '3BHK';
   imageUrl: string;
+  unitLabel?: string;
   carpetArea: number;
   superArea: number;
   price: number;
