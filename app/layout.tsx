@@ -8,6 +8,7 @@ import AppShell from '@/components/layout/AppShell';
 import ThemeScript from '@/components/ThemeScript';
 import { PROJECT_DATA } from '@/lib/constants';
 import { SITE_URL } from '@/lib/site';
+import { SITE_ICON_METADATA, SITE_OG_IMAGE } from '@/lib/branding';
 
 const cormorant = Cormorant_Garamond({
   variable: '--font-cormorant',
@@ -40,6 +41,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
+  icons: SITE_ICON_METADATA,
   openGraph: {
     title: 'Shubh Kamna Heights | Crafted for Comfort. Designed for Life.',
     description:
@@ -47,12 +49,14 @@ export const metadata: Metadata = {
     type: 'website',
     url: SITE_URL,
     siteName: 'Shubh Kamna Heights',
+    images: [SITE_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Shubh Kamna Heights | 2BHK & 3BHK Flats in Chandauli',
     description:
       'Premium homes at NH-2 Chandauli with 65%+ open space, lifestyle amenities, and direct connectivity to Varanasi.',
+    images: [SITE_OG_IMAGE.url],
   },
   robots: {
     index: true,
@@ -101,6 +105,8 @@ export default function RootLayout({
               },
               telephone: PROJECT_DATA.contactPhone.replace(/\s+/g, ''),
               url: SITE_URL,
+              image: SITE_OG_IMAGE.url,
+              logo: SITE_OG_IMAGE.url,
             }),
           }}
         />

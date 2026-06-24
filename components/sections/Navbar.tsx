@@ -9,6 +9,7 @@ import { PROJECT_DATA } from '@/lib/constants';
 import { useEnquiryModal } from '@/context/EnquiryModalContext';
 import { useTranslation } from '@/context/LocaleContext';
 import ThemeLocaleControls, { ThemeLocaleControlsMobile } from '@/components/ui/ThemeLocaleControls';
+import BrandLogo from '@/components/ui/BrandLogo';
 import { PageContainer } from '@/components/ui/design';
 import { cn } from '@/lib/cn';
 
@@ -110,26 +111,7 @@ export default function Navbar() {
       >
         <PageContainer>
           <div className="flex min-h-[var(--header-nav)] items-center justify-between gap-3">
-            <Link href="/" className="flex shrink-0 items-center">
-              <div className="flex flex-col leading-none">
-                <span
-                  className={cn(
-                    'font-cormorant text-lg font-bold tracking-[0.06em] lg:text-xl xl:text-[1.65rem] xl:tracking-[0.08em]',
-                    solidHeader || !isHome ? 'text-gold' : 'text-gold-dark',
-                  )}
-                >
-                  SHUBH KAMNA
-                </span>
-                <span
-                  className={cn(
-                    'mt-1 font-inter text-[0.55rem] uppercase tracking-[0.32em] lg:text-[0.6rem] xl:text-[0.68rem] xl:tracking-[0.36em]',
-                    solidHeader || !isHome ? 'text-text-secondary' : 'text-text-dark/60',
-                  )}
-                >
-                  HEIGHTS
-                </span>
-              </div>
-            </Link>
+            <BrandLogo href="/" variant="nav" />
 
             <div className="hidden min-w-0 flex-1 flex-nowrap items-center justify-center gap-1 overflow-x-auto md:flex md:gap-2 lg:[scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {NAV_LINKS.map((link) => {

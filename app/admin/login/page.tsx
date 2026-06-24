@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import BrandLogo from '@/components/ui/BrandLogo';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -53,10 +54,8 @@ export default function AdminLoginPage() {
         className="w-full max-w-md"
       >
         <div className="mb-8 text-center">
-          <h1 className="font-cormorant text-3xl font-bold text-[var(--gold)]">
-            SHUBH KAMNA
-          </h1>
-          <p className="mt-2 text-[var(--text-secondary)]">Admin Portal</p>
+          <BrandLogo variant="admin" />
+          <p className="mt-3 text-[var(--text-secondary)]">Admin Portal</p>
         </div>
 
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] p-8">

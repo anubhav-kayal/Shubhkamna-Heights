@@ -5,6 +5,7 @@ import { PROJECT_DATA } from '@/lib/constants';
 import { useTranslation } from '@/context/LocaleContext';
 import { ArrowRight, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react';
 import { PageContainer } from '@/components/ui/design';
+import BrandLogo from '@/components/ui/BrandLogo';
 
 const QUICK_LINKS = [
   { labelKey: 'nav.home', href: '/' },
@@ -72,14 +73,7 @@ export default function Footer() {
       <PageContainer className="py-10 sm:py-12">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-12 lg:gap-6">
           <div className="lg:col-span-4">
-            <Link href="/" className="inline-block">
-              <p className="font-cormorant text-2xl font-semibold uppercase tracking-[0.08em] text-gold sm:text-3xl">
-                SHUBH KAMNA
-              </p>
-              <p className="mt-1 font-inter text-xs uppercase tracking-[0.38em] text-text-secondary">
-                Heights
-              </p>
-            </Link>
+            <BrandLogo href="/" variant="footer" />
             <p className="mt-4 max-w-sm text-sm text-text-secondary">{PROJECT_DATA.tagline}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {BADGE_KEYS.map((key) => (

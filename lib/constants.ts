@@ -20,6 +20,8 @@ export const PROJECT_DATA = {
     active: ['Block A', 'Block B'],
     future: ['Block C', 'Block D'],
   },
+  sitePlanPdfUrl: '/fullplan.pdf',
+  logoUrl: '/images/logo.png',
 };
 
 /** Replace imageUrl when photos are added under public/images/promoters/ */
