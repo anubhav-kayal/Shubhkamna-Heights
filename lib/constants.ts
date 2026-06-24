@@ -101,11 +101,13 @@ export const AMENITIES_LIST = [
   '24/7 Security',
 ];
 
-/** Place testimonial MP4s in public/videos/ or set per-entry videoUrl */
+/** Customer review clips in public/videos/ */
+export const CUSTOMER_REVIEW_VIDEO_URL = '/videos/cust1.mp4';
+
 export const VIDEO_TESTIMONIAL_MEDIA = {
-  rajesh: process.env.NEXT_PUBLIC_VIDEO_TESTIMONIAL_1 ?? '/videos/testimonial-rajesh.mp4',
-  priya: process.env.NEXT_PUBLIC_VIDEO_TESTIMONIAL_2 ?? '/videos/testimonial-priya.mp4',
-  amit: process.env.NEXT_PUBLIC_VIDEO_TESTIMONIAL_3 ?? '/videos/testimonial-amit.mp4',
+  rajesh: process.env.NEXT_PUBLIC_VIDEO_TESTIMONIAL_1 ?? CUSTOMER_REVIEW_VIDEO_URL,
+  priya: process.env.NEXT_PUBLIC_VIDEO_TESTIMONIAL_2 ?? CUSTOMER_REVIEW_VIDEO_URL,
+  amit: process.env.NEXT_PUBLIC_VIDEO_TESTIMONIAL_3 ?? CUSTOMER_REVIEW_VIDEO_URL,
 } as const;
 
 /** Project overview film in public/videos/ */
