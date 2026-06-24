@@ -12,31 +12,35 @@ import {
 } from '@/lib/calculator';
 import { getPricingSettings } from '@/lib/firestore';
 import { PROJECT_DATA } from '@/lib/constants';
+import {
+  DEFAULT_FLAT_UNIT_ID,
+  DISCOUNTED_PRICE_PER_SQFT,
+  FLAT_UNIT_OPTIONS,
+  getFlatUnitOption,
+} from '@/lib/flat-pricing';
 import { Button } from '@/components/ui/design';
+import CustomSelect from '@/components/ui/CustomSelect';
 import { useTranslation } from '@/context/LocaleContext';
 import { cn } from '@/lib/cn';
 
 const fieldLabelClassName =
   'block text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary';
 
-const selectClassName =
-  'w-full border border-border-gold bg-bg-primary px-3 py-2.5 text-sm text-text-primary focus:border-gold focus:outline-none';
-
-const numberInputClassName =
-  'w-full border border-border-gold bg-bg-primary px-3 py-2.5 font-inter text-sm text-text-primary tabular-nums placeholder:text-text-secondary/60 focus:border-gold focus:outline-none';
+const LOAN_TENURE_OPTIONS = [10, 15, 20, 25] as const;
 
 export default function CostCalculatorWidget() {
   const { t } = useTranslation();
   const { isOpen, openCalculator, closeCalculator } = useCalculator();
-  const DEFAULT_PRICE_PER_SQFT = 3500;
+  const defaultFlat = getFlatUnitOption(DEFAULT_FLAT_UNIT_ID);
 
   const [inputs, setInputs] = useState<CalculatorInputs>({
-    bhkType: '3BHK',
-    areaScftFt: 1200,
+    flatUnitId: defaultFlat.id,
+    bhkType: defaultFlat.bhkType,
+    areaScftFt: defaultFlat.saleableAreaSqFt,
     downPaymentPercent: 20,
     loanTenureYears: 20,
     interestRateAnnual: 8.5,
-    pricePerSqft: DEFAULT_PRICE_PER_SQFT,
+    pricePerSqft: DISCOUNTED_PRICE_PER_SQFT,
     gstPercent: 5,
     stampDutyPercent: 5,
   });
@@ -53,9 +57,7 @@ export default function CostCalculatorWidget() {
           pricePerSqft:
             pricing?.perSqftRate && pricing.perSqftRate > 0
               ? pricing.perSqftRate
-              : prev.pricePerSqft > 0
-                ? prev.pricePerSqft
-                : DEFAULT_PRICE_PER_SQFT,
+              : DISCOUNTED_PRICE_PER_SQFT,
           gstPercent: pricing?.gstPercent ?? prev.gstPercent,
           stampDutyPercent: pricing?.stampDutyPercent ?? prev.stampDutyPercent,
         }));
@@ -82,8 +84,9 @@ export default function CostCalculatorWidget() {
 
   const handleWhatsAppClick = () => {
     const emiText = outputs ? formatEmi(outputs.monthlyEmi) : '—';
+    const flat = getFlatUnitOption(inputs.flatUnitId);
     const message = encodeURIComponent(
-      `Hello! I'm interested in home loan options for Shubh Kamna Heights (${inputs.bhkType}, ${inputs.areaScftFt} sq ft). My estimated EMI is ${emiText}/month. Please connect me with your loan expert.`,
+      `Hello! I'm interested in home loan options for Shubh Kamna Heights (${flat.label}). My estimated EMI is ${emiText}/month. Please connect me with your loan expert.`,
     );
     window.open(`https://wa.me/${PROJECT_DATA.whatsappNumber}?text=${message}`, '_blank');
   };
@@ -209,6 +212,17 @@ function CalculatorContent({
   handleWhatsAppClick,
 }: CalculatorContentProps) {
   const { t } = useTranslation();
+  const selectedFlat = getFlatUnitOption(inputs.flatUnitId);
+
+  const handleFlatChange = (flatUnitId: string) => {
+    const flat = getFlatUnitOption(flatUnitId);
+    setInputs({
+      ...inputs,
+      flatUnitId: flat.id,
+      bhkType: flat.bhkType,
+      areaScftFt: flat.saleableAreaSqFt,
+    });
+  };
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -232,78 +246,25 @@ function CalculatorContent({
         ) : (
           <div className="space-y-5">
             <div>
-              <label htmlFor="bhk-type" className={fieldLabelClassName}>
+              <label htmlFor="flat-unit" className={fieldLabelClassName}>
                 {t('sections.calculator.bhk')}
               </label>
-              <select
-                id="bhk-type"
-                value={inputs.bhkType}
-                onChange={(e) => setInputs({ ...inputs, bhkType: e.target.value })}
-                className={cn('mt-2', selectClassName)}
-              >
-                <option value="2BHK">2 BHK</option>
-                <option value="3BHK">3 BHK</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="price-per-sqft" className={fieldLabelClassName}>
-                {t('sections.calculator.pricePerSqft')}
-              </label>
-              <input
-                id="price-per-sqft"
-                type="number"
-                min={2000}
-                max={15000}
-                step={50}
-                value={inputs.pricePerSqft || ''}
-                onChange={(e) => {
-                  const next = Number(e.target.value);
-                  setInputs({
-                    ...inputs,
-                    pricePerSqft: Number.isFinite(next) && next > 0 ? next : 0,
-                  });
-                }}
-                className={cn('mt-2', numberInputClassName)}
-                placeholder="e.g. 3500"
+              <CustomSelect
+                id="flat-unit"
+                value={inputs.flatUnitId}
+                onChange={handleFlatChange}
+                options={FLAT_UNIT_OPTIONS.map((option) => ({
+                  value: option.id,
+                  label: option.label,
+                }))}
+                className="mt-2"
               />
-            </div>
-
-            <div>
-              <label htmlFor="area-sqft" className={fieldLabelClassName}>
-                {t('sections.calculator.area')}
-              </label>
-              <input
-                id="area-sqft"
-                type="number"
-                min={800}
-                max={2000}
-                step={50}
-                value={inputs.areaScftFt}
-                onChange={(e) => {
-                  const next = Number(e.target.value);
-                  if (!Number.isFinite(next)) return;
-                  setInputs({
-                    ...inputs,
-                    areaScftFt: Math.min(2000, Math.max(800, next)),
-                  });
-                }}
-                className={cn('mt-2', numberInputClassName)}
-              />
-              <input
-                id="area-range"
-                type="range"
-                min="800"
-                max="2000"
-                step="50"
-                value={inputs.areaScftFt}
-                onChange={(e) =>
-                  setInputs({ ...inputs, areaScftFt: Number(e.target.value) })
-                }
-                className="mt-3 h-2 w-full cursor-pointer appearance-none bg-border-gold accent-gold"
-                aria-label="Adjust carpet area"
-              />
-              <p className="mt-1.5 text-xs text-text-secondary">800 to 2000 sq ft</p>
+              <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                {t('sections.calculator.flatSummary', {
+                  area: selectedFlat.saleableAreaSqFt.toLocaleString('en-IN'),
+                  rate: inputs.pricePerSqft.toLocaleString('en-IN'),
+                })}
+              </p>
             </div>
 
             <div>
@@ -334,19 +295,18 @@ function CalculatorContent({
               <label htmlFor="loan-tenure" className={fieldLabelClassName}>
                 {t('sections.calculator.tenure')}
               </label>
-              <select
+              <CustomSelect
                 id="loan-tenure"
-                value={inputs.loanTenureYears}
-                onChange={(e) =>
-                  setInputs({ ...inputs, loanTenureYears: Number(e.target.value) })
+                value={String(inputs.loanTenureYears)}
+                onChange={(nextValue) =>
+                  setInputs({ ...inputs, loanTenureYears: Number(nextValue) })
                 }
-                className={cn('mt-2', selectClassName)}
-              >
-                <option value="10">{t('sections.calculator.years', { n: 10 })}</option>
-                <option value="15">{t('sections.calculator.years', { n: 15 })}</option>
-                <option value="20">{t('sections.calculator.years', { n: 20 })}</option>
-                <option value="25">{t('sections.calculator.years', { n: 25 })}</option>
-              </select>
+                options={LOAN_TENURE_OPTIONS.map((years) => ({
+                  value: String(years),
+                  label: t('sections.calculator.years', { n: years }),
+                }))}
+                className="mt-2"
+              />
             </div>
 
             <div>

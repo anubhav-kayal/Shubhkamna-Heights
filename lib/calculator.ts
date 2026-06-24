@@ -1,4 +1,5 @@
 export interface CalculatorInputs {
+  flatUnitId: string;
   bhkType: string;
   areaScftFt: number;
   downPaymentPercent: number;
