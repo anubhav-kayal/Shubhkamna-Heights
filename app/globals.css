@@ -136,8 +136,9 @@ html[data-theme="dark"] {
   --color-subtle-on-light: var(--theme-subtle-on-light);
   --color-border-on-light: var(--theme-border-on-light);
 
-  --font-cormorant: var(--font-cormorant), Georgia, serif;
-  --font-inter: var(--font-inter), Arial, sans-serif;
+  --font-cormorant: var(--font-cormorant), 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-inter: var(--font-inter), 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: var(--font-mono), 'JetBrains Mono', 'Fira Code', monospace;
 }
 
 :root {

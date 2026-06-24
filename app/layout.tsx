@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Cormorant_Garamond, Inter } from 'next/font/google';
+import { Cormorant_Garamond, DM_Sans, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { CalculatorProvider } from '@/context/CalculatorContext';
 import { EnquiryModalProvider } from '@/context/EnquiryModalContext';
@@ -16,10 +16,16 @@ const cormorant = Cormorant_Garamond({
   weight: ['400', '600', '700'],
 });
 
-const inter = Inter({
+const dmSans = DM_Sans({
   variable: '--font-inter',
   subsets: ['latin'],
   weight: ['400', '500', '600'],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: '--font-mono',
+  subsets: ['latin'],
+  weight: ['400'],
 });
 
 export const metadata: Metadata = {
@@ -81,13 +87,13 @@ export default function RootLayout({
       lang="en"
       data-theme="light"
       suppressHydrationWarning
-      className={`${cormorant.variable} ${inter.variable} h-full scroll-smooth antialiased`}
+      className={`${cormorant.variable} ${dmSans.variable} ${jetbrainsMono.variable} h-full scroll-smooth antialiased`}
     >
       <head>
         <ThemeScript />
       </head>
       <body
-        className={`${inter.className} min-h-full w-full bg-bg-primary font-inter text-text-primary antialiased`}
+        className={`${dmSans.className} min-h-full w-full bg-bg-primary font-inter text-text-primary antialiased`}
       >
         <script
           type="application/ld+json"
