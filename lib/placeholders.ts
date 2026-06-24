@@ -34,7 +34,7 @@ export function getPlaceholderUrl(
     case 'blog':
       return getProjectBlogCover(seed);
     case 'bank':
-      return `/images/banks/sbi.svg`;
+      return `/images/banks/sbi-logo.webp`;
     case 'promoter':
       return getProjectPromoterImage(seed);
     default:

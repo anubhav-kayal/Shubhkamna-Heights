@@ -107,7 +107,7 @@ const FLOOR_PLAN_UNIT_IMAGE_MAP: Record<string, string> = {
   'flat-3bhk-1730': PROJECT_IMAGES.livingRoom,
   'flat-3bhk-1801': PROJECT_IMAGES.diningArea,
   'flat-3bhk-1806': PROJECT_IMAGES.kitchen,
-  'flat-3bhk-1913': PROJECT_IMAGES.cover,
+  'flat-3bhk-1913': img('balcony.png'),
 };
 
 const BLOG_COVER_MAP: Record<string, string> = {
