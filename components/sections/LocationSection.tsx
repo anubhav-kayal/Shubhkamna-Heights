@@ -53,7 +53,7 @@ export default function LocationSection() {
               className="min-h-[280px] overflow-hidden border border-border-gold sm:min-h-[360px] lg:min-h-[420px]"
             >
               <iframe
-                src="https://maps.google.com/maps?q=PDDU+Nagar+Chandauli+UP&output=embed"
+                src={PROJECT_DATA.mapEmbedUrl}
                 width="100%"
                 height="100%"
                 className="h-full min-h-[280px] w-full sm:min-h-[360px] lg:min-h-[420px]"

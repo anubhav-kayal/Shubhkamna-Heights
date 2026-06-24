@@ -146,9 +146,9 @@ export default function OurStoryClient({ heroImage }: { heroImage: string }) {
             <div className="flex h-full flex-col justify-center">
               <MapPin size={32} className="text-gold-dark" strokeWidth={1.5} />
               <p className="mt-4 font-cormorant text-2xl font-semibold leading-snug text-text-dark sm:text-3xl">
-                {PROJECT_DATA.location}
+                {PROJECT_DATA.fullAddress}
               </p>
-              <p className="mt-3 text-sm leading-relaxed text-muted-on-light">{PROJECT_DATA.fullAddress}</p>
+              <p className="mt-3 text-sm leading-relaxed text-muted-on-light">{PROJECT_DATA.location}</p>
             </div>
           </LightCard>
         </section>

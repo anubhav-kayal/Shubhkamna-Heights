@@ -158,9 +158,16 @@ export default function Footer() {
                   <span className="truncate">{PROJECT_DATA.contactEmail}</span>
                 </a>
               </li>
-              <li className="inline-flex items-start gap-2">
-                <MapPin size={14} className="mt-0.5 shrink-0 text-gold" />
-                <span className="line-clamp-2 text-xs">{PROJECT_DATA.location}</span>
+              <li>
+                <a
+                  href={PROJECT_DATA.mapUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-start gap-2 hover:text-gold"
+                >
+                  <MapPin size={14} className="mt-0.5 shrink-0 text-gold" />
+                  <span className="line-clamp-2 text-xs">{PROJECT_DATA.location}</span>
+                </a>
               </li>
             </ul>
           </div>

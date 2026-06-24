@@ -1,9 +1,14 @@
+const PROJECT_FULL_ADDRESS = 'Arazi No. 538MI, 542MI, 546, 547, Mauja- Godhana, Paragana-Dhoos, Tehsil- P.D.D.U. Nagar, Distt- Chandauli / UP';
+const PROJECT_MAP_URL = 'https://maps.app.goo.gl/9hFq1szuJh5mLiRRA?g_st=ac';
+
 export const PROJECT_DATA = {
   name: 'Shubh Kamna Heights',
   tagline: 'Crafted for Comfort. Designed for Life.',
   subTagline: 'Where spiritual grace meets natural beauty',
   location: 'PDDU Nagar, Chandauli / Uttar Pradesh',
-  fullAddress: 'Arazi No. 538MI, 542MI, 546, 547, Mauja- Godhana, Paragana-Dhoos, Tehsil- P.D.D.U. Nagar, Distt- Chandauli / UP',
+  fullAddress: PROJECT_FULL_ADDRESS,
+  mapUrl: PROJECT_MAP_URL,
+  mapEmbedUrl: `https://maps.google.com/maps?q=${encodeURIComponent(PROJECT_FULL_ADDRESS)}&output=embed`,
   reraNumber: 'UPRERAPRJ757815/04/2025',
   reraUrl: 'https://www.up-rera.in',
   vdaApproved: true,

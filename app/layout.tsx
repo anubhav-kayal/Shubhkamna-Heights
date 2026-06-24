@@ -104,7 +104,7 @@ export default function RootLayout({
               name: PROJECT_DATA.name,
               address: {
                 '@type': 'PostalAddress',
-                streetAddress: 'Arazi No. 538MI, 542MI, 546, 547, Mauja-Godhana',
+                streetAddress: PROJECT_DATA.fullAddress,
                 addressLocality: 'Chandauli',
                 addressRegion: 'Uttar Pradesh',
                 addressCountry: 'IN',
