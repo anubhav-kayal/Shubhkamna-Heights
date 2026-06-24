@@ -56,6 +56,7 @@ export default function HeroSection({ settings = {} as HeroSettings }) {
               loop
               playsInline
               poster={heroPoster}
+              preload="none"
               className="absolute inset-0 hidden h-full w-full object-cover sm:block"
             >
               <source src={settings.videoUrl} type="video/mp4" />

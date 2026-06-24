@@ -156,6 +156,7 @@ export function LandingPremiumHero({ settings }: { settings: LandingSettings | n
               loop
               playsInline
               poster={posterUrl}
+              preload="none"
               className="absolute inset-0 hidden h-full w-full object-cover lg:block"
             >
               <source src={videoUrl} type="video/mp4" />
