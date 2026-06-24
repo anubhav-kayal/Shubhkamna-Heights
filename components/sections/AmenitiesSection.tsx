@@ -104,7 +104,7 @@ function FeaturedAmenityCard({
         priority={priority}
       />
       <div className="media-caption-gradient pointer-events-none absolute inset-0" aria-hidden />
-      <div className="absolute inset-x-0 bottom-0 z-[1] p-5 sm:p-7">
+      <div className="media-image-caption absolute inset-x-0 bottom-0 z-[1] p-5 sm:p-7">
         <span className="inline-flex items-center gap-2 text-gold" aria-hidden>
           {AMENITY_ICONS[amenity.title] || <Users size={20} />}
         </span>

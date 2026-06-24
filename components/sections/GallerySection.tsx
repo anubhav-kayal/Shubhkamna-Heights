@@ -130,7 +130,7 @@ export default function GallerySection() {
                     fallbackKind="gallery"
                     fallbackSeed={image.category}
                   />
-                  <MediaCardBody className="min-h-[13rem] sm:min-h-[15rem]">
+                  <MediaCardBody className="media-image-caption min-h-[13rem] sm:min-h-[15rem]">
                     <BadgePill className="w-fit border border-gold/25 bg-bg-card/80 text-gold backdrop-blur-sm">
                       {categoryLabel(image.category, t)}
                     </BadgePill>
