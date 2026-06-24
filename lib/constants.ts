@@ -108,10 +108,12 @@ export const VIDEO_TESTIMONIAL_MEDIA = {
   amit: process.env.NEXT_PUBLIC_VIDEO_TESTIMONIAL_3 ?? '/videos/testimonial-amit.mp4',
 } as const;
 
-/** Place project film at public/videos/shubh-kamna-heights.mp4 or set NEXT_PUBLIC_PROJECT_VIDEO_URL */
+/** Project overview film in public/videos/ */
+export const PROJECT_OVERVIEW_VIDEO_URL = '/videos/overview.mp4';
+
 export const PROJECT_MEDIA = {
-  videoUrl: process.env.NEXT_PUBLIC_PROJECT_VIDEO_URL ?? '/videos/shubh-kamna-heights.mp4',
-  posterUrl: process.env.NEXT_PUBLIC_PROJECT_VIDEO_POSTER_URL ?? '',
+  videoUrl: process.env.NEXT_PUBLIC_PROJECT_VIDEO_URL ?? PROJECT_OVERVIEW_VIDEO_URL,
+  posterUrl: process.env.NEXT_PUBLIC_PROJECT_VIDEO_POSTER_URL ?? '/images/Front-Day-View.jpg',
 };
 
 export const DISCLAIMER = 'The images shown are artistic impressions and are for illustration purposes only. The actual features, design, and amenities may differ from the visual representations. We recommend visiting the site and consulting with the sales team for accurate information. This website is for informational purposes only and does not constitute an offer to sell or solicitation to buy. Prices and specifications are subject to change.';

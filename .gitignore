@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Large local media (host separately or set NEXT_PUBLIC_PROJECT_VIDEO_URL)
+public/videos/overview.mp4

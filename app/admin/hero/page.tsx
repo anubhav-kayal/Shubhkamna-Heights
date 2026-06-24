@@ -88,7 +88,7 @@ export default function AdminHeroPage() {
                 onChange={(value) => update('videoUrl', value)}
                 folder="hero"
                 accept="video/mp4,video/*"
-                hint="MP4 URL for the project page hero. Falls back to NEXT_PUBLIC_PROJECT_VIDEO_URL."
+                hint="MP4 URL for the project page hero. Falls back to /videos/overview.mp4."
               />
               <MediaUrlField
                 label="Poster URL"

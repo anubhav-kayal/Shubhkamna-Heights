@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Play } from 'lucide-react';
 import { getHeroSettings } from '@/lib/firestore';
-import { PROJECT_MEDIA } from '@/lib/constants';
+import { PROJECT_MEDIA, PROJECT_OVERVIEW_VIDEO_URL } from '@/lib/constants';
 import { getHeroPosterUrl } from '@/lib/placeholders';
 import {
   GoldRule,
@@ -21,7 +21,6 @@ import { useTranslation } from '@/context/LocaleContext';
 export default function ProjectVideoSection({ className }: { className?: string }) {
   const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoUrl, setVideoUrl] = useState(PROJECT_MEDIA.videoUrl);
   const [posterUrl, setPosterUrl] = useState(() =>
     getHeroPosterUrl(PROJECT_MEDIA.posterUrl || undefined),
   );
@@ -32,10 +31,6 @@ export default function ProjectVideoSection({ className }: { className?: string 
     const load = async () => {
       try {
         const settings = await getHeroSettings();
-        if (settings?.videoUrl && typeof settings.videoUrl === 'string') {
-          setVideoUrl(settings.videoUrl);
-          setHasError(false);
-        }
         if (settings?.posterUrl && typeof settings.posterUrl === 'string') {
           setPosterUrl(getHeroPosterUrl(settings.posterUrl));
         }
@@ -50,11 +45,36 @@ export default function ProjectVideoSection({ className }: { className?: string 
   const handlePlay = async () => {
     const el = videoRef.current;
     if (!el) return;
+
     setHasStarted(true);
+    setHasError(false);
+    el.preload = 'auto';
+
     try {
+      if (el.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) {
+        el.load();
+        await new Promise<void>((resolve, reject) => {
+          const onReady = () => {
+            cleanup();
+            resolve();
+          };
+          const onFail = () => {
+            cleanup();
+            reject(new Error('Video failed to load'));
+          };
+          const cleanup = () => {
+            el.removeEventListener('loadeddata', onReady);
+            el.removeEventListener('error', onFail);
+          };
+          el.addEventListener('loadeddata', onReady, { once: true });
+          el.addEventListener('error', onFail, { once: true });
+        });
+      }
+
       await el.play();
     } catch {
-      /* native controls remain available */
+      setHasError(true);
+      setHasStarted(false);
     }
   };
 
@@ -107,23 +127,32 @@ export default function ProjectVideoSection({ className }: { className?: string 
                     <p className="mt-2 text-sm leading-relaxed text-text-secondary">
                       {t('sections.video.errorLead')}
                     </p>
+                    <button
+                      type="button"
+                      onClick={() => void handlePlay()}
+                      className="mt-5 inline-flex items-center justify-center gap-2 border border-gold/50 bg-gold/15 px-5 py-2.5 font-inter text-sm font-semibold text-gold transition-colors hover:bg-gold/25"
+                    >
+                      <Play size={16} />
+                      {t('sections.video.playFull')}
+                    </button>
                   </div>
                 </div>
               ) : (
                 <>
                   <video
                     ref={videoRef}
+                    src={PROJECT_OVERVIEW_VIDEO_URL}
                     className="aspect-video w-full bg-black object-cover"
                     poster={posterUrl}
                     playsInline
-                    preload="metadata"
                     controls={hasStarted}
+                    preload="none"
                     onPlay={() => setHasStarted(true)}
-                    onError={() => setHasError(true)}
-                  >
-                    <source src={videoUrl} type="video/mp4" />
-                    Your browser does not support embedded video.
-                  </video>
+                    onError={() => {
+                      setHasError(true);
+                      setHasStarted(false);
+                    }}
+                  />
 
                   {!hasStarted && (
                     <button
@@ -143,10 +172,6 @@ export default function ProjectVideoSection({ className }: { className?: string 
                 </>
               )}
             </div>
-
-            <p className="mt-5 text-center text-xs text-text-secondary sm:text-sm">
-              {t('sections.video.footerNote')}
-            </p>
           </div>
         </motion.div>
       </PageContainer>
