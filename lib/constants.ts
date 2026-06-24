@@ -110,11 +110,14 @@ export const VIDEO_TESTIMONIAL_MEDIA = {
   amit: process.env.NEXT_PUBLIC_VIDEO_TESTIMONIAL_3 ?? CUSTOMER_REVIEW_VIDEO_URL,
 } as const;
 
-/** Project overview film in public/videos/ */
-export const PROJECT_OVERVIEW_VIDEO_URL = '/videos/overview.mp4';
+/** Default MP4 background video used by the landing hero */
+export const PROJECT_HERO_VIDEO_URL = '/videos/overview.mp4';
+
+/** Project overview film / embed URL shown on the project page by default */
+export const PROJECT_OVERVIEW_VIDEO_URL = 'https://youtu.be/uRcD-wwo0sI?si=697kjcGb1X1OK9LP';
 
 export const PROJECT_MEDIA = {
-  videoUrl: process.env.NEXT_PUBLIC_PROJECT_VIDEO_URL ?? PROJECT_OVERVIEW_VIDEO_URL,
+  videoUrl: process.env.NEXT_PUBLIC_PROJECT_VIDEO_URL ?? PROJECT_HERO_VIDEO_URL,
   posterUrl: process.env.NEXT_PUBLIC_PROJECT_VIDEO_POSTER_URL ?? '/images/Front-Day-View.jpg',
 };
 

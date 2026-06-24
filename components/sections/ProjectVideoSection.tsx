@@ -18,9 +18,40 @@ import {
 import { cn } from '@/lib/cn';
 import { useTranslation } from '@/context/LocaleContext';
 
+function getYouTubeEmbedUrl(url: string): string | null {
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+
+  try {
+    const parsed = new URL(trimmed);
+    const hostname = parsed.hostname.replace(/^www\./, '');
+
+    if (hostname === 'youtu.be') {
+      const videoId = parsed.pathname.replace(/^\//, '');
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+    }
+
+    if (hostname === 'youtube.com' || hostname === 'm.youtube.com') {
+      if (parsed.pathname === '/watch') {
+        const videoId = parsed.searchParams.get('v');
+        return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+      }
+
+      if (parsed.pathname.startsWith('/embed/')) {
+        return trimmed;
+      }
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
 export default function ProjectVideoSection({ className }: { className?: string }) {
   const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoUrl, setVideoUrl] = useState(PROJECT_OVERVIEW_VIDEO_URL);
   const [posterUrl, setPosterUrl] = useState(() =>
     getHeroPosterUrl(PROJECT_MEDIA.posterUrl || undefined),
   );
@@ -31,6 +62,9 @@ export default function ProjectVideoSection({ className }: { className?: string 
     const load = async () => {
       try {
         const settings = await getHeroSettings();
+        if (settings?.videoUrl && typeof settings.videoUrl === 'string') {
+          setVideoUrl(settings.videoUrl);
+        }
         if (settings?.posterUrl && typeof settings.posterUrl === 'string') {
           setPosterUrl(getHeroPosterUrl(settings.posterUrl));
         }
@@ -41,6 +75,8 @@ export default function ProjectVideoSection({ className }: { className?: string 
 
     void load();
   }, []);
+
+  const embedUrl = getYouTubeEmbedUrl(videoUrl);
 
   const handlePlay = async () => {
     const el = videoRef.current;
@@ -112,7 +148,18 @@ export default function ProjectVideoSection({ className }: { className?: string 
                 'bg-bg-card shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:',
               )}
             >
-              {hasError ? (
+              {embedUrl ? (
+                <div className="aspect-video w-full bg-black">
+                  <iframe
+                    src={embedUrl}
+                    title={t('sections.video.title')}
+                    className="h-full w-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                  />
+                </div>
+              ) : hasError ? (
                 <div className="relative flex aspect-video flex-col items-center justify-center gap-4 px-6 text-center">
                   <div
                     className="absolute inset-0 bg-cover bg-center"
@@ -141,7 +188,7 @@ export default function ProjectVideoSection({ className }: { className?: string 
                 <>
                   <video
                     ref={videoRef}
-                    src={PROJECT_OVERVIEW_VIDEO_URL}
+                    src={videoUrl}
                     className="aspect-video w-full bg-black object-cover"
                     poster={posterUrl}
                     playsInline

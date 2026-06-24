@@ -22,6 +22,15 @@ const OVERLAY_CLASS = {
   card: 'media-overlay-card',
 } as const;
 
+function resolveMediaSrc(
+  src: string,
+  fallbackKind: PlaceholderKind,
+  fallbackSeed: string | number,
+): string {
+  const trimmed = src.trim();
+  return trimmed || getPlaceholderUrl(fallbackKind, fallbackSeed);
+}
+
 export default function MediaCover({
   src,
   alt,
@@ -32,8 +41,11 @@ export default function MediaCover({
   fallbackKind = 'gallery',
   fallbackSeed = 'default',
 }: MediaCoverProps) {
-  const [imgSrc, setImgSrc] = useState(src);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const overlayClass = overlay === 'none' ? '' : OVERLAY_CLASS[overlay];
+  const fallbackSrc = getPlaceholderUrl(fallbackKind, fallbackSeed);
+  const normalizedSrc = resolveMediaSrc(src, fallbackKind, fallbackSeed);
+  const imgSrc = failedSrc === normalizedSrc ? fallbackSrc : normalizedSrc;
 
   return (
     <div className={`absolute inset-0 overflow-hidden ${className}`}>
@@ -44,7 +56,7 @@ export default function MediaCover({
         priority={priority}
         sizes={sizes}
         className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-        onError={() => setImgSrc(getPlaceholderUrl(fallbackKind, fallbackSeed))}
+        onError={() => setFailedSrc(normalizedSrc)}
       />
       {overlayClass ? (
         <div className={cn('pointer-events-none absolute inset-0', overlayClass)} aria-hidden />
