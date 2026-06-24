@@ -6,6 +6,7 @@ import { submitEnquiry } from '@/lib/firestore';
 import { PROJECT_DATA } from '@/lib/constants';
 import { useTranslation } from '@/context/LocaleContext';
 import VisitDatePicker from '@/components/ui/VisitDatePicker';
+import CustomSelect from '@/components/ui/CustomSelect';
 import { Button, BtnRow, PanelDark } from '@/components/ui/design';
 import { cn } from '@/lib/cn';
 
@@ -43,6 +44,7 @@ type EnquiryFormProps = {
   source: string;
   idPrefix?: string;
   compact?: boolean;
+  defaultBhkPreference?: string;
   onSuccess?: () => void;
   className?: string;
 };
@@ -51,11 +53,15 @@ export default function EnquiryForm({
   source,
   idPrefix = 'enquiry',
   compact = false,
+  defaultBhkPreference = '3BHK',
   onSuccess,
   className,
 }: EnquiryFormProps) {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState<EnquiryFormData>(EMPTY_FORM);
+  const [formData, setFormData] = useState<EnquiryFormData>({
+    ...EMPTY_FORM,
+    bhkPreference: defaultBhkPreference,
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -84,7 +90,7 @@ export default function EnquiryForm({
       });
 
       setSubmitted(true);
-      setFormData(EMPTY_FORM);
+      setFormData({ ...EMPTY_FORM, bhkPreference: defaultBhkPreference });
       onSuccess?.();
 
       setTimeout(() => {
@@ -202,17 +208,20 @@ export default function EnquiryForm({
           <label htmlFor={`${idPrefix}-bhk`} className={labelClassName}>
             {t('enquiry.bhk')}
           </label>
-          <select
+          <CustomSelect
             id={`${idPrefix}-bhk`}
             name="bhkPreference"
             value={formData.bhkPreference}
-            onChange={handleChange}
-            className={inputClassName}
-          >
-            <option value="2BHK">{t('enquiry.bhk2')}</option>
-            <option value="3BHK">{t('enquiry.bhk3')}</option>
-            <option value="Not decided">{t('enquiry.bhkUndecided')}</option>
-          </select>
+            onChange={(value) =>
+              setFormData((prev) => ({ ...prev, bhkPreference: value }))
+            }
+            options={[
+              { value: '2BHK', label: t('enquiry.bhk2') },
+              { value: '3BHK', label: t('enquiry.bhk3') },
+              { value: 'Not decided', label: t('enquiry.bhkUndecided') },
+            ]}
+            triggerClassName={inputClassName}
+          />
         </div>
 
         <div className="flex flex-col gap-2 sm:col-span-2">

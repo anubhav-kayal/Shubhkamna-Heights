@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { submitEnquiry } from '@/lib/firestore';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 export default function ExitIntentModal() {
   const [isVisible, setIsVisible] = useState(false);
@@ -167,15 +168,18 @@ export default function ExitIntentModal() {
                     className="w-full border border-border-gold bg-bg-primary px-3 py-2 font-inter text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-gold"
                   />
 
-                  <select
+                  <CustomSelect
                     value={formData.bhkPreference}
-                    onChange={e => setFormData({ ...formData, bhkPreference: e.target.value })}
-                    className="w-full border border-border-gold bg-bg-primary px-3 py-2 font-inter text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-gold"
-                  >
-                    <option value="2BHK">2 BHK</option>
-                    <option value="3BHK">3 BHK</option>
-                    <option value="Not decided">Not decided</option>
-                  </select>
+                    onChange={(value) =>
+                      setFormData({ ...formData, bhkPreference: value })
+                    }
+                    options={[
+                      { value: '2BHK', label: '2 BHK' },
+                      { value: '3BHK', label: '3 BHK' },
+                      { value: 'Not decided', label: 'Not decided' },
+                    ]}
+                    triggerClassName="w-full border border-border-gold bg-bg-primary px-3 py-2 font-inter text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-gold"
+                  />
 
                   <button
                     type="submit"
