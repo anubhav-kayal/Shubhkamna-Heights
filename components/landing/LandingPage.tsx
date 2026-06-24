@@ -1,6 +1,6 @@
 'use client';
 
-import type { LandingSettings } from '@/types';
+import type { BlogPost, LandingSettings } from '@/types';
 import BlogSection from '@/components/sections/BlogSection';
 import Footer from '@/components/sections/Footer';
 import {
@@ -13,7 +13,13 @@ import {
   LandingConversation,
 } from '@/components/landing/LandingSections';
 
-export default function LandingPage({ settings }: { settings: LandingSettings | null }) {
+export default function LandingPage({
+  settings,
+  blogPosts,
+}: {
+  settings: LandingSettings | null;
+  blogPosts?: BlogPost[];
+}) {
   return (
     <>
       <LandingPremiumHero settings={settings} />
@@ -23,7 +29,7 @@ export default function LandingPage({ settings }: { settings: LandingSettings | 
       <LandingHappiness />
       <LandingCurated settings={settings} />
       <LandingConversation />
-      <BlogSection />
+      <BlogSection initialData={blogPosts} />
       <Footer />
     </>
   );
