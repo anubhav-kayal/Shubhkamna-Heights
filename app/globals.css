@@ -302,6 +302,25 @@ html[data-theme='light'] .media-image-caption .text-gold {
   }
 }
 
+/* Skeleton shimmer for media placeholders */
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(201, 168, 76, 0.06) 40%,
+    rgba(201, 168, 76, 0.08) 50%,
+    rgba(201, 168, 76, 0.06) 60%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
 /* Tailwind rounded-* utilities load after @layer base — force sharp corners everywhere */
 [class*='rounded'] {
   border-radius: 0 !important;

@@ -42,6 +42,7 @@ export default function MediaCover({
   fallbackSeed = 'default',
 }: MediaCoverProps) {
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
   const overlayClass = overlay === 'none' ? '' : OVERLAY_CLASS[overlay];
   const fallbackSrc = getPlaceholderUrl(fallbackKind, fallbackSeed);
   const normalizedSrc = resolveMediaSrc(src, fallbackKind, fallbackSeed);
@@ -49,14 +50,24 @@ export default function MediaCover({
 
   return (
     <div className={`absolute inset-0 overflow-hidden ${className}`}>
+      {!loaded && (
+        <div className="absolute inset-0 bg-bg-card" aria-hidden>
+          <div className="skeleton-shimmer absolute inset-0" />
+        </div>
+      )}
       <Image
         src={imgSrc}
         alt={alt}
         fill
         priority={priority}
         sizes={sizes}
-        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+        className={cn(
+          'object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]',
+          'transition-opacity duration-300',
+          loaded ? 'opacity-100' : 'opacity-0',
+        )}
         onError={() => setFailedSrc(normalizedSrc)}
+        onLoad={() => setLoaded(true)}
       />
       {overlayClass ? (
         <div className={cn('pointer-events-none absolute inset-0', overlayClass)} aria-hidden />
