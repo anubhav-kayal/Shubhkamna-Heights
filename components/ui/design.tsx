@@ -361,7 +361,7 @@ export function SegmentControl({
   return (
     <div
       className={cn(
-        'inline-flex w-full max-w-full flex-wrap border sm:flex-nowrap',
+        'flex w-full overflow-x-auto border sm:inline-flex sm:w-auto sm:overflow-visible',
         tone === 'dark'
           ? 'border-border-gold bg-bg-card'
           : 'border-border-on-light bg-white',
@@ -387,9 +387,9 @@ export function SegmentButton({
       role="tab"
       aria-selected={active}
       className={cn(
-        'min-h-[2.75rem] flex-1 basis-0 px-3 py-2.5 font-inter text-[0.6875rem] font-semibold uppercase tracking-[0.12em] transition-colors sm:px-4 sm:text-xs',
-        'border-r border-b sm:border-b-0 last:border-r-0',
-        tone === 'dark' ? 'border-border-gold' : 'border-border-on-light',
+        'min-h-[2.75rem] shrink-0 whitespace-nowrap px-4 py-2.5 font-inter text-[0.6875rem] font-semibold uppercase tracking-[0.12em] transition-colors sm:flex-1 sm:basis-0 sm:px-4 sm:text-xs',
+        'border-r',
+        tone === 'dark' ? 'border-border-gold last:border-r-0' : 'border-border-on-light last:border-r-0',
         tone === 'dark'
           ? active
             ? 'bg-gold text-text-dark'

@@ -79,7 +79,7 @@ export default function FloorPlansSection({
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.15 }}
+          viewport={{ once: true, margin: '0px 0px -100px 0px' }}
           transition={{ duration: 0.55, ease: 'easeOut' }}
         >
           <SectionToolbar>
@@ -143,7 +143,7 @@ export default function FloorPlansSection({
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className=" border border-border-on-light bg-bg-light p-4">
                           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-on-light">
                             <Expand size={16} aria-hidden className="text-gold-dark" />

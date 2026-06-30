@@ -67,7 +67,8 @@ export default function ProjectOverviewSection() {
               key={metric.caption}
               className={cn(
                 'px-4 py-8 sm:px-6 sm:py-10',
-                i > 0 && 'border-l border-border-gold/60',
+                i % 2 !== 0 && 'border-l border-border-gold/60',
+                i > 0 && i % 2 === 0 && 'lg:border-l border-border-gold/60',
                 i >= 2 && 'border-t border-border-gold/60 lg:border-t-0',
               )}
             >

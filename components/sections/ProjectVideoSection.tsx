@@ -160,7 +160,7 @@ export default function ProjectVideoSection({
             <div
               className={cn(
                 'relative overflow-hidden border border-border-gold',
-                'bg-bg-card shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:',
+                'bg-bg-card shadow-[0_24px_80px_rgba(0,0,0,0.45)]',
               )}
             >
               {embedUrl ? (
