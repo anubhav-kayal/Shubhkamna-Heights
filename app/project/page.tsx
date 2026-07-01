@@ -5,6 +5,7 @@ import AmenitiesSection from '@/components/sections/AmenitiesSection';
 import FloorPlansSection from '@/components/sections/FloorPlansSection';
 import GallerySection from '@/components/sections/GallerySection';
 import SpecificationsSection from '@/components/sections/SpecificationsSection';
+import CertificatesBanner from '@/components/sections/CertificatesBanner';
 import TieUpBanksSection from '@/components/sections/TieUpBanksSection';
 import LocationSection from '@/components/sections/LocationSection';
 import AboutSection from '@/components/sections/AboutSection';
@@ -59,6 +60,7 @@ export default async function ProjectPage() {
       />
       <GallerySection initialData={initialGallery} />
       <SpecificationsSection />
+      <CertificatesBanner />
       <TieUpBanksSection initialData={initialBanks} />
       <LocationSection />
       <AboutSection />

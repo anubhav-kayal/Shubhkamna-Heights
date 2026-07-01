@@ -254,6 +254,16 @@ export const en = {
       lead: 'Materials, finishes, and systems chosen for durability, comfort, and long term value, documented clearly for your purchase decision.',
       loading: 'Loading specifications…',
     },
+    certificates: {
+      kicker: 'Regulatory',
+      title: 'Certificates',
+      bannerTitle: 'Certificates',
+      bannerLead: '{count} official approvals, RERA documents, and layout plans available for review.',
+      bannerCta: 'View all',
+      viewDownload: 'View / Download',
+      pdf: 'PDF',
+      close: 'Close certificates',
+    },
     banks: {
       kicker: 'Financing',
       title: 'Easy Home Loans Available',
